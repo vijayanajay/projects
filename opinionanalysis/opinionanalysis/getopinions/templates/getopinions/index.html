@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+        <p>
+        {% if post_text %}
+        <ul>   
+            {{ post_text }}
+        {% else %}
+            <ul>Nothing here <ul>
+        {% endif %}
+{% endblock %}

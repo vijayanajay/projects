@@ -1,0 +1,60 @@
+[22/Mar/2015 21:24:42] DEBUG [django.db.backends:91] (0.000) QUERY = "\n            SELECT name FROM sqlite_master\n            WHERE type in ('table', 'view') AND NOT name='sqlite_sequence'\n            ORDER BY name" - PARAMS = (); args=None
+[22/Mar/2015 21:24:42] DEBUG [django.db.backends:91] (0.000) QUERY = u'SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"' - PARAMS = (); args=()
+[22/Mar/2015 21:24:49] DEBUG [django.db.backends:91] (0.001) QUERY = "\n            SELECT name FROM sqlite_master\n            WHERE type in ('table', 'view') AND NOT name='sqlite_sequence'\n            ORDER BY name" - PARAMS = (); args=None
+[22/Mar/2015 21:24:49] DEBUG [django.db.backends:91] (0.000) QUERY = u'SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"' - PARAMS = (); args=()
+[22/Mar/2015 21:27:25] ERROR [django.request:231] Internal Server Error: /getopinions
+Traceback (most recent call last):
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\handlers\base.py", line 87, in get_response
+    response = middleware_method(request)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\middleware\common.py", line 72, in process_request
+    if (not urlresolvers.is_valid_path(request.path_info, urlconf) and
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 619, in is_valid_path
+    resolve(path, urlconf)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 494, in resolve
+    return get_resolver(urlconf).resolve(path)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 343, in resolve
+    for pattern in self.url_patterns:
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 372, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 366, in urlconf_module
+    self._urlconf_module = import_module(self.urlconf_name)
+  File "C:\Python27\Lib\importlib\__init__.py", line 37, in import_module
+    __import__(name)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\opinionanalysis\urls.py", line 10, in <module>
+    url(r'^getopinions/', include('getopinions.urls')),
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\conf\urls\__init__.py", line 28, in include
+    urlconf_module = import_module(urlconf_module)
+  File "C:\Python27\Lib\importlib\__init__.py", line 37, in import_module
+    __import__(name)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\getopinions\urls.py", line 3, in <module>
+    from getopinions import views
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\getopinions\views.py", line 2, in <module>
+    import getwebsite
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\getopinions\getwebsite.py", line 1, in <module>
+    from bs4 import BeautifulSoup
+ImportError: No module named bs4
+[22/Mar/2015 21:27:29] ERROR [django.request:231] Internal Server Error: /getopinions/
+Traceback (most recent call last):
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\handlers\base.py", line 98, in get_response
+    resolver_match = resolver.resolve(request.path_info)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 343, in resolve
+    for pattern in self.url_patterns:
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 372, in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\core\urlresolvers.py", line 366, in urlconf_module
+    self._urlconf_module = import_module(self.urlconf_name)
+  File "C:\Python27\Lib\importlib\__init__.py", line 37, in import_module
+    __import__(name)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\opinionanalysis\urls.py", line 10, in <module>
+    url(r'^getopinions/', include('getopinions.urls')),
+  File "C:\gCode\projects.git\trunk\opinionanalysis\lib\site-packages\django\conf\urls\__init__.py", line 28, in include
+    urlconf_module = import_module(urlconf_module)
+  File "C:\Python27\Lib\importlib\__init__.py", line 37, in import_module
+    __import__(name)
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\getopinions\urls.py", line 3, in <module>
+    from getopinions import views
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\getopinions\views.py", line 2, in <module>
+    import getwebsite
+  File "C:\gCode\projects.git\trunk\opinionanalysis\opinionanalysis\getopinions\getwebsite.py", line 1, in <module>
+    from bs4 import BeautifulSoup
+ImportError: No module named bs4
