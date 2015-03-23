@@ -2,6 +2,7 @@ LICENSE
 MANIFEST.in
 NEWS
 README
+setup.cfg
 setup.py
 docs/add_custom_css.py
 docs/advanced.rst
