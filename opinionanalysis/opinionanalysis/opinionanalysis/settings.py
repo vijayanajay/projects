@@ -110,7 +110,7 @@ LOGGING = {
             'propagate': True,
             'level':'DEBUG',
         },
-        'getcarsdata': {
+        'getopinions': {
             'handlers': ['file'],
             'level': 'DEBUG',
         },
