@@ -4,4 +4,7 @@ from django.contrib import admin
 from getopinions.models import *
 from django.contrib import admin
 
-admin.site.register(Article)
+class ArticleAdmin (admin.ModelAdmin):
+	list_display = ['site_name', 'title', 'content', 'link']
+
+admin.site.register(Article, ArticleAdmin)
