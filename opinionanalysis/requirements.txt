@@ -1,0 +1,6 @@
+django
+beautifulsoup4
+chardet
+speedparser
+django-debug-toolbar
+
