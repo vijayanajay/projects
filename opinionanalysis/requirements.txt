@@ -3,4 +3,9 @@ beautifulsoup4
 chardet
 speedparser
 django-debug-toolbar
-
+behave
+selenium
+parse
+django-behave
+mechanize
+wsgi_intercept
