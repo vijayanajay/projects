@@ -13,7 +13,7 @@ def extract(url):
     goose = Goose()
     article = goose.extract(url=url)
     # logger.debug(article.cleaned_text)
-    return (article)
+    return article
 
 
 def get_feed(feed):
@@ -34,7 +34,8 @@ def get_feed(feed):
                 article.link = entry['links'][0]['href']
                 article.save()
     except:
-        logger.debug(e)
+        pass
 
     # return links_in_feed[0]['href']
     return feed_content['entries'][1]['links'][0]['href']
+
