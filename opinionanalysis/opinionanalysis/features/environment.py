@@ -5,7 +5,7 @@ import django
 import os
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'opinionanalysis.settings'
-
+os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'localhost:8000'
 
 def before_all(context):
     # Check http://www.whoisnicoleharris.com/2015/03/19/bdd-part-two.html
@@ -14,7 +14,7 @@ def before_all(context):
 
     utils.setup_test_environment()
     context.browser = Browser()
-    context.server_url = "http://localhost:8080/"
+    context.server_url = "http://localhost:8000/"
 
 
 def before_scenario(context, scenario):
