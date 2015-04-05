@@ -1,16 +1,18 @@
 import datetime
 import os
+import warnings
+from inspect import getargspec
 
 from django import forms
-from django.db.models.fields import Field
 from django.core import checks
-from django.core.exceptions import ImproperlyConfigured
 from django.core.files.base import File
-from django.core.files.storage import default_storage
 from django.core.files.images import ImageFile
+from django.core.files.storage import default_storage
 from django.db.models import signals
-from django.utils.encoding import force_str, force_text
+from django.db.models.fields import Field
 from django.utils import six
+from django.utils.deprecation import RemovedInDjango20Warning
+from django.utils.encoding import force_str, force_text
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -86,7 +88,19 @@ class FieldFile(File):
 
     def save(self, name, content, save=True):
         name = self.field.generate_filename(self.instance, name)
-        self.name = self.storage.save(name, content)
+
+        args, varargs, varkw, defaults = getargspec(self.storage.save)
+        if 'max_length' in args:
+            self.name = self.storage.save(name, content, max_length=self.field.max_length)
+        else:
+            warnings.warn(
+                'Backwards compatibility for storage backends without '
+                'support for the `max_length` argument in '
+                'Storage.save() will be removed in Django 2.0.',
+                RemovedInDjango20Warning, stacklevel=2
+            )
+            self.name = self.storage.save(name, content)
+
         setattr(self.instance, self.field.name, self.name)
 
         # Update the filesize cache
@@ -189,7 +203,7 @@ class FileDescriptor(object):
             instance.__dict__[self.field.name] = attr
 
         # Other types of files may be assigned as well, but they need to have
-        # the FieldFile interface added to the. Thus, we wrap any other type of
+        # the FieldFile interface added to them. Thus, we wrap any other type of
         # File inside a FieldFile (well, the field's attr_class, which is
         # usually FieldFile).
         elif isinstance(file, File) and not isinstance(file, FieldFile):
@@ -301,8 +315,8 @@ class FileField(Field):
             file.save(file.name, file, save=False)
         return file
 
-    def contribute_to_class(self, cls, name):
-        super(FileField, self).contribute_to_class(cls, name)
+    def contribute_to_class(self, cls, name, **kwargs):
+        super(FileField, self).contribute_to_class(cls, name, **kwargs)
         setattr(cls, self.name, self.descriptor_class(self))
 
     def get_directory_name(self):
@@ -386,13 +400,13 @@ class ImageField(FileField):
 
     def _check_image_library_installed(self):
         try:
-            from django.utils.image import Image  # NOQA
-        except ImproperlyConfigured:
+            from PIL import Image  # NOQA
+        except ImportError:
             return [
                 checks.Error(
                     'Cannot use ImageField because Pillow is not installed.',
                     hint=('Get Pillow at https://pypi.python.org/pypi/Pillow '
-                          'or run command "pip install pillow".'),
+                          'or run command "pip install Pillow".'),
                     obj=self,
                     id='fields.E210',
                 )
@@ -408,8 +422,8 @@ class ImageField(FileField):
             kwargs['height_field'] = self.height_field
         return name, path, args, kwargs
 
-    def contribute_to_class(self, cls, name):
-        super(ImageField, self).contribute_to_class(cls, name)
+    def contribute_to_class(self, cls, name, **kwargs):
+        super(ImageField, self).contribute_to_class(cls, name, **kwargs)
         # Attach update_dimension_fields so that dimension fields declared
         # after their corresponding image field don't stay cleared by
         # Model.__init__, see bug #11196.

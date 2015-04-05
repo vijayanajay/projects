@@ -2,17 +2,17 @@
 import base64
 from datetime import datetime
 
+from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT, BaseCache
+from django.db import DatabaseError, connections, router, transaction
+from django.db.backends.utils import typecast_timestamp
+from django.utils import six, timezone
+from django.utils.encoding import force_bytes
+
 try:
     from django.utils.six.moves import cPickle as pickle
 except ImportError:
     import pickle
-
-from django.conf import settings
-from django.core.cache.backends.base import BaseCache, DEFAULT_TIMEOUT
-from django.db import connections, transaction, router, DatabaseError
-from django.db.backends.utils import typecast_timestamp
-from django.utils import timezone, six
-from django.utils.encoding import force_bytes
 
 
 class Options(object):
@@ -30,6 +30,7 @@ class Options(object):
         self.abstract = False
         self.managed = True
         self.proxy = False
+        self.swapped = False
 
 
 class BaseDatabaseCache(BaseCache):
@@ -200,8 +201,3 @@ class DatabaseCache(BaseDatabaseCache):
         table = connections[db].ops.quote_name(self._table)
         with connections[db].cursor() as cursor:
             cursor.execute('DELETE FROM %s' % table)
-
-
-# For backwards compatibility
-class CacheClass(DatabaseCache):
-    pass

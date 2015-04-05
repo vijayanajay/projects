@@ -11,8 +11,8 @@ from django.template import defaultfilters
 from django.utils.encoding import force_text
 from django.utils.formats import number_format
 from django.utils.safestring import mark_safe
-from django.utils.translation import pgettext, ungettext, ugettext as _
 from django.utils.timezone import is_aware, utc
+from django.utils.translation import pgettext, ugettext as _, ungettext
 
 register = template.Library()
 
@@ -150,7 +150,8 @@ def apnumber(value):
         return value
     if not 0 < value < 10:
         return value
-    return (_('one'), _('two'), _('three'), _('four'), _('five'), _('six'), _('seven'), _('eight'), _('nine'))[value - 1]
+    return (_('one'), _('two'), _('three'), _('four'), _('five'),
+            _('six'), _('seven'), _('eight'), _('nine'))[value - 1]
 
 
 # Perform the comparison in the default time zone when USE_TZ = True

@@ -1,19 +1,22 @@
-from importlib import import_module
+import inspect
 import os
 import pkgutil
-from threading import local
 import warnings
+from importlib import import_module
+from threading import local
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.deprecation import RemovedInDjango18Warning, RemovedInDjango19Warning
+from django.utils import six
+from django.utils._os import upath
+from django.utils.deprecation import (
+    RemovedInDjango19Warning, RemovedInDjango20Warning,
+)
 from django.utils.functional import cached_property
 from django.utils.module_loading import import_string
-from django.utils._os import upath
-from django.utils import six
-
 
 DEFAULT_DB_ALIAS = 'default'
+DJANGO_VERSION_PICKLE_KEY = '_django_version'
 
 
 class Error(Exception if six.PY3 else StandardError):
@@ -167,11 +170,6 @@ class ConnectionHandler(object):
             raise ConnectionDoesNotExist("The connection %s doesn't exist" % alias)
 
         conn.setdefault('ATOMIC_REQUESTS', False)
-        if settings.TRANSACTIONS_MANAGED:
-            warnings.warn(
-                "TRANSACTIONS_MANAGED is deprecated. Use AUTOCOMMIT instead.",
-                RemovedInDjango18Warning, stacklevel=2)
-            conn.setdefault('AUTOCOMMIT', False)
         conn.setdefault('AUTOCOMMIT', True)
         conn.setdefault('ENGINE', 'django.db.backends.dummy')
         if conn['ENGINE'] == 'django.db.backends.' or not conn['ENGINE']:
@@ -256,6 +254,14 @@ class ConnectionHandler(object):
     def all(self):
         return [self[alias] for alias in self]
 
+    def close_all(self):
+        for alias in self:
+            try:
+                connection = getattr(self._connections, alias)
+            except AttributeError:
+                continue
+            connection.close()
+
 
 class ConnectionRouter(object):
     def __init__(self, routers=None):
@@ -290,10 +296,10 @@ class ConnectionRouter(object):
                     chosen_db = method(model, **hints)
                     if chosen_db:
                         return chosen_db
-            try:
-                return hints['instance']._state.db or DEFAULT_DB_ALIAS
-            except KeyError:
-                return DEFAULT_DB_ALIAS
+            instance = hints.get('instance')
+            if instance is not None and instance._state.db:
+                return instance._state.db
+            return DEFAULT_DB_ALIAS
         return _route_db
 
     db_for_read = _router_func('db_for_read')
@@ -312,7 +318,7 @@ class ConnectionRouter(object):
                     return allow
         return obj1._state.db == obj2._state.db
 
-    def allow_migrate(self, db, model):
+    def allow_migrate(self, db, app_label, **hints):
         for router in self.routers:
             try:
                 try:
@@ -325,16 +331,36 @@ class ConnectionRouter(object):
                         RemovedInDjango19Warning, stacklevel=2)
             except AttributeError:
                 # If the router doesn't have a method, skip to the next one.
-                pass
+                continue
+
+            argspec = inspect.getargspec(method)
+            if len(argspec.args) == 3 and not argspec.keywords:
+                warnings.warn(
+                    "The signature of allow_migrate has changed from "
+                    "allow_migrate(self, db, model) to "
+                    "allow_migrate(self, db, app_label, model_name=None, **hints). "
+                    "Support for the old signature will be removed in Django 2.0.",
+                    RemovedInDjango20Warning)
+                model = hints.get('model')
+                allow = None if model is None else method(db, model)
             else:
-                allow = method(db, model)
-                if allow is not None:
-                    return allow
+                allow = method(db, app_label, **hints)
+
+            if allow is not None:
+                return allow
         return True
+
+    def allow_migrate_model(self, db, model):
+        return self.allow_migrate(
+            db,
+            model._meta.app_label,
+            model_name=model._meta.model_name,
+            model=model,
+        )
 
     def get_migratable_models(self, app_config, db, include_auto_created=False):
         """
         Return app models allowed to be synchronized on provided db.
         """
         models = app_config.get_models(include_auto_created=include_auto_created)
-        return [model for model in models if self.allow_migrate(db, model)]
+        return [model for model in models if self.allow_migrate_model(db, model)]

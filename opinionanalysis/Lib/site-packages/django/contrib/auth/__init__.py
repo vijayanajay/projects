@@ -21,13 +21,21 @@ def load_backend(path):
     return import_string(path)()
 
 
-def get_backends():
+def _get_backends(return_tuples=False):
     backends = []
     for backend_path in settings.AUTHENTICATION_BACKENDS:
-        backends.append(load_backend(backend_path))
+        backend = load_backend(backend_path)
+        backends.append((backend, backend_path) if return_tuples else backend)
     if not backends:
-        raise ImproperlyConfigured('No authentication backends have been defined. Does AUTHENTICATION_BACKENDS contain anything?')
+        raise ImproperlyConfigured(
+            'No authentication backends have been defined. Does '
+            'AUTHENTICATION_BACKENDS contain anything?'
+        )
     return backends
+
+
+def get_backends():
+    return _get_backends(return_tuples=False)
 
 
 def _clean_credentials(credentials):
@@ -45,11 +53,17 @@ def _clean_credentials(credentials):
     return credentials
 
 
+def _get_user_session_key(request):
+    # This value in the session is always serialized to a string, so we need
+    # to convert it back to Python whenever we access it.
+    return get_user_model()._meta.pk.to_python(request.session[SESSION_KEY])
+
+
 def authenticate(**credentials):
     """
     If the given credentials are valid, return a User object.
     """
-    for backend in get_backends():
+    for backend, backend_path in _get_backends(return_tuples=True):
         try:
             inspect.getcallargs(backend.authenticate, **credentials)
         except TypeError:
@@ -64,7 +78,7 @@ def authenticate(**credentials):
         if user is None:
             continue
         # Annotate the user object with the path of the backend.
-        user.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+        user.backend = backend_path
         return user
 
     # The credentials supplied are invalid to all backends, fire signal
@@ -85,7 +99,7 @@ def login(request, user):
         session_auth_hash = user.get_session_auth_hash()
 
     if SESSION_KEY in request.session:
-        if request.session[SESSION_KEY] != user.pk or (
+        if _get_user_session_key(request) != user.pk or (
                 session_auth_hash and
                 request.session.get(HASH_SESSION_KEY) != session_auth_hash):
             # To avoid reusing another user's session, create a new, empty
@@ -94,7 +108,7 @@ def login(request, user):
             request.session.flush()
     else:
         request.session.cycle_key()
-    request.session[SESSION_KEY] = user.pk
+    request.session[SESSION_KEY] = user._meta.pk.value_to_string(user)
     request.session[BACKEND_SESSION_KEY] = user.backend
     request.session[HASH_SESSION_KEY] = session_auth_hash
     if hasattr(request, 'user'):
@@ -116,8 +130,7 @@ def logout(request):
     user_logged_out.send(sender=user.__class__, request=request, user=user)
 
     # remember language choice saved to session
-    # for backwards compatibility django_language is also checked (remove in 1.8)
-    language = request.session.get(LANGUAGE_SESSION_KEY, request.session.get('django_language'))
+    language = request.session.get(LANGUAGE_SESSION_KEY)
 
     request.session.flush()
 
@@ -138,7 +151,9 @@ def get_user_model():
     except ValueError:
         raise ImproperlyConfigured("AUTH_USER_MODEL must be of the form 'app_label.model_name'")
     except LookupError:
-        raise ImproperlyConfigured("AUTH_USER_MODEL refers to model '%s' that has not been installed" % settings.AUTH_USER_MODEL)
+        raise ImproperlyConfigured(
+            "AUTH_USER_MODEL refers to model '%s' that has not been installed" % settings.AUTH_USER_MODEL
+        )
 
 
 def get_user(request):
@@ -149,7 +164,7 @@ def get_user(request):
     from .models import AnonymousUser
     user = None
     try:
-        user_id = request.session[SESSION_KEY]
+        user_id = _get_user_session_key(request)
         backend_path = request.session[BACKEND_SESSION_KEY]
     except KeyError:
         pass

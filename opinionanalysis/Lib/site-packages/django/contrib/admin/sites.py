@@ -1,18 +1,20 @@
 from functools import update_wrapper
-from django.http import Http404, HttpResponseRedirect
+
+from django.apps import apps
+from django.conf import settings
 from django.contrib.admin import ModelAdmin, actions
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.views.decorators.csrf import csrf_protect
-from django.db.models.base import ModelBase
-from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
-from django.core.urlresolvers import reverse, NoReverseMatch
+from django.core.urlresolvers import NoReverseMatch, reverse
+from django.db.models.base import ModelBase
+from django.http import Http404, HttpResponseRedirect
+from django.template.engine import Engine
 from django.template.response import TemplateResponse
 from django.utils import six
 from django.utils.text import capfirst
-from django.utils.translation import ugettext_lazy, ugettext as _
+from django.utils.translation import ugettext as _, ugettext_lazy
 from django.views.decorators.cache import never_cache
-from django.conf import settings
+from django.views.decorators.csrf import csrf_protect
 
 system_check_errors = []
 
@@ -43,6 +45,9 @@ class AdminSite(object):
     # Text to put at the top of the admin index page.
     index_title = ugettext_lazy('Site administration')
 
+    # URL for the "View site" link at the top of each admin page.
+    site_url = '/'
+
     login_form = None
     index_template = None
     app_index_template = None
@@ -51,10 +56,9 @@ class AdminSite(object):
     password_change_template = None
     password_change_done_template = None
 
-    def __init__(self, name='admin', app_name='admin'):
+    def __init__(self, name='admin'):
         self._registry = {}  # model_class class -> admin_class instance
         self.name = name
-        self.app_name = app_name
         self._actions = {'delete_selected': actions.delete_selected}
         self._global_actions = self._actions.copy()
 
@@ -116,6 +120,12 @@ class AdminSite(object):
                 raise NotRegistered('The model %s is not registered' % model.__name__)
             del self._registry[model]
 
+    def is_registered(self, model):
+        """
+        Check if a model class is registered with this `AdminSite`.
+        """
+        return model in self._registry
+
     def add_action(self, action, name=None):
         """
         Register an action to be available globally.
@@ -159,14 +169,31 @@ class AdminSite(object):
         installed, as well as the auth context processor.
         """
         if not apps.is_installed('django.contrib.admin'):
-            raise ImproperlyConfigured("Put 'django.contrib.admin' in "
-                "your INSTALLED_APPS setting in order to use the admin application.")
+            raise ImproperlyConfigured(
+                "Put 'django.contrib.admin' in your INSTALLED_APPS "
+                "setting in order to use the admin application.")
         if not apps.is_installed('django.contrib.contenttypes'):
-            raise ImproperlyConfigured("Put 'django.contrib.contenttypes' in "
-                "your INSTALLED_APPS setting in order to use the admin application.")
-        if 'django.contrib.auth.context_processors.auth' not in settings.TEMPLATE_CONTEXT_PROCESSORS:
-            raise ImproperlyConfigured("Put 'django.contrib.auth.context_processors.auth' "
-                "in your TEMPLATE_CONTEXT_PROCESSORS setting in order to use the admin application.")
+            raise ImproperlyConfigured(
+                "Put 'django.contrib.contenttypes' in your INSTALLED_APPS "
+                "setting in order to use the admin application.")
+        try:
+            default_template_engine = Engine.get_default()
+        except Exception:
+            # Skip this non-critical check:
+            # 1. if the user has a non-trivial TEMPLATES setting and Django
+            #    can't find a default template engine
+            # 2. if anything goes wrong while loading template engines, in
+            #    order to avoid raising an exception from a confusing location
+            # Catching ImproperlyConfigured suffices for 1. but 2. requires
+            # catching all exceptions.
+            pass
+        else:
+            if ('django.contrib.auth.context_processors.auth'
+                    not in default_template_engine.context_processors):
+                raise ImproperlyConfigured(
+                    "Enable 'django.contrib.auth.context_processors.auth' "
+                    "in your TEMPLATES setting in order to use the admin "
+                    "application.")
 
     def admin_view(self, view, cacheable=False):
         """
@@ -179,12 +206,12 @@ class AdminSite(object):
             class MyAdminSite(AdminSite):
 
                 def get_urls(self):
-                    from django.conf.urls import patterns, url
+                    from django.conf.urls import url
 
                     urls = super(MyAdminSite, self).get_urls()
-                    urls += patterns('',
+                    urls += [
                         url(r'^my_view/$', self.admin_view(some_view))
-                    )
+                    ]
                     return urls
 
         By default, admin_views are marked non-cacheable using the
@@ -213,7 +240,7 @@ class AdminSite(object):
         return update_wrapper(inner, view)
 
     def get_urls(self):
-        from django.conf.urls import patterns, url, include
+        from django.conf.urls import url, include
         # Since this module gets imported in the application's root package,
         # it cannot import models from other applications at the module level,
         # and django.contrib.contenttypes.views imports ContentType.
@@ -228,23 +255,25 @@ class AdminSite(object):
             return update_wrapper(wrapper, view)
 
         # Admin-site-wide views.
-        urlpatterns = patterns('',
+        urlpatterns = [
             url(r'^$', wrap(self.index), name='index'),
             url(r'^login/$', self.login, name='login'),
             url(r'^logout/$', wrap(self.logout), name='logout'),
             url(r'^password_change/$', wrap(self.password_change, cacheable=True), name='password_change'),
-            url(r'^password_change/done/$', wrap(self.password_change_done, cacheable=True), name='password_change_done'),
+            url(r'^password_change/done/$', wrap(self.password_change_done, cacheable=True),
+                name='password_change_done'),
             url(r'^jsi18n/$', wrap(self.i18n_javascript, cacheable=True), name='jsi18n'),
-            url(r'^r/(?P<content_type_id>\d+)/(?P<object_id>.+)/$', wrap(contenttype_views.shortcut), name='view_on_site'),
-        )
+            url(r'^r/(?P<content_type_id>\d+)/(?P<object_id>.+)/$', wrap(contenttype_views.shortcut),
+                name='view_on_site'),
+        ]
 
         # Add in each model's views, and create a list of valid URLS for the
         # app_index
         valid_app_labels = []
         for model, model_admin in six.iteritems(self._registry):
-            urlpatterns += patterns('',
-                url(r'^%s/%s/' % (model._meta.app_label, model._meta.model_name), include(model_admin.urls))
-            )
+            urlpatterns += [
+                url(r'^%s/%s/' % (model._meta.app_label, model._meta.model_name), include(model_admin.urls)),
+            ]
             if model._meta.app_label not in valid_app_labels:
                 valid_app_labels.append(model._meta.app_label)
 
@@ -252,16 +281,16 @@ class AdminSite(object):
         # labels for which we need to allow access to the app_index view,
         if valid_app_labels:
             regex = r'^(?P<app_label>' + '|'.join(valid_app_labels) + ')/$'
-            urlpatterns += patterns('',
+            urlpatterns += [
                 url(regex, wrap(self.app_index), name='app_list'),
-            )
+            ]
         return urlpatterns
 
     @property
     def urls(self):
-        return self.get_urls(), self.app_name, self.name
+        return self.get_urls(), 'admin', self.name
 
-    def each_context(self):
+    def each_context(self, request):
         """
         Returns a dictionary of variables to put in the template context for
         *every* page in the admin site.
@@ -269,18 +298,22 @@ class AdminSite(object):
         return {
             'site_title': self.site_title,
             'site_header': self.site_header,
+            'site_url': self.site_url,
+            'has_permission': self.has_permission(request),
         }
 
-    def password_change(self, request):
+    def password_change(self, request, extra_context=None):
         """
         Handles the "change password" task -- both form display and validation.
         """
+        from django.contrib.admin.forms import AdminPasswordChangeForm
         from django.contrib.auth.views import password_change
         url = reverse('admin:password_change_done', current_app=self.name)
         defaults = {
             'current_app': self.name,
+            'password_change_form': AdminPasswordChangeForm,
             'post_change_redirect': url,
-            'extra_context': self.each_context(),
+            'extra_context': dict(self.each_context(request), **(extra_context or {})),
         }
         if self.password_change_template is not None:
             defaults['template_name'] = self.password_change_template
@@ -293,7 +326,7 @@ class AdminSite(object):
         from django.contrib.auth.views import password_change_done
         defaults = {
             'current_app': self.name,
-            'extra_context': dict(self.each_context(), **(extra_context or {})),
+            'extra_context': dict(self.each_context(request), **(extra_context or {})),
         }
         if self.password_change_done_template is not None:
             defaults['template_name'] = self.password_change_done_template
@@ -322,7 +355,7 @@ class AdminSite(object):
         from django.contrib.auth.views import logout
         defaults = {
             'current_app': self.name,
-            'extra_context': dict(self.each_context(), **(extra_context or {})),
+            'extra_context': dict(self.each_context(request), **(extra_context or {})),
         }
         if self.logout_template is not None:
             defaults['template_name'] = self.logout_template
@@ -343,7 +376,7 @@ class AdminSite(object):
         # it cannot import models from other applications at the module level,
         # and django.contrib.admin.forms eventually imports User.
         from django.contrib.admin.forms import AdminAuthenticationForm
-        context = dict(self.each_context(),
+        context = dict(self.each_context(request),
             title=_('Log in'),
             app_path=request.get_full_path(),
         )
@@ -367,10 +400,9 @@ class AdminSite(object):
         apps that have been registered in this site.
         """
         app_dict = {}
-        user = request.user
         for model, model_admin in self._registry.items():
             app_label = model._meta.app_label
-            has_module_perms = user.has_module_perms(app_label)
+            has_module_perms = model_admin.has_module_permission(request)
 
             if has_module_perms:
                 perms = model_admin.get_model_perms(request)
@@ -400,7 +432,11 @@ class AdminSite(object):
                         app_dict[app_label] = {
                             'name': apps.get_app_config(app_label).verbose_name,
                             'app_label': app_label,
-                            'app_url': reverse('admin:app_list', kwargs={'app_label': app_label}, current_app=self.name),
+                            'app_url': reverse(
+                                'admin:app_list',
+                                kwargs={'app_label': app_label},
+                                current_app=self.name,
+                            ),
                             'has_module_perms': has_module_perms,
                             'models': [model_dict],
                         }
@@ -414,24 +450,26 @@ class AdminSite(object):
             app['models'].sort(key=lambda x: x['name'])
 
         context = dict(
-            self.each_context(),
+            self.each_context(request),
             title=self.index_title,
             app_list=app_list,
         )
         context.update(extra_context or {})
+
+        request.current_app = self.name
+
         return TemplateResponse(request, self.index_template or
-                                'admin/index.html', context,
-                                current_app=self.name)
+                                'admin/index.html', context)
 
     def app_index(self, request, app_label, extra_context=None):
-        user = request.user
         app_name = apps.get_app_config(app_label).verbose_name
-        has_module_perms = user.has_module_perms(app_label)
-        if not has_module_perms:
-            raise PermissionDenied
         app_dict = {}
         for model, model_admin in self._registry.items():
             if app_label == model._meta.app_label:
+                has_module_perms = model_admin.has_module_permission(request)
+                if not has_module_perms:
+                    raise PermissionDenied
+
                 perms = model_admin.get_model_perms(request)
 
                 # Check whether user has any perm for this module.
@@ -470,17 +508,19 @@ class AdminSite(object):
             raise Http404('The requested admin page does not exist.')
         # Sort the models alphabetically within each app.
         app_dict['models'].sort(key=lambda x: x['name'])
-        context = dict(self.each_context(),
+        context = dict(self.each_context(request),
             title=_('%(app)s administration') % {'app': app_name},
             app_list=[app_dict],
             app_label=app_label,
         )
         context.update(extra_context or {})
 
+        request.current_app = self.name
+
         return TemplateResponse(request, self.app_index_template or [
             'admin/%s/app_index.html' % app_label,
             'admin/app_index.html'
-        ], context, current_app=self.name)
+        ], context)
 
 # This global object represents the default admin site, for the common case.
 # You can instantiate AdminSite in your own code to create a custom admin site.

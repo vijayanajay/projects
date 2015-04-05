@@ -1,7 +1,10 @@
 from __future__ import unicode_literals
+
 from django.db.transaction import atomic
+from django.utils.encoding import python_2_unicode_compatible
 
 
+@python_2_unicode_compatible
 class Migration(object):
     """
     The base class for all migrations.
@@ -66,12 +69,16 @@ class Migration(object):
     def __hash__(self):
         return hash("%s.%s" % (self.app_label, self.name))
 
-    def mutate_state(self, project_state):
+    def mutate_state(self, project_state, preserve=True):
         """
         Takes a ProjectState and returns a new one with the migration's
-        operations applied to it.
+        operations applied to it. Preserves the original object state by
+        default and will return a mutated state from a copy.
         """
-        new_state = project_state.clone()
+        new_state = project_state
+        if preserve:
+            new_state = project_state.clone()
+
         for operation in self.operations:
             operation.state_forwards(self.app_label, new_state)
         return new_state
@@ -95,19 +102,17 @@ class Migration(object):
                 schema_editor.collected_sql.append("-- %s" % operation.describe())
                 schema_editor.collected_sql.append("--")
                 continue
-            # Get the state after the operation has run
-            new_state = project_state.clone()
-            operation.state_forwards(self.app_label, new_state)
+            # Save the state before the operation has run
+            old_state = project_state.clone()
+            operation.state_forwards(self.app_label, project_state)
             # Run the operation
             if not schema_editor.connection.features.can_rollback_ddl and operation.atomic:
                 # We're forcing a transaction on a non-transactional-DDL backend
                 with atomic(schema_editor.connection.alias):
-                    operation.database_forwards(self.app_label, schema_editor, project_state, new_state)
+                    operation.database_forwards(self.app_label, schema_editor, old_state, project_state)
             else:
                 # Normal behaviour
-                operation.database_forwards(self.app_label, schema_editor, project_state, new_state)
-            # Switch states
-            project_state = new_state
+                operation.database_forwards(self.app_label, schema_editor, old_state, project_state)
         return project_state
 
     def unapply(self, project_state, schema_editor, collect_sql=False):

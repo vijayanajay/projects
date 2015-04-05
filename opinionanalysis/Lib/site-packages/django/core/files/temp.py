@@ -18,6 +18,7 @@ full range of keyword arguments available in Python 2.6+ and 3.0+.
 
 import os
 import tempfile
+
 from django.core.files.utils import FileProxyMixin
 
 __all__ = ('NamedTemporaryFile', 'gettempdir',)
@@ -29,7 +30,8 @@ if os.name == 'nt':
         Temporary file object constructor that supports reopening of the
         temporary file in Windows.
 
-        Note that __init__() does not support the 'delete' keyword argument in
+        Note that unlike tempfile.NamedTemporaryFile from the standard library,
+        __init__() does not support the 'delete' keyword argument in
         Python 2.6+, or the 'delete', 'buffering', 'encoding', or 'newline'
         keyword arguments in Python 3.0+.
         """

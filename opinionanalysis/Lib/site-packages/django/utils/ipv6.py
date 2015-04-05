@@ -2,8 +2,8 @@
 # Copyright 2007 Google Inc. http://code.google.com/p/ipaddr-py/
 # Licensed under the Apache License, Version 2.0 (the "License").
 from django.core.exceptions import ValidationError
+from django.utils.six.moves import range
 from django.utils.translation import ugettext_lazy as _
-from django.utils.six.moves import xrange
 
 
 def clean_ipv6_address(ip_str, unpack_ipv4=False,
@@ -21,7 +21,7 @@ def clean_ipv6_address(ip_str, unpack_ipv4=False,
         ip_str: A valid IPv6 address.
         unpack_ipv4: if an IPv4-mapped address is found,
         return the plain IPv4 address (default=False).
-        error_message: A error message for in the ValidationError.
+        error_message: An error message used in the ValidationError.
 
     Returns:
         A compressed IPv6 address, or the same value
@@ -239,7 +239,7 @@ def _explode_shorthand_ip_string(ip_str):
         sep = len(hextet[0].split(':')) + len(hextet[1].split(':'))
         new_ip = hextet[0].split(':')
 
-        for __ in xrange(fill_to - sep):
+        for __ in range(fill_to - sep):
             new_ip.append('0000')
         new_ip += hextet[1].split(':')
 

@@ -10,7 +10,6 @@ from django.conf import settings
 from django.utils.encoding import force_bytes
 from django.utils.timezone import utc
 
-
 logger = logging.getLogger('django.db.backends')
 
 
@@ -29,7 +28,9 @@ class CursorWrapper(object):
             return cursor_attr
 
     def __iter__(self):
-        return iter(self.cursor)
+        with self.db.wrap_database_errors:
+            for item in self.cursor:
+                yield item
 
     def __enter__(self):
         return self
@@ -48,7 +49,6 @@ class CursorWrapper(object):
 
     def callproc(self, procname, params=None):
         self.db.validate_no_broken_transaction()
-        self.db.set_dirty()
         with self.db.wrap_database_errors:
             if params is None:
                 return self.cursor.callproc(procname)
@@ -57,7 +57,6 @@ class CursorWrapper(object):
 
     def execute(self, sql, params=None):
         self.db.validate_no_broken_transaction()
-        self.db.set_dirty()
         with self.db.wrap_database_errors:
             if params is None:
                 return self.cursor.execute(sql)
@@ -66,7 +65,6 @@ class CursorWrapper(object):
 
     def executemany(self, sql, param_list):
         self.db.validate_no_broken_transaction()
-        self.db.set_dirty()
         with self.db.wrap_database_errors:
             return self.cursor.executemany(sql, param_list)
 
@@ -83,7 +81,7 @@ class CursorDebugWrapper(CursorWrapper):
             stop = time()
             duration = stop - start
             sql = self.db.ops.last_executed_query(self.cursor, sql, params)
-            self.db.queries.append({
+            self.db.queries_log.append({
                 'sql': sql,
                 'time': "%.3f" % duration,
             })
@@ -102,7 +100,7 @@ class CursorDebugWrapper(CursorWrapper):
                 times = len(param_list)
             except TypeError:           # param_list could be an iterator
                 times = '?'
-            self.db.queries.append({
+            self.db.queries_log.append({
                 'sql': '%s times: %s' % (times, sql),
                 'time': "%.3f" % duration,
             })
@@ -192,9 +190,18 @@ def format_number(value, max_digits, decimal_places):
     Formats a number into a string with the requisite number of digits and
     decimal places.
     """
+    if value is None:
+        return None
     if isinstance(value, decimal.Decimal):
         context = decimal.getcontext().copy()
-        context.prec = max_digits
-        return "{0:f}".format(value.quantize(decimal.Decimal(".1") ** decimal_places, context=context))
-    else:
+        if max_digits is not None:
+            context.prec = max_digits
+        if decimal_places is not None:
+            value = value.quantize(decimal.Decimal(".1") ** decimal_places, context=context)
+        else:
+            context.traps[decimal.Rounded] = 1
+            value = context.create_decimal(value)
+        return "{:f}".format(value)
+    if decimal_places is not None:
         return "%.*f" % (decimal_places, value)
+    return "{:f}".format(value)

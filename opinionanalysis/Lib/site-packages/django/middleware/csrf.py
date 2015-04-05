@@ -12,10 +12,9 @@ import re
 from django.conf import settings
 from django.core.urlresolvers import get_callable
 from django.utils.cache import patch_vary_headers
+from django.utils.crypto import constant_time_compare, get_random_string
 from django.utils.encoding import force_text
 from django.utils.http import same_origin
-from django.utils.crypto import constant_time_compare, get_random_string
-
 
 logger = logging.getLogger('django.request')
 
@@ -171,7 +170,15 @@ class CsrfViewMiddleware(object):
             # Check non-cookie token for match.
             request_csrf_token = ""
             if request.method == "POST":
-                request_csrf_token = request.POST.get('csrfmiddlewaretoken', '')
+                try:
+                    request_csrf_token = request.POST.get('csrfmiddlewaretoken', '')
+                except IOError:
+                    # Handle a broken connection before we've completed reading
+                    # the POST data. process_view shouldn't raise any
+                    # exceptions, so we'll ignore and serve the user a 403
+                    # (assuming they're still listening, which they probably
+                    # aren't because of the error).
+                    pass
 
             if request_csrf_token == "":
                 # Fall back to X-CSRFToken, to make things easier for AJAX,

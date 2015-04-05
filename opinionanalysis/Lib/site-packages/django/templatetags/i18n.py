@@ -1,15 +1,15 @@
 from __future__ import unicode_literals
+
 import re
 import sys
 
 from django.conf import settings
-from django.template import (Node, Variable, TemplateSyntaxError,
-    TokenParser, Library, TOKEN_TEXT, TOKEN_VAR)
-from django.template.base import render_value_in_context
+from django.template import Library, Node, TemplateSyntaxError, Variable
+from django.template.base import (
+    TOKEN_TEXT, TOKEN_VAR, TokenParser, render_value_in_context,
+)
 from django.template.defaulttags import token_kwargs
-from django.utils import six
-from django.utils import translation
-
+from django.utils import six, translation
 
 register = Library()
 
@@ -149,7 +149,7 @@ class BlockTranslateNode(Node):
                 result = translation.pgettext(message_context, singular)
             else:
                 result = translation.ugettext(singular)
-        default_value = settings.TEMPLATE_STRING_IF_INVALID
+        default_value = context.template.engine.string_if_invalid
 
         def render_value(key):
             if key in context:
@@ -158,7 +158,7 @@ class BlockTranslateNode(Node):
                 val = default_value % key if '%s' in default_value else default_value
             return render_value_in_context(val, context)
 
-        data = dict((v, render_value(v)) for v in vars)
+        data = {v: render_value(v) for v in vars}
         context.pop()
         try:
             result = result % data

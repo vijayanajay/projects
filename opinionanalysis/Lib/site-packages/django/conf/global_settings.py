@@ -171,9 +171,6 @@ FILE_CHARSET = 'utf-8'
 # Email address that error messages come from.
 SERVER_EMAIL = 'root@localhost'
 
-# Whether to send broken-link emails. Deprecated, must be removed in 1.8.
-SEND_BROKEN_LINK_EMAILS = False
-
 # Database connection info. If left empty, will default to the dummy backend.
 DATABASES = {}
 
@@ -197,6 +194,9 @@ EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None
+EMAIL_TIMEOUT = None
 
 # List of strings representing installed apps.
 INSTALLED_APPS = ()
@@ -218,17 +218,19 @@ TEMPLATE_LOADERS = (
 # only parameter and returns a dictionary to add to the context.
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    # 'django.core.context_processors.request',
+    'django.template.context_processors.debug',
+    'django.template.context_processors.i18n',
+    'django.template.context_processors.media',
+    'django.template.context_processors.static',
+    'django.template.context_processors.tz',
+    # 'django.template.context_processors.request',
     'django.contrib.messages.context_processors.messages',
 )
 
 # Output to use in template system for invalid (e.g. misspelled) variables.
 TEMPLATE_STRING_IF_INVALID = ''
+
+TEMPLATES = []
 
 # Default email address to use for various automated correspondence from
 # the site managers.
@@ -264,11 +266,6 @@ ABSOLUTE_URL_OVERRIDES = {}
 # Tuple of strings representing allowed prefixes for the {% ssi %} tag.
 # Example: ('/home/html', '/var/www')
 ALLOWED_INCLUDE_ROOTS = ()
-
-# If this is an admin settings module, this should be a list of
-# settings modules (in the format 'foo.bar.baz') for which this admin
-# is an admin.
-ADMIN_FOR = ()
 
 # List of compiled regular expression objects representing URLs that need not
 # be reported by BrokenLinkEmailsMiddleware. Here are a few examples:
@@ -426,10 +423,6 @@ NUMBER_GROUPING = 0
 # Thousand separator symbol
 THOUSAND_SEPARATOR = ','
 
-# Do you want to manage transactions manually?
-# Hint: you really don't!
-TRANSACTIONS_MANAGED = False
-
 # The tablespaces to use for each model when not specified otherwise.
 DEFAULT_TABLESPACE = ''
 DEFAULT_INDEX_TABLESPACE = ''
@@ -471,18 +464,31 @@ MIDDLEWARE_CLASSES = (
 # SESSIONS #
 ############
 
-SESSION_CACHE_ALIAS = 'default'                         # Cache to store session data if using the cache session backend.
-SESSION_COOKIE_NAME = 'sessionid'                       # Cookie name. This can be whatever you want.
-SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2               # Age of cookie, in seconds (default: 2 weeks).
-SESSION_COOKIE_DOMAIN = None                            # A string like ".example.com", or None for standard domain cookie.
-SESSION_COOKIE_SECURE = False                           # Whether the session cookie should be secure (https:// only).
-SESSION_COOKIE_PATH = '/'                               # The path of the session cookie.
-SESSION_COOKIE_HTTPONLY = True                          # Whether to use the non-RFC standard httpOnly flag (IE, FF3+, others)
-SESSION_SAVE_EVERY_REQUEST = False                      # Whether to save the session data on every request.
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False                 # Whether a user's session cookie expires when the Web browser is closed.
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # The module to store session data
-SESSION_FILE_PATH = None                                # Directory to store session files if using the file session module. If None, the backend will use a sensible default.
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'  # class to serialize session data
+# Cache to store session data if using the cache session backend.
+SESSION_CACHE_ALIAS = 'default'
+# Cookie name. This can be whatever you want.
+SESSION_COOKIE_NAME = 'sessionid'
+# Age of cookie, in seconds (default: 2 weeks).
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2
+# A string like ".example.com", or None for standard domain cookie.
+SESSION_COOKIE_DOMAIN = None
+# Whether the session cookie should be secure (https:// only).
+SESSION_COOKIE_SECURE = False
+# The path of the session cookie.
+SESSION_COOKIE_PATH = '/'
+# Whether to use the non-RFC standard httpOnly flag (IE, FF3+, others)
+SESSION_COOKIE_HTTPONLY = True
+# Whether to save the session data on every request.
+SESSION_SAVE_EVERY_REQUEST = False
+# Whether a user's session cookie expires when the Web browser is closed.
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+# The module to store session data
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# Directory to store session files if using the file session module. If None,
+# the backend will use a sensible default.
+SESSION_FILE_PATH = None
+# class to serialize session data
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 #########
 # CACHE #
@@ -497,16 +503,6 @@ CACHES = {
 CACHE_MIDDLEWARE_KEY_PREFIX = ''
 CACHE_MIDDLEWARE_SECONDS = 600
 CACHE_MIDDLEWARE_ALIAS = 'default'
-
-####################
-# COMMENTS         #
-####################
-
-COMMENTS_ALLOW_PROFANITIES = False
-
-# The profanities that will trigger a validation error in
-# CommentDetailsForm.clean_comment. All of these should be in lowercase.
-PROFANITIES_LIST = ()
 
 ##################
 # AUTHENTICATION #
@@ -638,3 +634,14 @@ MIGRATION_MODULES = {}
 # serious issues like errors and criticals does not result in hiding the
 # message, but Django will not stop you from e.g. running server.
 SILENCED_SYSTEM_CHECKS = []
+
+#######################
+# SECURITY MIDDLEWARE #
+#######################
+SECURE_BROWSER_XSS_FILTER = False
+SECURE_CONTENT_TYPE_NOSNIFF = False
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_SECONDS = 0
+SECURE_REDIRECT_EXEMPT = []
+SECURE_SSL_HOST = None
+SECURE_SSL_REDIRECT = False

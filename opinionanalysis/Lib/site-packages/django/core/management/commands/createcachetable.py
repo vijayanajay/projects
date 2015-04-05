@@ -1,10 +1,10 @@
-from optparse import make_option
-
 from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.db import BaseDatabaseCache
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connections, router, transaction, models, DEFAULT_DB_ALIAS
+from django.db import (
+    DEFAULT_DB_ALIAS, connections, models, router, transaction,
+)
 from django.db.utils import DatabaseError
 from django.utils.encoding import force_text
 
@@ -12,14 +12,16 @@ from django.utils.encoding import force_text
 class Command(BaseCommand):
     help = "Creates the tables needed to use the SQL cache backend."
 
-    option_list = BaseCommand.option_list + (
-        make_option('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Nominates a database onto '
-                'which the cache tables will be installed. '
-                'Defaults to the "default" database.'),
-    )
-
     requires_system_checks = False
+
+    def add_arguments(self, parser):
+        parser.add_argument('args', metavar='table_name', nargs='*',
+            help='Optional table names. Otherwise, settings.CACHES is used to '
+            'find cache tables.')
+        parser.add_argument('--database', action='store', dest='database',
+            default=DEFAULT_DB_ALIAS,
+            help='Nominates a database onto which the cache tables will be '
+            'installed. Defaults to the "default" database.')
 
     def handle(self, *tablenames, **options):
         db = options.get('database')
@@ -36,7 +38,7 @@ class Command(BaseCommand):
 
     def create_table(self, database, tablename):
         cache = BaseDatabaseCache(tablename, {})
-        if not router.allow_migrate(database, cache.cache_model_class):
+        if not router.allow_migrate_model(database, cache.cache_model_class):
             return
         connection = connections[database]
 

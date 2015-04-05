@@ -1,13 +1,13 @@
-from collections import Counter, defaultdict, OrderedDict
 import os
 import sys
 import threading
 import warnings
+from collections import Counter, OrderedDict, defaultdict
 
 from django.core.exceptions import AppRegistryNotReady, ImproperlyConfigured
 from django.utils import lru_cache
-from django.utils.deprecation import RemovedInDjango19Warning
 from django.utils._os import upath
+from django.utils.deprecation import RemovedInDjango19Warning
 
 from .config import AppConfig
 
@@ -337,9 +337,14 @@ class Apps(object):
 
         This is mostly used in tests.
         """
+        # Call expire cache on each model. This will purge
+        # the relation tree and the fields cache.
         self.get_models.cache_clear()
+        if self.ready:
+            for model in self.get_models(include_auto_created=True):
+                model._meta._expire_cache()
 
-    ### DEPRECATED METHODS GO BELOW THIS LINE ###
+    # ### DEPRECATED METHODS GO BELOW THIS LINE ###
 
     def load_app(self, app_name):
         """

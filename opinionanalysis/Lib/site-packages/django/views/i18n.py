@@ -1,18 +1,20 @@
+import gettext as gettext_module
 import importlib
 import json
 import os
-import gettext as gettext_module
 
 from django import http
 from django.apps import apps
 from django.conf import settings
-from django.template import Context, Template
-from django.utils.translation import check_for_language, to_locale, get_language, LANGUAGE_SESSION_KEY
-from django.utils.encoding import smart_text
-from django.utils.formats import get_format_modules, get_format
-from django.utils._os import upath
-from django.utils.http import is_safe_url
+from django.template import Context, Engine
 from django.utils import six
+from django.utils._os import upath
+from django.utils.encoding import smart_text
+from django.utils.formats import get_format, get_format_modules
+from django.utils.http import is_safe_url
+from django.utils.translation import (
+    LANGUAGE_SESSION_KEY, check_for_language, get_language, to_locale,
+)
 
 
 def set_language(request):
@@ -176,7 +178,7 @@ js_catalog_template = r"""
 
 
 def render_javascript_catalog(catalog=None, plural=None):
-    template = Template(js_catalog_template)
+    template = Engine().from_string(js_catalog_template)
     indent = lambda s: s.replace('\n', '\n  ')
     context = Context({
         'catalog_str': indent(json.dumps(
@@ -253,7 +255,8 @@ def get_javascript_catalog(locale, domain, packages):
                 plural = l.split(':', 1)[1].strip()
     if plural is not None:
         # this should actually be a compiled function of a typical plural-form:
-        # Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;
+        # Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 :
+        #               n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;
         plural = [el.strip() for el in plural.split(';') if el.strip().startswith('plural=')][0].split('=', 1)[1]
 
     pdict = {}

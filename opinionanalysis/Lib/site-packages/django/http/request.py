@@ -14,13 +14,15 @@ from django.core.exceptions import DisallowedHost, ImproperlyConfigured
 from django.core.files import uploadhandler
 from django.http.multipartparser import MultiPartParser, MultiPartParserError
 from django.utils import six
-from django.utils.datastructures import MultiValueDict, ImmutableList
-from django.utils.encoding import force_bytes, force_text, force_str, iri_to_uri
-from django.utils.six.moves.urllib.parse import parse_qsl, urlencode, quote, urljoin
-
+from django.utils.datastructures import ImmutableList, MultiValueDict
+from django.utils.encoding import (
+    escape_uri_path, force_bytes, force_str, force_text, iri_to_uri,
+)
+from django.utils.six.moves.urllib.parse import (
+    parse_qsl, quote, urlencode, urljoin, urlsplit,
+)
 
 RAISE_ERROR = object()
-absolute_http_url_re = re.compile(r"^https?://", re.I)
 host_validation_re = re.compile(r"^([a-z0-9.-]+|\[[a-f0-9]*:[a-f0-9:]+\])(:\d+)?$")
 
 
@@ -49,7 +51,12 @@ class HttpRequest(object):
         # Any variable assignment made here should also happen in
         # `WSGIRequest.__init__()`.
 
-        self.GET, self.POST, self.COOKIES, self.META, self.FILES = {}, {}, {}, {}, {}
+        self.GET = QueryDict(mutable=True)
+        self.POST = QueryDict(mutable=True)
+        self.COOKIES = {}
+        self.META = {}
+        self.FILES = MultiValueDict()
+
         self.path = ''
         self.path_info = ''
         self.method = None
@@ -57,7 +64,11 @@ class HttpRequest(object):
         self._post_parse_error = False
 
     def __repr__(self):
-        return build_request_repr(self)
+        if self.method is None or not self.get_full_path():
+            return force_str('<%s>' % self.__class__.__name__)
+        return force_str(
+            '<%s: %s %r>' % (self.__class__.__name__, self.method, force_str(self.get_full_path()))
+        )
 
     def get_host(self):
         """Returns the HTTP host using the environment or request headers."""
@@ -92,7 +103,10 @@ class HttpRequest(object):
     def get_full_path(self):
         # RFC 3986 requires query string arguments to be in the ASCII range.
         # Rather than crash if this doesn't happen, we encode defensively.
-        return '%s%s' % (self.path, ('?' + iri_to_uri(self.META.get('QUERY_STRING', ''))) if self.META.get('QUERY_STRING', '') else '')
+        return '%s%s' % (
+            escape_uri_path(self.path),
+            ('?' + iri_to_uri(self.META.get('QUERY_STRING', ''))) if self.META.get('QUERY_STRING', '') else ''
+        )
 
     def get_signed_cookie(self, key, default=RAISE_ERROR, salt='', max_age=None):
         """
@@ -120,14 +134,25 @@ class HttpRequest(object):
     def build_absolute_uri(self, location=None):
         """
         Builds an absolute URI from the location and the variables available in
-        this request. If no location is specified, the absolute URI is built on
-        ``request.get_full_path()``.
+        this request. If no ``location`` is specified, the absolute URI is
+        built on ``request.get_full_path()``. Anyway, if the location is
+        absolute, it is simply converted to an RFC 3987 compliant URI and
+        returned and if location is relative or is scheme-relative (i.e.,
+        ``//example.com/``), it is urljoined to a base URL constructed from the
+        request variables.
         """
-        if not location:
-            location = self.get_full_path()
-        if not absolute_http_url_re.match(location):
-            current_uri = '%s://%s%s' % (self.scheme,
-                                         self.get_host(), self.path)
+        if location is None:
+            # Make it an absolute url (but schemeless and domainless) for the
+            # edge case that the path starts with '//'.
+            location = '//%s' % self.get_full_path()
+        bits = urlsplit(location)
+        if not (bits.scheme and bits.netloc):
+            current_uri = '{scheme}://{host}{path}'.format(scheme=self.scheme,
+                                                           host=self.get_host(),
+                                                           path=self.path)
+            # Join the constructed URL with the provided location, which will
+            # allow the provided ``location`` to apply query strings to the
+            # base path as well as override the host, if it begins with //
             location = urljoin(current_uri, location)
         return iri_to_uri(location)
 
@@ -141,7 +166,9 @@ class HttpRequest(object):
             try:
                 header, value = settings.SECURE_PROXY_SSL_HEADER
             except ValueError:
-                raise ImproperlyConfigured('The SECURE_PROXY_SSL_HEADER setting must be a tuple containing two values.')
+                raise ImproperlyConfigured(
+                    'The SECURE_PROXY_SSL_HEADER setting must be a tuple containing two values.'
+                )
             if self.META.get(header, None) == value:
                 return 'https'
         # Failing that, fall back to _get_scheme(), which is a hook for
@@ -306,7 +333,7 @@ class QueryDict(MultiValueDict):
     _mutable = True
     _encoding = None
 
-    def __init__(self, query_string, mutable=False, encoding=None):
+    def __init__(self, query_string=None, mutable=False, encoding=None):
         super(QueryDict, self).__init__()
         if not encoding:
             encoding = settings.DEFAULT_CHARSET
@@ -432,8 +459,8 @@ class QueryDict(MultiValueDict):
             encode = lambda k, v: urlencode({k: v})
         for k, list_ in self.lists():
             k = force_bytes(k, self.encoding)
-            output.extend([encode(k, force_bytes(v, self.encoding))
-                           for v in list_])
+            output.extend(encode(k, force_bytes(v, self.encoding))
+                          for v in list_)
         return '&'.join(output)
 
 

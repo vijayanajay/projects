@@ -1,6 +1,7 @@
-from django.utils.six.moves import html_parser as _html_parser
 import re
 import sys
+
+from django.utils.six.moves import html_parser as _html_parser
 
 current_version = sys.version_info
 
@@ -9,7 +10,12 @@ use_workaround = (
     (current_version >= (3, 0) and current_version < (3, 2, 3))
 )
 
-HTMLParseError = _html_parser.HTMLParseError
+try:
+    HTMLParseError = _html_parser.HTMLParseError
+except AttributeError:
+    # create a dummy class for Python 3.5+ where it's been removed
+    class HTMLParseError(Exception):
+        pass
 
 if not use_workaround:
     if current_version >= (3, 4):

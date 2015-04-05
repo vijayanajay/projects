@@ -1,53 +1,55 @@
-from collections import OrderedDict
 import copy
 import operator
-from functools import partial, reduce, update_wrapper
 import warnings
+from collections import OrderedDict
+from functools import partial, reduce, update_wrapper
 
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin import widgets, helpers
-from django.contrib.admin import validation
-from django.contrib.admin.checks import (BaseModelAdminChecks, ModelAdminChecks,
-    InlineModelAdminChecks)
+from django.contrib.admin import helpers, validation, widgets
+from django.contrib.admin.checks import (
+    BaseModelAdminChecks, InlineModelAdminChecks, ModelAdminChecks,
+)
 from django.contrib.admin.exceptions import DisallowedModelAdminToField
-from django.contrib.admin.utils import (quote, unquote, flatten_fieldsets,
-    get_deleted_objects, model_format_dict, NestedObjects,
-    lookup_needs_distinct)
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
+from django.contrib.admin.utils import (
+    NestedObjects, flatten_fieldsets, get_deleted_objects,
+    lookup_needs_distinct, model_format_dict, quote, unquote,
+)
 from django.contrib.auth import get_permission_codename
 from django.core import checks
-from django.core.exceptions import (PermissionDenied, ValidationError,
-    FieldError, ImproperlyConfigured)
+from django.core.exceptions import (
+    FieldDoesNotExist, FieldError, ImproperlyConfigured, PermissionDenied,
+    ValidationError,
+)
 from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
-from django.db import models, transaction, router
+from django.db import models, router, transaction
 from django.db.models.constants import LOOKUP_SEP
-from django.db.models.related import RelatedObject
-from django.db.models.fields import BLANK_CHOICE_DASH, FieldDoesNotExist
+from django.db.models.fields import BLANK_CHOICE_DASH
+from django.db.models.fields.related import ForeignObjectRel
 from django.db.models.sql.constants import QUERY_TERMS
-from django.forms.formsets import all_valid, DELETION_FIELD_NAME
-from django.forms.models import (modelform_factory, modelformset_factory,
-    inlineformset_factory, BaseInlineFormSet, modelform_defines_fields)
+from django.forms.formsets import DELETION_FIELD_NAME, all_valid
+from django.forms.models import (
+    BaseInlineFormSet, inlineformset_factory, modelform_defines_fields,
+    modelform_factory, modelformset_factory,
+)
+from django.forms.widgets import CheckboxSelectMultiple, SelectMultiple
 from django.http import Http404, HttpResponseRedirect
 from django.http.response import HttpResponseBase
-from django.shortcuts import get_object_or_404
 from django.template.response import SimpleTemplateResponse, TemplateResponse
 from django.utils import six
 from django.utils.decorators import method_decorator
-from django.utils.deprecation import (RenameMethodsBase,
-    RemovedInDjango18Warning, RemovedInDjango19Warning)
+from django.utils.deprecation import RemovedInDjango19Warning
 from django.utils.encoding import force_text, python_2_unicode_compatible
 from django.utils.html import escape, escapejs
 from django.utils.http import urlencode
-from django.utils.text import capfirst, get_text_list
-from django.utils.translation import ugettext as _
-from django.utils.translation import ungettext
 from django.utils.safestring import mark_safe
+from django.utils.text import capfirst, get_text_list
+from django.utils.translation import string_concat, ugettext as _, ungettext
 from django.views.decorators.csrf import csrf_protect
-
 
 IS_POPUP_VAR = '_popup'
 TO_FIELD_VAR = '_to_field'
@@ -93,13 +95,7 @@ FORMFIELD_FOR_DBFIELD_DEFAULTS = {
 csrf_protect_m = method_decorator(csrf_protect)
 
 
-class RenameBaseModelAdminMethods(forms.MediaDefiningClass, RenameMethodsBase):
-    renamed_methods = (
-        ('queryset', 'get_queryset', RemovedInDjango18Warning),
-    )
-
-
-class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
+class BaseModelAdmin(six.with_metaclass(forms.MediaDefiningClass)):
     """Functionality common to both ModelAdmin and InlineAdmin."""
 
     raw_id_fields = ()
@@ -115,6 +111,7 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
     readonly_fields = ()
     ordering = None
     view_on_site = True
+    show_full_result_count = True
 
     # Validation of ModelAdmin definitions
     # Old, deprecated style:
@@ -192,11 +189,16 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
             # OneToOneField with parent_link=True or a M2M intermediary.
             if formfield and db_field.name not in self.raw_id_fields:
                 related_modeladmin = self.admin_site._registry.get(db_field.rel.to)
-                can_add_related = bool(related_modeladmin and
-                    related_modeladmin.has_add_permission(request))
+                wrapper_kwargs = {}
+                if related_modeladmin:
+                    wrapper_kwargs.update(
+                        can_add_related=related_modeladmin.has_add_permission(request),
+                        can_change_related=related_modeladmin.has_change_permission(request),
+                        can_delete_related=related_modeladmin.has_delete_permission(request),
+                    )
                 formfield.widget = widgets.RelatedFieldWidgetWrapper(
-                    formfield.widget, db_field.rel, self.admin_site,
-                    can_add_related=can_add_related)
+                    formfield.widget, db_field.rel, self.admin_site, **wrapper_kwargs
+                )
 
             return formfield
 
@@ -277,14 +279,22 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
                                     self.admin_site, using=db)
             kwargs['help_text'] = ''
         elif db_field.name in (list(self.filter_vertical) + list(self.filter_horizontal)):
-            kwargs['widget'] = widgets.FilteredSelectMultiple(db_field.verbose_name, (db_field.name in self.filter_vertical))
+            kwargs['widget'] = widgets.FilteredSelectMultiple(
+                db_field.verbose_name,
+                db_field.name in self.filter_vertical
+            )
 
         if 'queryset' not in kwargs:
             queryset = self.get_field_queryset(db, db_field, request)
             if queryset is not None:
                 kwargs['queryset'] = queryset
 
-        return db_field.formfield(**kwargs)
+        form_field = db_field.formfield(**kwargs)
+        if isinstance(form_field.widget, SelectMultiple) and not isinstance(form_field.widget, CheckboxSelectMultiple):
+            msg = _('Hold down "Control", or "Command" on a Mac, to select more than one.')
+            help_text = form_field.help_text
+            form_field.help_text = string_concat(help_text, ' ', msg) if help_text else msg
+        return form_field
 
     def get_view_on_site_url(self, obj=None):
         if obj is None or not self.view_on_site:
@@ -402,7 +412,7 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
         rel_name = None
         for part in parts[:-1]:
             try:
-                field, _, _, _ = model._meta.get_field_by_name(part)
+                field = model._meta.get_field(part)
             except FieldDoesNotExist:
                 # Lookups on non-existent fields are ok, since they're ignored
                 # later.
@@ -417,8 +427,8 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
                     rel_name = field.rel.get_related_field().name
                 else:
                     rel_name = None
-            elif isinstance(field, RelatedObject):
-                model = field.model
+            elif isinstance(field, ForeignObjectRel):
+                model = field.related_model
                 rel_name = model._meta.pk.name
             else:
                 rel_name = None
@@ -455,6 +465,12 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
         if field.primary_key:
             return True
 
+        # Allow reverse relationships to models defining m2m fields if they
+        # target the specified field.
+        for many_to_many in opts.many_to_many:
+            if many_to_many.m2m_target_field_name() == to_field:
+                return True
+
         # Make sure at least one of the models registered for this site
         # references this field through a FK or a M2M relationship.
         registered_models = set()
@@ -463,8 +479,12 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
             for inline in admin.inlines:
                 registered_models.add(inline.model)
 
-        for related_object in opts.get_all_related_objects(include_hidden=True):
-            related_model = related_object.model
+        related_objects = (
+            f for f in opts.get_fields(include_hidden=True)
+            if (f.auto_created and not f.concrete)
+        )
+        for related_object in related_objects:
+            related_model = related_object.related_model
             if (any(issubclass(model, related_model) for model in registered_models) and
                     related_object.field.rel.get_related_field() == field):
                 return True
@@ -509,6 +529,19 @@ class BaseModelAdmin(six.with_metaclass(RenameBaseModelAdminMethods)):
         opts = self.opts
         codename = get_permission_codename('delete', opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_module_permission(self, request):
+        """
+        Returns True if the given request has any permission in the given
+        app label.
+
+        Can be overridden by the user in subclasses. In such case it should
+        return True if the given request has permission to view the module on
+        the admin index page and access the module's index page. Overriding it
+        does not restrict access to the add, change or delete views. Use
+        `ModelAdmin.has_(add|change|delete)_permission` for that.
+        """
+        return request.user.has_module_perms(self.opts.app_label)
 
 
 @python_2_unicode_compatible
@@ -576,7 +609,7 @@ class ModelAdmin(BaseModelAdmin):
         return inline_instances
 
     def get_urls(self):
-        from django.conf.urls import patterns, url
+        from django.conf.urls import url
 
         def wrap(view):
             def wrapper(*args, **kwargs):
@@ -585,13 +618,13 @@ class ModelAdmin(BaseModelAdmin):
 
         info = self.model._meta.app_label, self.model._meta.model_name
 
-        urlpatterns = patterns('',
+        urlpatterns = [
             url(r'^$', wrap(self.changelist_view), name='%s_%s_changelist' % info),
             url(r'^add/$', wrap(self.add_view), name='%s_%s_add' % info),
             url(r'^(.+)/history/$', wrap(self.history_view), name='%s_%s_history' % info),
             url(r'^(.+)/delete/$', wrap(self.delete_view), name='%s_%s_delete' % info),
             url(r'^(.+)/$', wrap(self.change_view), name='%s_%s_change' % info),
-        )
+        ]
         return urlpatterns
 
     def urls(self):
@@ -676,17 +709,18 @@ class ModelAdmin(BaseModelAdmin):
         from django.contrib.admin.views.main import ChangeList
         return ChangeList
 
-    def get_object(self, request, object_id):
+    def get_object(self, request, object_id, from_field=None):
         """
-        Returns an instance matching the primary key provided. ``None``  is
-        returned if no match is found (or the object_id failed validation
-        against the primary key field).
+        Returns an instance matching the field and value provided, the primary
+        key is used if no field is provided. Returns ``None`` if no match is
+        found or the object_id fails validation.
         """
         queryset = self.get_queryset(request)
         model = queryset.model
+        field = model._meta.pk if from_field is None else model._meta.get_field(from_field)
         try:
-            object_id = model._meta.pk.to_python(object_id)
-            return queryset.get(pk=object_id)
+            object_id = field.to_python(object_id)
+            return queryset.get(**{field.name: object_id})
         except (model.DoesNotExist, ValidationError, ValueError):
             return None
 
@@ -749,7 +783,7 @@ class ModelAdmin(BaseModelAdmin):
             warnings.warn(
                 "ModelAdmin.get_formsets() is deprecated and will be removed in "
                 "Django 1.9. Use ModelAdmin.get_formsets_with_inlines() instead.",
-                RemovedInDjango19Warning
+                RemovedInDjango19Warning, stacklevel=2
             )
             if formsets:
                 zipped = zip(formsets, self.get_inline_instances(request, None))
@@ -824,8 +858,7 @@ class ModelAdmin(BaseModelAdmin):
         """
         # If self.actions is explicitly set to None that means that we don't
         # want *any* actions enabled on this page.
-        from django.contrib.admin.views.main import _is_changelist_popup
-        if self.actions is None or _is_changelist_popup(request):
+        if self.actions is None or IS_POPUP_VAR in request.GET:
             return OrderedDict()
 
         actions = []
@@ -1097,11 +1130,13 @@ class ModelAdmin(BaseModelAdmin):
         else:
             form_template = self.change_form_template
 
+        request.current_app = self.admin_site.name
+
         return TemplateResponse(request, form_template or [
             "admin/%s/%s/change_form.html" % (app_label, opts.model_name),
             "admin/%s/change_form.html" % app_label,
             "admin/change_form.html"
-        ], context, current_app=self.admin_site.name)
+        ], context)
 
     def response_add(self, request, obj, post_url_continue=None):
         """
@@ -1135,7 +1170,10 @@ class ModelAdmin(BaseModelAdmin):
                                             (opts.app_label, opts.model_name),
                                             args=(quote(pk_value),),
                                             current_app=self.admin_site.name)
-            post_url_continue = add_preserved_filters({'preserved_filters': preserved_filters, 'opts': opts}, post_url_continue)
+            post_url_continue = add_preserved_filters(
+                {'preserved_filters': preserved_filters, 'opts': opts},
+                post_url_continue
+            )
             return HttpResponseRedirect(post_url_continue)
 
         elif "_addanother" in request.POST:
@@ -1154,6 +1192,19 @@ class ModelAdmin(BaseModelAdmin):
         """
         Determines the HttpResponse for the change_view stage.
         """
+
+        if IS_POPUP_VAR in request.POST:
+            to_field = request.POST.get(TO_FIELD_VAR)
+            attr = str(to_field) if to_field else obj._meta.pk.attname
+            # Retrieve the `object_id` from the resolved pattern arguments.
+            value = request.resolver_match.args[0]
+            new_value = obj.serializable_value(attr)
+            return SimpleTemplateResponse('admin/popup_response.html', {
+                'action': 'change',
+                'value': escape(value),
+                'obj': escapejs(obj),
+                'new_value': escape(new_value),
+            })
 
         opts = self.model._meta
         pk_value = obj._get_pk_val()
@@ -1293,17 +1344,23 @@ class ModelAdmin(BaseModelAdmin):
             self.message_user(request, msg, messages.WARNING)
             return None
 
-    def response_delete(self, request, obj_display):
+    def response_delete(self, request, obj_display, obj_id):
         """
         Determines the HttpResponse for the delete_view stage.
         """
 
         opts = self.model._meta
 
+        if IS_POPUP_VAR in request.POST:
+            return SimpleTemplateResponse('admin/popup_response.html', {
+                'action': 'delete',
+                'value': escape(obj_id),
+            })
+
         self.message_user(request,
             _('The %(name)s "%(obj)s" was deleted successfully.') % {
                 'name': force_text(opts.verbose_name),
-                'obj': force_text(obj_display)
+                'obj': force_text(obj_display),
             }, messages.SUCCESS)
 
         if self.has_change_permission(request, None):
@@ -1323,12 +1380,18 @@ class ModelAdmin(BaseModelAdmin):
         opts = self.model._meta
         app_label = opts.app_label
 
+        request.current_app = self.admin_site.name
+        context.update(
+            to_field_var=TO_FIELD_VAR,
+            is_popup_var=IS_POPUP_VAR,
+        )
+
         return TemplateResponse(request,
             self.delete_confirmation_template or [
                 "admin/{}/{}/delete_confirmation.html".format(app_label, opts.model_name),
                 "admin/{}/delete_confirmation.html".format(app_label),
                 "admin/delete_confirmation.html"
-            ], context, current_app=self.admin_site.name)
+            ], context)
 
     def get_inline_formsets(self, request, formsets, inline_instances,
                             obj=None):
@@ -1351,7 +1414,7 @@ class ModelAdmin(BaseModelAdmin):
         for k in initial:
             try:
                 f = self.model._meta.get_field(k)
-            except models.FieldDoesNotExist:
+            except FieldDoesNotExist:
                 continue
             # We have to special-case M2Ms as a list of comma-separated PKs.
             if isinstance(f, models.ManyToManyField):
@@ -1376,7 +1439,7 @@ class ModelAdmin(BaseModelAdmin):
             obj = None
 
         else:
-            obj = self.get_object(request, unquote(object_id))
+            obj = self.get_object(request, unquote(object_id), to_field)
 
             if not self.has_change_permission(request, obj):
                 raise PermissionDenied
@@ -1431,7 +1494,7 @@ class ModelAdmin(BaseModelAdmin):
         for inline_formset in inline_formsets:
             media = media + inline_formset.media
 
-        context = dict(self.admin_site.each_context(),
+        context = dict(self.admin_site.each_context(request),
             title=(_('Add %s') if add else _('Change %s')) % force_text(opts.verbose_name),
             adminform=adminForm,
             object_id=object_id,
@@ -1587,7 +1650,7 @@ class ModelAdmin(BaseModelAdmin):
             'All %(total_count)s selected', cl.result_count)
 
         context = dict(
-            self.admin_site.each_context(),
+            self.admin_site.each_context(request),
             module_name=force_text(opts.verbose_name_plural),
             selection_note=_('0 of %(cnt)s selected') % {'cnt': len(cl.result_list)},
             selection_note_all=selection_note_all % {'total_count': cl.result_count},
@@ -1606,11 +1669,13 @@ class ModelAdmin(BaseModelAdmin):
         )
         context.update(extra_context or {})
 
+        request.current_app = self.admin_site.name
+
         return TemplateResponse(request, self.change_list_template or [
             'admin/%s/%s/change_list.html' % (app_label, opts.model_name),
             'admin/%s/change_list.html' % app_label,
             'admin/change_list.html'
-        ], context, current_app=self.admin_site.name)
+        ], context)
 
     @csrf_protect_m
     @transaction.atomic
@@ -1619,7 +1684,11 @@ class ModelAdmin(BaseModelAdmin):
         opts = self.model._meta
         app_label = opts.app_label
 
-        obj = self.get_object(request, unquote(object_id))
+        to_field = request.POST.get(TO_FIELD_VAR, request.GET.get(TO_FIELD_VAR))
+        if to_field and not self.to_field_allowed(request, to_field):
+            raise DisallowedModelAdminToField("The field %s cannot be referenced." % to_field)
+
+        obj = self.get_object(request, unquote(object_id), to_field)
 
         if not self.has_delete_permission(request, obj):
             raise PermissionDenied
@@ -1634,17 +1703,19 @@ class ModelAdmin(BaseModelAdmin):
 
         # Populate deleted_objects, a data structure of all related objects that
         # will also be deleted.
-        (deleted_objects, perms_needed, protected) = get_deleted_objects(
+        (deleted_objects, model_count, perms_needed, protected) = get_deleted_objects(
             [obj], opts, request.user, self.admin_site, using)
 
         if request.POST:  # The user has already confirmed the deletion.
             if perms_needed:
                 raise PermissionDenied
             obj_display = force_text(obj)
+            attr = str(to_field) if to_field else opts.pk.attname
+            obj_id = obj.serializable_value(attr)
             self.log_deletion(request, obj, obj_display)
             self.delete_model(request, obj)
 
-            return self.response_delete(request, obj_display)
+            return self.response_delete(request, obj_display, obj_id)
 
         object_name = force_text(opts.verbose_name)
 
@@ -1654,16 +1725,20 @@ class ModelAdmin(BaseModelAdmin):
             title = _("Are you sure?")
 
         context = dict(
-            self.admin_site.each_context(),
+            self.admin_site.each_context(request),
             title=title,
             object_name=object_name,
             object=obj,
             deleted_objects=deleted_objects,
+            model_count=dict(model_count).items(),
             perms_lacking=perms_needed,
             protected=protected,
             opts=opts,
             app_label=app_label,
             preserved_filters=self.get_preserved_filters(request),
+            is_popup=(IS_POPUP_VAR in request.POST or
+                      IS_POPUP_VAR in request.GET),
+            to_field=to_field,
         )
         context.update(extra_context or {})
 
@@ -1674,7 +1749,12 @@ class ModelAdmin(BaseModelAdmin):
         from django.contrib.admin.models import LogEntry
         # First check if the user can see this history.
         model = self.model
-        obj = get_object_or_404(self.get_queryset(request), pk=unquote(object_id))
+        obj = self.get_object(request, unquote(object_id))
+        if obj is None:
+            raise Http404(_('%(name)s object with primary key %(key)r does not exist.') % {
+                'name': force_text(model._meta.verbose_name),
+                'key': escape(object_id),
+            })
 
         if not self.has_change_permission(request, obj):
             raise PermissionDenied
@@ -1687,7 +1767,7 @@ class ModelAdmin(BaseModelAdmin):
             content_type=get_content_type_for_model(model)
         ).select_related().order_by('action_time')
 
-        context = dict(self.admin_site.each_context(),
+        context = dict(self.admin_site.each_context(request),
             title=_('Change history: %s') % force_text(obj),
             action_list=action_list,
             module_name=capfirst(force_text(opts.verbose_name_plural)),
@@ -1696,11 +1776,14 @@ class ModelAdmin(BaseModelAdmin):
             preserved_filters=self.get_preserved_filters(request),
         )
         context.update(extra_context or {})
+
+        request.current_app = self.admin_site.name
+
         return TemplateResponse(request, self.object_history_template or [
             "admin/%s/%s/object_history.html" % (app_label, opts.model_name),
             "admin/%s/object_history.html" % app_label,
             "admin/object_history.html"
-        ], context, current_app=self.admin_site.name)
+        ], context)
 
     def _create_formsets(self, request, obj, change):
         "Helper function to generate formsets for add/change_view."
@@ -1749,6 +1832,7 @@ class InlineModelAdmin(BaseModelAdmin):
     verbose_name = None
     verbose_name_plural = None
     can_delete = True
+    show_change_link = False
 
     checks_class = InlineModelAdminChecks
 
@@ -1756,6 +1840,7 @@ class InlineModelAdmin(BaseModelAdmin):
         self.admin_site = admin_site
         self.parent_model = parent_model
         self.opts = self.model._meta
+        self.has_registered_model = admin_site.is_registered(self.model)
         super(InlineModelAdmin, self).__init__()
         if self.verbose_name is None:
             self.verbose_name = self.model._meta.verbose_name
@@ -1836,7 +1921,8 @@ class InlineModelAdmin(BaseModelAdmin):
                         objs = []
                         for p in collector.protected:
                             objs.append(
-                                # Translators: Model verbose name and instance representation, suitable to be an item in a list
+                                # Translators: Model verbose name and instance representation,
+                                # suitable to be an item in a list.
                                 _('%(class_name)s %(instance)s') % {
                                     'class_name': p._meta.verbose_name,
                                     'instance': p}

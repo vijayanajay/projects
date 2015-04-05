@@ -9,7 +9,7 @@
 import logging
 import os
 import re
-from ctypes import c_char_p, Structure, CDLL, CFUNCTYPE, POINTER
+from ctypes import CDLL, CFUNCTYPE, POINTER, Structure, c_char_p
 from ctypes.util import find_library
 
 from django.contrib.gis.geos.error import GEOSException
@@ -87,7 +87,7 @@ def error_h(fmt, lst):
     logger.error('GEOS_ERROR: %s\n' % err_msg)
 error_h = ERRORFUNC(error_h)
 
-#### GEOS Geometry C data structures, and utility functions. ####
+# #### GEOS Geometry C data structures, and utility functions. ####
 
 
 # Opaque GEOS geometry structures, used for GEOM_PTR and CS_PTR
@@ -145,8 +145,8 @@ def geos_version_info():
     m = version_regex.match(ver)
     if not m:
         raise GEOSException('Could not parse version info string "%s"' % ver)
-    return dict((key, m.group(key)) for key in (
-        'version', 'release_candidate', 'capi_version', 'major', 'minor', 'subminor'))
+    return {key: m.group(key) for key in (
+        'version', 'release_candidate', 'capi_version', 'major', 'minor', 'subminor')}
 
 # Version numbers and whether or not prepared geometry support is available.
 _verinfo = geos_version_info()

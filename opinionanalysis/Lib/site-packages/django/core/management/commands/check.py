@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from optparse import make_option
-
 from django.apps import apps
 from django.core import checks
 from django.core.checks.registry import registry
@@ -14,16 +12,19 @@ class Command(BaseCommand):
 
     requires_system_checks = False
 
-    option_list = BaseCommand.option_list + (
-        make_option('--tag', '-t', action='append', dest='tags',
-            help='Run only checks labeled with given tag.'),
-        make_option('--list-tags', action='store_true', dest='list_tags',
-            help='List available tags.'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('args', metavar='app_label', nargs='*')
+        parser.add_argument('--tag', '-t', action='append', dest='tags',
+            help='Run only checks labeled with given tag.')
+        parser.add_argument('--list-tags', action='store_true', dest='list_tags',
+            help='List available tags.')
+        parser.add_argument('--deploy', action='store_true', dest='deploy',
+            help='Check deployment settings.')
 
     def handle(self, *app_labels, **options):
+        include_deployment_checks = options['deploy']
         if options.get('list_tags'):
-            self.stdout.write('\n'.join(sorted(registry.tags_available())))
+            self.stdout.write('\n'.join(sorted(registry.tags_available(include_deployment_checks))))
             return
 
         if app_labels:
@@ -32,8 +33,20 @@ class Command(BaseCommand):
             app_configs = None
 
         tags = options.get('tags', None)
-        if tags and any(not checks.tag_exists(tag) for tag in tags):
-            invalid_tag = next(tag for tag in tags if not checks.tag_exists(tag))
-            raise CommandError('There is no system check with the "%s" tag.' % invalid_tag)
+        if tags:
+            try:
+                invalid_tag = next(
+                    tag for tag in tags if not checks.tag_exists(tag, include_deployment_checks)
+                )
+            except StopIteration:
+                # no invalid tags
+                pass
+            else:
+                raise CommandError('There is no system check with the "%s" tag.' % invalid_tag)
 
-        self.check(app_configs=app_configs, tags=tags, display_num_errors=True)
+        self.check(
+            app_configs=app_configs,
+            tags=tags,
+            display_num_errors=True,
+            include_deployment_checks=include_deployment_checks,
+        )

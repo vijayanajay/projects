@@ -28,7 +28,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import absolute_import  # Avoid importing `importlib` from this package.
+# Avoid importing `importlib` from this package.
+from __future__ import absolute_import
 
 import os
 import signal
@@ -39,10 +40,7 @@ import traceback
 from django.apps import apps
 from django.conf import settings
 from django.core.signals import request_finished
-try:
-    from django.utils.six.moves import _thread as thread
-except ImportError:
-    from django.utils.six.moves import _dummy_thread as thread
+from django.utils.six.moves import _thread as thread
 
 # This import does nothing, but it's necessary to avoid some race conditions
 # in the threading module. See http://code.djangoproject.com/ticket/2330 .
@@ -86,6 +84,9 @@ def gen_filenames(only_new=False):
     Returns a list of filenames referenced in sys.modules and translation
     files.
     """
+    # N.B. ``list(...)`` is needed, because this runs in parallel with
+    # application code which might be mutating ``sys.modules``, and this will
+    # fail with RuntimeError: cannot mutate dictionary while iterating
     global _cached_modules, _cached_filenames
     module_values = set(sys.modules.values())
     _cached_filenames = clean_files(_cached_filenames)

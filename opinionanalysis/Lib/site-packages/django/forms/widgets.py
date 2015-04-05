@@ -6,18 +6,16 @@ from __future__ import unicode_literals
 
 import copy
 from itertools import chain
-import warnings
 
 from django.conf import settings
 from django.forms.utils import flatatt, to_current_timezone
-from django.utils.datastructures import MultiValueDict, MergeDict
-from django.utils.deprecation import RemovedInDjango18Warning
-from django.utils.encoding import force_text, python_2_unicode_compatible
-from django.utils.html import conditional_escape, format_html
-from django.utils.translation import ugettext_lazy
-from django.utils.safestring import mark_safe
 from django.utils import formats, six
+from django.utils.datastructures import MergeDict, MultiValueDict
+from django.utils.encoding import force_text, python_2_unicode_compatible
+from django.utils.html import conditional_escape, format_html, html_safe
+from django.utils.safestring import mark_safe
 from django.utils.six.moves.urllib.parse import urljoin
+from django.utils.translation import ugettext_lazy
 
 __all__ = (
     'Media', 'MediaDefiningClass', 'Widget', 'TextInput',
@@ -32,6 +30,7 @@ __all__ = (
 MEDIA_TYPES = ('css', 'js')
 
 
+@html_safe
 @python_2_unicode_compatible
 class Media(object):
     def __init__(self, media=None, **kwargs):
@@ -46,10 +45,6 @@ class Media(object):
         for name in MEDIA_TYPES:
             getattr(self, 'add_' + name)(media_attrs.get(name, None))
 
-        # Any leftover attributes must be invalid.
-        # if media_attrs != {}:
-        #     raise TypeError("'class Media' has invalid attribute(s): %s" % ','.join(media_attrs.keys()))
-
     def __str__(self):
         return self.render()
 
@@ -57,16 +52,23 @@ class Media(object):
         return mark_safe('\n'.join(chain(*[getattr(self, 'render_' + name)() for name in MEDIA_TYPES])))
 
     def render_js(self):
-        return [format_html('<script type="text/javascript" src="{0}"></script>', self.absolute_path(path)) for path in self._js]
+        return [
+            format_html(
+                '<script type="text/javascript" src="{}"></script>',
+                self.absolute_path(path)
+            ) for path in self._js
+        ]
 
     def render_css(self):
         # To keep rendering order consistent, we can't just iterate over items().
         # We need to sort the keys, and iterate over the sorted list.
         media = sorted(self._css.keys())
-        return chain(*[
-            [format_html('<link href="{0}" type="text/css" media="{1}" rel="stylesheet" />', self.absolute_path(path), medium)
-             for path in self._css[medium]]
-            for medium in media])
+        return chain(*[[
+            format_html(
+                '<link href="{}" type="text/css" media="{}" rel="stylesheet" />',
+                self.absolute_path(path), medium
+            ) for path in self._css[medium]
+        ] for medium in media])
 
     def absolute_path(self, path, prefix=None):
         if path.startswith(('http://', 'https://', '/')):
@@ -148,6 +150,7 @@ class MediaDefiningClass(type):
         return new_class
 
 
+@html_safe
 @python_2_unicode_compatible
 class SubWidget(object):
     """
@@ -186,14 +189,6 @@ class Widget(six.with_metaclass(MediaDefiningClass)):
     @property
     def is_hidden(self):
         return self.input_type == 'hidden' if hasattr(self, 'input_type') else False
-
-    @is_hidden.setter
-    def is_hidden(self, *args):
-        warnings.warn(
-            "`is_hidden` property is now read-only (and checks `input_type`). "
-            "Please update your code.",
-            RemovedInDjango18Warning, stacklevel=2
-        )
 
     def subwidgets(self, name, value, attrs=None, choices=()):
         """
@@ -259,7 +254,7 @@ class Input(Widget):
         if value != '':
             # Only add the 'value' attribute if a value is non-empty.
             final_attrs['value'] = force_text(self._format_value(value))
-        return format_html('<input{0} />', flatatt(final_attrs))
+        return format_html('<input{} />', flatatt(final_attrs))
 
 
 class TextInput(Input):
@@ -322,7 +317,7 @@ class MultipleHiddenInput(HiddenInput):
                 # An ID attribute was given. Add a numeric index as a suffix
                 # so that the inputs don't all have the same ID attribute.
                 input_attrs['id'] = '%s_%s' % (id_, i)
-            inputs.append(format_html('<input{0} />', flatatt(input_attrs)))
+            inputs.append(format_html('<input{} />', flatatt(input_attrs)))
         return mark_safe('\n'.join(inputs))
 
     def value_from_datadict(self, data, files, name):
@@ -351,11 +346,12 @@ class ClearableFileInput(FileInput):
     input_text = ugettext_lazy('Change')
     clear_checkbox_label = ugettext_lazy('Clear')
 
-    template_with_initial = '%(initial_text)s: %(initial)s %(clear_template)s<br />%(input_text)s: %(input)s'
+    template_with_initial = (
+        '%(initial_text)s: <a href="%(initial_url)s">%(initial)s</a> '
+        '%(clear_template)s<br />%(input_text)s: %(input)s'
+    )
 
     template_with_clear = '%(clear)s <label for="%(clear_checkbox_id)s">%(clear_checkbox_label)s</label>'
-
-    url_markup_template = '<a href="{0}">{1}</a>'
 
     def clear_checkbox_name(self, name):
         """
@@ -370,6 +366,21 @@ class ClearableFileInput(FileInput):
         """
         return name + '_id'
 
+    def is_initial(self, value):
+        """
+        Return whether value is considered to be initial value.
+        """
+        return bool(value and hasattr(value, 'url'))
+
+    def get_template_substitution_values(self, value):
+        """
+        Return value-related substitutions.
+        """
+        return {
+            'initial': conditional_escape(value),
+            'initial_url': conditional_escape(value.url),
+        }
+
     def render(self, name, value, attrs=None):
         substitutions = {
             'initial_text': self.initial_text,
@@ -380,11 +391,9 @@ class ClearableFileInput(FileInput):
         template = '%(input)s'
         substitutions['input'] = super(ClearableFileInput, self).render(name, value, attrs)
 
-        if value and hasattr(value, "url"):
+        if self.is_initial(value):
             template = self.template_with_initial
-            substitutions['initial'] = format_html(self.url_markup_template,
-                                                   value.url,
-                                                   force_text(value))
+            substitutions.update(self.get_template_substitution_values(value))
             if not self.is_required:
                 checkbox_name = self.clear_checkbox_name(name)
                 checkbox_id = self.clear_checkbox_id(checkbox_name)
@@ -422,7 +431,7 @@ class Textarea(Widget):
         if value is None:
             value = ''
         final_attrs = self.build_attrs(attrs, name=name)
-        return format_html('<textarea{0}>\r\n{1}</textarea>',
+        return format_html('<textarea{}>\r\n{}</textarea>',
                            flatatt(final_attrs),
                            force_text(value))
 
@@ -471,7 +480,7 @@ class CheckboxInput(Widget):
         if not (value is True or value is False or value is None or value == ''):
             # Only add the 'value' attribute if a value is non-empty.
             final_attrs['value'] = force_text(value)
-        return format_html('<input{0} />', flatatt(final_attrs))
+        return format_html('<input{} />', flatatt(final_attrs))
 
     def value_from_datadict(self, data, files, name):
         if name not in data:
@@ -500,7 +509,7 @@ class Select(Widget):
         if value is None:
             value = ''
         final_attrs = self.build_attrs(attrs, name=name)
-        output = [format_html('<select{0}>', flatatt(final_attrs))]
+        output = [format_html('<select{}>', flatatt(final_attrs))]
         options = self.render_options(choices, [value])
         if options:
             output.append(options)
@@ -518,7 +527,7 @@ class Select(Widget):
                 selected_choices.remove(option_value)
         else:
             selected_html = ''
-        return format_html('<option value="{0}"{1}>{2}</option>',
+        return format_html('<option value="{}"{}>{}</option>',
                            option_value,
                            selected_html,
                            force_text(option_label))
@@ -529,7 +538,7 @@ class Select(Widget):
         output = []
         for option_value, option_label in chain(self.choices, choices):
             if isinstance(option_label, (list, tuple)):
-                output.append(format_html('<optgroup label="{0}">', force_text(option_value)))
+                output.append(format_html('<optgroup label="{}">', force_text(option_value)))
                 for option in option_label:
                     output.append(self.render_option(selected_choices, *option))
                 output.append('</optgroup>')
@@ -572,7 +581,7 @@ class SelectMultiple(Select):
         if value is None:
             value = []
         final_attrs = self.build_attrs(attrs, name=name)
-        output = [format_html('<select multiple="multiple"{0}>', flatatt(final_attrs))]
+        output = [format_html('<select multiple="multiple"{}>', flatatt(final_attrs))]
         options = self.render_options(choices, value)
         if options:
             output.append(options)
@@ -585,6 +594,7 @@ class SelectMultiple(Select):
         return data.get(name, None)
 
 
+@html_safe
 @python_2_unicode_compatible
 class ChoiceInput(SubWidget):
     """
@@ -608,19 +618,23 @@ class ChoiceInput(SubWidget):
 
     def render(self, name=None, value=None, attrs=None, choices=()):
         if self.id_for_label:
-            label_for = format_html(' for="{0}"', self.id_for_label)
+            label_for = format_html(' for="{}"', self.id_for_label)
         else:
             label_for = ''
-        return format_html('<label{0}>{1} {2}</label>', label_for, self.tag(), self.choice_label)
+        attrs = dict(self.attrs, **attrs) if attrs else self.attrs
+        return format_html(
+            '<label{}>{} {}</label>', label_for, self.tag(attrs), self.choice_label
+        )
 
     def is_checked(self):
         return self.value == self.choice_value
 
-    def tag(self):
-        final_attrs = dict(self.attrs, type=self.input_type, name=self.name, value=self.choice_value)
+    def tag(self, attrs=None):
+        attrs = attrs or self.attrs
+        final_attrs = dict(attrs, type=self.input_type, name=self.name, value=self.choice_value)
         if self.is_checked():
             final_attrs['checked'] = 'checked'
-        return format_html('<input{0} />', flatatt(final_attrs))
+        return format_html('<input{} />', flatatt(final_attrs))
 
     @property
     def id_for_label(self):
@@ -635,13 +649,6 @@ class RadioChoiceInput(ChoiceInput):
         self.value = force_text(self.value)
 
 
-class RadioInput(RadioChoiceInput):
-    def __init__(self, *args, **kwargs):
-        msg = "RadioInput has been deprecated. Use RadioChoiceInput instead."
-        warnings.warn(msg, RemovedInDjango18Warning, stacklevel=2)
-        super(RadioInput, self).__init__(*args, **kwargs)
-
-
 class CheckboxChoiceInput(ChoiceInput):
     input_type = 'checkbox'
 
@@ -653,6 +660,7 @@ class CheckboxChoiceInput(ChoiceInput):
         return self.choice_value in self.value
 
 
+@html_safe
 @python_2_unicode_compatible
 class ChoiceFieldRenderer(object):
     """
@@ -660,6 +668,8 @@ class ChoiceFieldRenderer(object):
     """
 
     choice_input_class = None
+    outer_html = '<ul{id_attr}>{content}</ul>'
+    inner_html = '<li>{choice_value}{sub_widgets}</li>'
 
     def __init__(self, name, value, attrs, choices):
         self.name = name
@@ -681,27 +691,28 @@ class ChoiceFieldRenderer(object):
         item in the list will get an id of `$id_$i`).
         """
         id_ = self.attrs.get('id', None)
-        start_tag = format_html('<ul id="{0}">', id_) if id_ else '<ul>'
-        output = [start_tag]
+        output = []
         for i, choice in enumerate(self.choices):
             choice_value, choice_label = choice
             if isinstance(choice_label, (tuple, list)):
                 attrs_plus = self.attrs.copy()
                 if id_:
-                    attrs_plus['id'] += '_{0}'.format(i)
+                    attrs_plus['id'] += '_{}'.format(i)
                 sub_ul_renderer = ChoiceFieldRenderer(name=self.name,
                                                       value=self.value,
                                                       attrs=attrs_plus,
                                                       choices=choice_label)
                 sub_ul_renderer.choice_input_class = self.choice_input_class
-                output.append(format_html('<li>{0}{1}</li>', choice_value,
-                                          sub_ul_renderer.render()))
+                output.append(format_html(self.inner_html, choice_value=choice_value,
+                                          sub_widgets=sub_ul_renderer.render()))
             else:
                 w = self.choice_input_class(self.name, self.value,
                                             self.attrs.copy(), choice, i)
-                output.append(format_html('<li>{0}</li>', force_text(w)))
-        output.append('</ul>')
-        return mark_safe('\n'.join(output))
+                output.append(format_html(self.inner_html,
+                                          choice_value=force_text(w), sub_widgets=''))
+        return format_html(self.outer_html,
+                           id_attr=format_html(' id="{}"', id_) if id_ else '',
+                           content=mark_safe('\n'.join(output)))
 
 
 class RadioFieldRenderer(ChoiceFieldRenderer):

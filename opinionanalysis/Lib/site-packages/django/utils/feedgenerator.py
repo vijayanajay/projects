@@ -24,13 +24,13 @@ http://web.archive.org/web/20110718035220/http://diveintomark.org/archives/2004/
 from __future__ import unicode_literals
 
 import datetime
-from django.utils.xmlutils import SimplerXMLGenerator
+
+from django.utils import datetime_safe, six
 from django.utils.encoding import force_text, iri_to_uri
-from django.utils import datetime_safe
-from django.utils import six
 from django.utils.six import StringIO
 from django.utils.six.moves.urllib.parse import urlparse
 from django.utils.timezone import is_aware
+from django.utils.xmlutils import SimplerXMLGenerator
 
 
 def rfc2822_date(date):
@@ -288,7 +288,8 @@ class Rss201rev2Feed(RssFeed):
         elif item["author_email"]:
             handler.addQuickElement("author", item["author_email"])
         elif item["author_name"]:
-            handler.addQuickElement("dc:creator", item["author_name"], {"xmlns:dc": "http://purl.org/dc/elements/1.1/"})
+            handler.addQuickElement("dc:creator", item["author_name"],
+                {"xmlns:dc": "http://purl.org/dc/elements/1.1/"})
 
         if item['pubdate'] is not None:
             handler.addQuickElement("pubDate", rfc2822_date(item['pubdate']))

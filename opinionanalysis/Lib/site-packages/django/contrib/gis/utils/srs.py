@@ -1,5 +1,5 @@
 from django.contrib.gis.gdal import SpatialReference
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.db import DEFAULT_DB_ALIAS, connections
 
 
 def add_srs_entry(srs, auth_name='EPSG', auth_srid=None, ref_sys_name=None,
@@ -39,9 +39,8 @@ def add_srs_entry(srs, auth_name='EPSG', auth_srid=None, ref_sys_name=None,
     if not hasattr(connection.ops, 'spatial_version'):
         raise Exception('The `add_srs_entry` utility only works '
                         'with spatial backends.')
-    if connection.ops.oracle or connection.ops.mysql:
-        raise Exception('This utility does not support the '
-                        'Oracle or MySQL spatial backends.')
+    if not connection.features.supports_add_srs_entry:
+        raise Exception('This utility does not support your database backend.')
     SpatialRefSys = connection.ops.spatial_ref_sys()
 
     # If argument is not a `SpatialReference` instance, use it as parameter
@@ -62,7 +61,7 @@ def add_srs_entry(srs, auth_name='EPSG', auth_srid=None, ref_sys_name=None,
               }
 
     # Backend-specific fields for the SpatialRefSys model.
-    srs_field_names = SpatialRefSys._meta.get_all_field_names()
+    srs_field_names = {f.name for f in SpatialRefSys._meta.get_fields()}
     if 'srtext' in srs_field_names:
         kwargs['srtext'] = srs.wkt
     if 'ref_sys_name' in srs_field_names:

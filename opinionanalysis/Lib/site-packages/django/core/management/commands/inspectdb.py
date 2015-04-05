@@ -1,28 +1,26 @@
 from __future__ import unicode_literals
 
-from collections import OrderedDict
 import keyword
 import re
-from optparse import make_option
+from collections import OrderedDict
 
-from django.core.management.base import NoArgsCommand, CommandError
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.core.management.base import BaseCommand, CommandError
+from django.db import DEFAULT_DB_ALIAS, connections
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = "Introspects the database tables in the given database and outputs a Django model module."
-
-    option_list = NoArgsCommand.option_list + (
-        make_option('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Nominates a database to '
-                'introspect.  Defaults to using the "default" database.'),
-    )
 
     requires_system_checks = False
 
     db_module = 'django.db'
 
-    def handle_noargs(self, **options):
+    def add_arguments(self, parser):
+        parser.add_argument('--database', action='store', dest='database',
+            default=DEFAULT_DB_ALIAS, help='Nominates a database to '
+            'introspect. Defaults to using the "default" database.')
+
+    def handle(self, **options):
         try:
             for line in self.handle_inspection(options):
                 self.stdout.write("%s\n" % line)
@@ -30,11 +28,11 @@ class Command(NoArgsCommand):
             raise CommandError("Database inspection isn't supported for the currently selected database backend.")
 
     def handle_inspection(self, options):
-        connection = connections[options.get('database')]
+        connection = connections[options['database']]
         # 'table_name_filter' is a stealth option
         table_name_filter = options.get('table_name_filter')
 
-        table2model = lambda table_name: table_name.title().replace('_', '').replace(' ', '').replace('-', '')
+        table2model = lambda table_name: re.sub(r'[^a-zA-Z0-9]', '', table_name.title())
         strip_prefix = lambda s: s[1:] if s.startswith("u'") else s
 
         with connection.cursor() as cursor:
@@ -42,10 +40,13 @@ class Command(NoArgsCommand):
             yield "# You'll have to do the following manually to clean this up:"
             yield "#   * Rearrange models' order"
             yield "#   * Make sure each model has one field with primary_key=True"
-            yield "#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table"
+            yield (
+                "#   * Remove `managed = False` lines if you wish to allow "
+                "Django to create, modify, and delete the table"
+            )
             yield "# Feel free to rename the models, but don't rename db_table values or field names."
             yield "#"
-            yield "# Also note: You'll have to insert the output of 'django-admin.py sqlcustom [app_label]'"
+            yield "# Also note: You'll have to insert the output of 'django-admin sqlcustom [app_label]'"
             yield "# into your database."
             yield "from __future__ import unicode_literals"
             yield ''
@@ -67,12 +68,16 @@ class Command(NoArgsCommand):
                     indexes = connection.introspection.get_indexes(cursor, table_name)
                 except NotImplementedError:
                     indexes = {}
+                try:
+                    constraints = connection.introspection.get_constraints(cursor, table_name)
+                except NotImplementedError:
+                    constraints = {}
                 used_column_names = []  # Holds column names used in the table so far
-                for i, row in enumerate(connection.introspection.get_table_description(cursor, table_name)):
+                for row in connection.introspection.get_table_description(cursor, table_name):
                     comment_notes = []  # Holds Field notes, to be displayed in a Python comment.
                     extra_params = OrderedDict()  # Holds Field parameters such as 'db_column'.
                     column_name = row[0]
-                    is_relation = i in relations
+                    is_relation = column_name in relations
 
                     att_name, params, notes = self.normalize_col_name(
                         column_name, used_column_names, is_relation)
@@ -89,7 +94,7 @@ class Command(NoArgsCommand):
                             extra_params['unique'] = True
 
                     if is_relation:
-                        rel_to = "self" if relations[i][1] == table_name else table2model(relations[i][1])
+                        rel_to = "self" if relations[column_name][1] == table_name else table2model(relations[column_name][1])
                         if rel_to in known_models:
                             field_type = 'ForeignKey(%s' % rel_to
                         else:
@@ -118,8 +123,7 @@ class Command(NoArgsCommand):
                             field_type = 'NullBooleanField('
                         else:
                             extra_params['blank'] = True
-                            if field_type not in ('TextField(', 'CharField('):
-                                extra_params['null'] = True
+                            extra_params['null'] = True
 
                     field_desc = '%s = %s%s' % (
                         att_name,
@@ -130,14 +134,14 @@ class Command(NoArgsCommand):
                     if extra_params:
                         if not field_desc.endswith('('):
                             field_desc += ', '
-                        field_desc += ', '.join([
+                        field_desc += ', '.join(
                             '%s=%s' % (k, strip_prefix(repr(v)))
-                            for k, v in extra_params.items()])
+                            for k, v in extra_params.items())
                     field_desc += ')'
                     if comment_notes:
                         field_desc += '  # ' + ' '.join(comment_notes)
                     yield '    %s' % field_desc
-                for meta_line in self.get_meta(table_name):
+                for meta_line in self.get_meta(table_name, constraints):
                     yield meta_line
 
     def normalize_col_name(self, col_name, used_column_names, is_relation):
@@ -234,13 +238,26 @@ class Command(NoArgsCommand):
 
         return field_type, field_params, field_notes
 
-    def get_meta(self, table_name):
+    def get_meta(self, table_name, constraints):
         """
         Return a sequence comprising the lines of code necessary
         to construct the inner Meta class for the model corresponding
         to the given database table name.
         """
-        return ["",
+        unique_together = []
+        for index, params in constraints.items():
+            if params['unique']:
+                columns = params['columns']
+                if len(columns) > 1:
+                    # we do not want to include the u"" or u'' prefix
+                    # so we build the string rather than interpolate the tuple
+                    tup = '(' + ', '.join("'%s'" % c for c in columns) + ')'
+                    unique_together.append(tup)
+        meta = ["",
                 "    class Meta:",
                 "        managed = False",
                 "        db_table = '%s'" % table_name]
+        if unique_together:
+            tup = '(' + ', '.join(unique_together) + ',)'
+            meta += ["        unique_together = %s" % tup]
+        return meta

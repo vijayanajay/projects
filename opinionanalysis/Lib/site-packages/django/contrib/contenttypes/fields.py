@@ -2,45 +2,51 @@ from __future__ import unicode_literals
 
 from collections import defaultdict
 
+from django.contrib.contenttypes.models import ContentType
 from django.core import checks
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import connection
-from django.db import models, router, transaction, DEFAULT_DB_ALIAS
-from django.db.models import signals, FieldDoesNotExist, DO_NOTHING
+from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist
+from django.db import DEFAULT_DB_ALIAS, connection, models, router, transaction
+from django.db.models import DO_NOTHING, signals
 from django.db.models.base import ModelBase
 from django.db.models.fields.related import ForeignObject, ForeignObjectRel
-from django.db.models.related import PathInfo
-from django.db.models.sql.datastructures import Col
-from django.contrib.contenttypes.models import ContentType
-from django.utils import six
-from django.utils.deprecation import RenameMethodsBase, RemovedInDjango18Warning
-from django.utils.encoding import smart_text, python_2_unicode_compatible
-
-
-class RenameGenericForeignKeyMethods(RenameMethodsBase):
-    renamed_methods = (
-        ('get_prefetch_query_set', 'get_prefetch_queryset', RemovedInDjango18Warning),
-    )
+from django.db.models.query_utils import PathInfo
+from django.utils.encoding import python_2_unicode_compatible, smart_text
 
 
 @python_2_unicode_compatible
-class GenericForeignKey(six.with_metaclass(RenameGenericForeignKeyMethods)):
+class GenericForeignKey(object):
     """
     Provides a generic relation to any object through content-type/object-id
     fields.
     """
+    # Field flags
+    auto_created = False
+    concrete = False
+    editable = False
+    hidden = False
+
+    is_relation = True
+    many_to_many = False
+    many_to_one = True
+    one_to_many = False
+    one_to_one = False
+    related_model = None
+
+    allow_unsaved_instance_assignment = False
 
     def __init__(self, ct_field="content_type", fk_field="object_id", for_concrete_model=True):
         self.ct_field = ct_field
         self.fk_field = fk_field
         self.for_concrete_model = for_concrete_model
         self.editable = False
+        self.rel = None
+        self.column = None
 
-    def contribute_to_class(self, cls, name):
+    def contribute_to_class(self, cls, name, **kwargs):
         self.name = name
         self.model = cls
         self.cache_attr = "_%s_cache" % name
-        cls._meta.add_virtual_field(self)
+        cls._meta.add_field(self, virtual=True)
 
         # Only run pre-initialization field assignment on non-abstract models
         if not cls._meta.abstract:
@@ -112,7 +118,10 @@ class GenericForeignKey(six.with_metaclass(RenameGenericForeignKeyMethods)):
                         "'%s.%s' is not a ForeignKey." % (
                             self.model._meta.object_name, self.ct_field
                         ),
-                        hint="GenericForeignKeys must use a ForeignKey to 'contenttypes.ContentType' as the 'content_type' field.",
+                        hint=(
+                            "GenericForeignKeys must use a ForeignKey to "
+                            "'contenttypes.ContentType' as the 'content_type' field."
+                        ),
                         obj=self,
                         id='contenttypes.E003',
                     )
@@ -123,7 +132,10 @@ class GenericForeignKey(six.with_metaclass(RenameGenericForeignKeyMethods)):
                         "'%s.%s' is not a ForeignKey to 'contenttypes.ContentType'." % (
                             self.model._meta.object_name, self.ct_field
                         ),
-                        hint="GenericForeignKeys must use a ForeignKey to 'contenttypes.ContentType' as the 'content_type' field.",
+                        hint=(
+                            "GenericForeignKeys must use a ForeignKey to "
+                            "'contenttypes.ContentType' as the 'content_type' field."
+                        ),
                         obj=self,
                         id='contenttypes.E004',
                     )
@@ -231,6 +243,11 @@ class GenericForeignKey(six.with_metaclass(RenameGenericForeignKeyMethods)):
         if value is not None:
             ct = self.get_content_type(obj=value)
             fk = value._get_pk_val()
+            if not self.allow_unsaved_instance_assignment and fk is None:
+                raise ValueError(
+                    'Cannot assign "%r": "%s" instance isn\'t saved in the database.' %
+                    (value, value._meta.object_name)
+                )
 
         setattr(instance, self.ct_field, ct)
         setattr(instance, self.fk_field, fk)
@@ -239,6 +256,13 @@ class GenericForeignKey(six.with_metaclass(RenameGenericForeignKeyMethods)):
 
 class GenericRelation(ForeignObject):
     """Provides an accessor to generic related objects (e.g. comments)"""
+    # Field flags
+    auto_created = False
+
+    many_to_many = False
+    many_to_one = False
+    one_to_many = True
+    one_to_one = False
 
     def __init__(self, to, **kwargs):
         kwargs['verbose_name'] = kwargs.get('verbose_name', None)
@@ -299,12 +323,11 @@ class GenericRelation(ForeignObject):
 
     def resolve_related_fields(self):
         self.to_fields = [self.model._meta.pk.name]
-        return [(self.rel.to._meta.get_field_by_name(self.object_id_field_name)[0],
-                 self.model._meta.pk)]
+        return [(self.rel.to._meta.get_field(self.object_id_field_name), self.model._meta.pk)]
 
     def get_path_info(self):
         opts = self.rel.to._meta
-        target = opts.get_field_by_name(self.object_id_field_name)[0]
+        target = opts.pk
         return [PathInfo(self.model._meta, opts, (target,), self.rel, True, False)]
 
     def get_reverse_path_info(self):
@@ -319,8 +342,9 @@ class GenericRelation(ForeignObject):
         qs = getattr(obj, self.name).all()
         return smart_text([instance._get_pk_val() for instance in qs])
 
-    def contribute_to_class(self, cls, name):
-        super(GenericRelation, self).contribute_to_class(cls, name, virtual_only=True)
+    def contribute_to_class(self, cls, name, **kwargs):
+        kwargs['virtual_only'] = True
+        super(GenericRelation, self).contribute_to_class(cls, name, **kwargs)
         # Save a reference to which model this class is on for future use
         self.model = cls
         # Add the descriptor for the relation
@@ -340,10 +364,10 @@ class GenericRelation(ForeignObject):
                                                  for_concrete_model=self.for_concrete_model)
 
     def get_extra_restriction(self, where_class, alias, remote_alias):
-        field = self.rel.to._meta.get_field_by_name(self.content_type_field_name)[0]
+        field = self.rel.to._meta.get_field(self.content_type_field_name)
         contenttype_pk = self.get_content_type().pk
         cond = where_class()
-        lookup = field.get_lookup('exact')(Col(remote_alias, field, field), contenttype_pk)
+        lookup = field.get_lookup('exact')(field.get_col(remote_alias), contenttype_pk)
         cond.add(lookup, 'AND')
         return cond
 
@@ -401,10 +425,16 @@ class ReverseGenericRelatedObjectsDescriptor(object):
         return manager
 
     def __set__(self, instance, value):
+        # Force evaluation of `value` in case it's a queryset whose
+        # value could be affected by `manager.clear()`. Refs #19816.
+        value = tuple(value)
+
         manager = self.__get__(instance)
-        manager.clear()
-        for obj in value:
-            manager.add(obj)
+        db = router.db_for_write(manager.model, instance=manager.instance)
+        with transaction.atomic(using=db, savepoint=False):
+            manager.clear()
+            for obj in value:
+                manager.add(obj)
 
 
 def create_generic_related_manager(superclass):
@@ -485,12 +515,14 @@ def create_generic_related_manager(superclass):
                     self.prefetch_cache_name)
 
         def add(self, *objs):
-            for obj in objs:
-                if not isinstance(obj, self.model):
-                    raise TypeError("'%s' instance expected" % self.model._meta.object_name)
-                setattr(obj, self.content_type_field_name, self.content_type)
-                setattr(obj, self.object_id_field_name, self.pk_val)
-                obj.save()
+            db = router.db_for_write(self.model, instance=self.instance)
+            with transaction.atomic(using=db, savepoint=False):
+                for obj in objs:
+                    if not isinstance(obj, self.model):
+                        raise TypeError("'%s' instance expected" % self.model._meta.object_name)
+                    setattr(obj, self.content_type_field_name, self.content_type)
+                    setattr(obj, self.object_id_field_name, self.pk_val)
+                    obj.save()
         add.alters_data = True
 
         def remove(self, *objs, **kwargs):
@@ -509,9 +541,11 @@ def create_generic_related_manager(superclass):
             db = router.db_for_write(self.model, instance=self.instance)
             queryset = queryset.using(db)
             if bulk:
+                # `QuerySet.delete()` creates its own atomic block which
+                # contains the `pre_delete` and `post_delete` signal handlers.
                 queryset.delete()
             else:
-                with transaction.commit_on_success_unless_managed(using=db, savepoint=False):
+                with transaction.atomic(using=db, savepoint=False):
                     for obj in queryset:
                         obj.delete()
         _clear.alters_data = True

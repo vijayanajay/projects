@@ -5,21 +5,23 @@ import gzip
 import os
 import warnings
 import zipfile
-from optparse import make_option
+from itertools import product
 
 from django.apps import apps
 from django.conf import settings
 from django.core import serializers
+from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
-from django.db import (connections, router, transaction, DEFAULT_DB_ALIAS,
-      IntegrityError, DatabaseError)
+from django.db import (
+    DEFAULT_DB_ALIAS, DatabaseError, IntegrityError, connections, router,
+    transaction,
+)
 from django.utils import lru_cache
-from django.utils.encoding import force_text
-from django.utils.functional import cached_property
 from django.utils._os import upath
 from django.utils.deprecation import RemovedInDjango19Warning
-from itertools import product
+from django.utils.encoding import force_text
+from django.utils.functional import cached_property
 
 try:
     import bz2
@@ -30,18 +32,21 @@ except ImportError:
 
 class Command(BaseCommand):
     help = 'Installs the named fixture(s) in the database.'
-    args = "fixture [fixture ...]"
+    missing_args_message = ("No database fixture specified. Please provide the "
+                            "path of at least one fixture in the command line.")
 
-    option_list = BaseCommand.option_list + (
-        make_option('--database', action='store', dest='database',
+    def add_arguments(self, parser):
+        parser.add_argument('args', metavar='fixture', nargs='+',
+            help='Fixture labels.')
+        parser.add_argument('--database', action='store', dest='database',
             default=DEFAULT_DB_ALIAS, help='Nominates a specific database to load '
-                'fixtures into. Defaults to the "default" database.'),
-        make_option('--app', action='store', dest='app_label',
-            default=None, help='Only look for fixtures in the specified app.'),
-        make_option('--ignorenonexistent', '-i', action='store_true', dest='ignore',
-            default=False, help='Ignores entries in the serialized data for fields'
-                                ' that do not currently exist on the model.'),
-    )
+            'fixtures into. Defaults to the "default" database.')
+        parser.add_argument('--app', action='store', dest='app_label',
+            default=None, help='Only look for fixtures in the specified app.')
+        parser.add_argument('--ignorenonexistent', '-i', action='store_true',
+            dest='ignore', default=False,
+            help='Ignores entries in the serialized data for fields that do not '
+            'currently exist on the model.')
 
     def handle(self, *fixture_labels, **options):
 
@@ -49,15 +54,9 @@ class Command(BaseCommand):
         self.using = options.get('database')
         self.app_label = options.get('app_label')
         self.hide_empty = options.get('hide_empty', False)
+        self.verbosity = options.get('verbosity')
 
-        if not len(fixture_labels):
-            raise CommandError(
-                "No database fixture specified. Please provide the path "
-                "of at least one fixture in the command line.")
-
-        self.verbosity = int(options.get('verbosity'))
-
-        with transaction.commit_on_success_unless_managed(using=self.using):
+        with transaction.atomic(using=self.using):
             self.loaddata(fixture_labels)
 
         # Close the DB connection -- unless we're still in a transaction. This
@@ -141,7 +140,7 @@ class Command(BaseCommand):
 
                 for obj in objects:
                     objects_in_fixture += 1
-                    if router.allow_migrate(self.using, obj.object.__class__):
+                    if router.allow_migrate_model(self.using, obj.object.__class__):
                         loaded_objects_in_fixture += 1
                         self.models.add(obj.object.__class__)
                         try:
@@ -190,7 +189,7 @@ class Command(BaseCommand):
             fixture_name = os.path.basename(fixture_name)
         else:
             fixture_dirs = self.fixture_dirs
-            if os.path.sep in fixture_name:
+            if os.path.sep in os.path.normpath(fixture_name):
                 fixture_dirs = [os.path.join(dir_, os.path.dirname(fixture_name))
                                 for dir_ in fixture_dirs]
                 fixture_name = os.path.basename(fixture_name)
@@ -242,13 +241,23 @@ class Command(BaseCommand):
         current directory.
         """
         dirs = []
+        fixture_dirs = settings.FIXTURE_DIRS
+        if len(fixture_dirs) != len(set(fixture_dirs)):
+            raise ImproperlyConfigured("settings.FIXTURE_DIRS contains duplicates.")
         for app_config in apps.get_app_configs():
-            if self.app_label and app_config.label != self.app_label:
-                continue
+            app_label = app_config.label
             app_dir = os.path.join(app_config.path, 'fixtures')
+            if app_dir in fixture_dirs:
+                raise ImproperlyConfigured(
+                    "'%s' is a default fixture directory for the '%s' app "
+                    "and cannot be listed in settings.FIXTURE_DIRS." % (app_dir, app_label)
+                )
+
+            if self.app_label and app_label != self.app_label:
+                continue
             if os.path.isdir(app_dir):
                 dirs.append(app_dir)
-        dirs.extend(list(settings.FIXTURE_DIRS))
+        dirs.extend(list(fixture_dirs))
         dirs.append('')
         dirs = [upath(os.path.abspath(os.path.realpath(d))) for d in dirs]
         return dirs

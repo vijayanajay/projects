@@ -9,13 +9,14 @@ import unicodedata
 from binascii import Error as BinasciiError
 from email.utils import formatdate
 
+from django.utils import six
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_bytes, force_str, force_text
 from django.utils.functional import allow_lazy
-from django.utils import six
 from django.utils.six.moves.urllib.parse import (
-    quote, quote_plus, unquote, unquote_plus, urlparse,
-    urlencode as original_urlencode)
+    quote, quote_plus, unquote, unquote_plus, urlencode as original_urlencode,
+    urlparse,
+)
 
 ETAG_MATCH = re.compile(r'(?:W/)?"((?:\\.|[^"])*)"')
 
@@ -29,6 +30,14 @@ __T = r'(?P<hour>\d{2}):(?P<min>\d{2}):(?P<sec>\d{2})'
 RFC1123_DATE = re.compile(r'^\w{3}, %s %s %s %s GMT$' % (__D, __M, __Y, __T))
 RFC850_DATE = re.compile(r'^\w{6,9}, %s-%s-%s %s GMT$' % (__D, __M, __Y2, __T))
 ASCTIME_DATE = re.compile(r'^\w{3} %s %s %s %s$' % (__M, __D2, __T, __Y))
+
+RFC3986_GENDELIMS = str(":/?#[]@")
+RFC3986_SUBDELIMS = str("!$&'()*+,;=")
+
+PROTOCOL_TO_PORT = {
+    'http': 80,
+    'https': 443,
+}
 
 
 def urlquote(url, safe='/'):
@@ -186,8 +195,7 @@ def int_to_base36(i):
     """
     Converts an integer to a base36 string
     """
-    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
-    factor = 0
+    char_set = '0123456789abcdefghijklmnopqrstuvwxyz'
     if i < 0:
         raise ValueError("Negative base36 conversion input.")
     if six.PY2:
@@ -195,20 +203,13 @@ def int_to_base36(i):
             raise TypeError("Non-integer base36 conversion input.")
         if i > sys.maxint:
             raise ValueError("Base36 conversion input too large.")
-    # Find starting factor
-    while True:
-        factor += 1
-        if i < 36 ** factor:
-            factor -= 1
-            break
-    base36 = []
-    # Construct base36 representation
-    while factor >= 0:
-        j = 36 ** factor
-        base36.append(digits[i // j])
-        i = i % j
-        factor -= 1
-    return ''.join(base36)
+    if i < 36:
+        return char_set[i]
+    b36 = ''
+    while i != 0:
+        i, n = divmod(i, 36)
+        b36 = char_set[n] + b36
+    return b36
 
 
 def urlsafe_base64_encode(s):
@@ -258,8 +259,10 @@ def same_origin(url1, url2):
     """
     p1, p2 = urlparse(url1), urlparse(url2)
     try:
-        return (p1.scheme, p1.hostname, p1.port) == (p2.scheme, p2.hostname, p2.port)
-    except ValueError:
+        o1 = (p1.scheme, p1.hostname, p1.port or PROTOCOL_TO_PORT[p1.scheme])
+        o2 = (p2.scheme, p2.hostname, p2.port or PROTOCOL_TO_PORT[p2.scheme])
+        return o1 == o2
+    except (ValueError, KeyError):
         return False
 
 

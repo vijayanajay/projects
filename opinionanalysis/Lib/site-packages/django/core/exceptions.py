@@ -1,11 +1,13 @@
 """
 Global Django exception and warning classes.
 """
-from functools import reduce
-import operator
-
 from django.utils import six
 from django.utils.encoding import force_text
+
+
+class FieldDoesNotExist(Exception):
+    """The requested model field does not exist"""
+    pass
 
 
 class DjangoRuntimeWarning(RuntimeWarning):
@@ -140,7 +142,7 @@ class ValidationError(Exception):
     @property
     def messages(self):
         if hasattr(self, 'error_dict'):
-            return reduce(operator.add, dict(self).values())
+            return sum(dict(self).values(), [])
         return list(self)
 
     def update_error_dict(self, error_dict):

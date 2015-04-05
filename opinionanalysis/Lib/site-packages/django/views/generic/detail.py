@@ -4,7 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.http import Http404
 from django.utils.translation import ugettext as _
-from django.views.generic.base import TemplateResponseMixin, ContextMixin, View
+from django.views.generic.base import ContextMixin, TemplateResponseMixin, View
 
 
 class SingleObjectMixin(ContextMixin):
@@ -17,6 +17,7 @@ class SingleObjectMixin(ContextMixin):
     context_object_name = None
     slug_url_kwarg = 'slug'
     pk_url_kwarg = 'pk'
+    query_pk_and_slug = False
 
     def get_object(self, queryset=None):
         """
@@ -37,12 +38,12 @@ class SingleObjectMixin(ContextMixin):
             queryset = queryset.filter(pk=pk)
 
         # Next, try looking up by slug.
-        elif slug is not None:
+        if slug is not None and (pk is None or self.query_pk_and_slug):
             slug_field = self.get_slug_field()
             queryset = queryset.filter(**{slug_field: slug})
 
         # If none of those are defined, it's an error.
-        else:
+        if pk is None and slug is None:
             raise AttributeError("Generic detail view %s must be called with "
                                  "either an object pk or a slug."
                                  % self.__class__.__name__)

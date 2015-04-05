@@ -1,7 +1,10 @@
 from functools import wraps
-from django.utils.decorators import decorator_from_middleware_with_args, available_attrs
-from django.utils.cache import patch_cache_control, add_never_cache_headers
+
 from django.middleware.cache import CacheMiddleware
+from django.utils.cache import add_never_cache_headers, patch_cache_control
+from django.utils.decorators import (
+    available_attrs, decorator_from_middleware_with_args,
+)
 
 
 def cache_page(*args, **kwargs):
@@ -28,7 +31,9 @@ def cache_page(*args, **kwargs):
     if kwargs:
         raise TypeError("cache_page has two optional keyword arguments: cache and key_prefix")
 
-    return decorator_from_middleware_with_args(CacheMiddleware)(cache_timeout=cache_timeout, cache_alias=cache_alias, key_prefix=key_prefix)
+    return decorator_from_middleware_with_args(CacheMiddleware)(
+        cache_timeout=cache_timeout, cache_alias=cache_alias, key_prefix=key_prefix
+    )
 
 
 def cache_control(**kwargs):

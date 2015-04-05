@@ -1,7 +1,8 @@
 from collections import OrderedDict
+from itertools import chain
 from operator import attrgetter
 
-from django.db import connections, transaction, IntegrityError
+from django.db import IntegrityError, connections, transaction
 from django.db.models import signals, sql
 from django.utils import six
 
@@ -51,12 +52,29 @@ def DO_NOTHING(collector, field, sub_objs, using):
     pass
 
 
+def get_candidate_relations_to_delete(opts):
+    # Collect models that contain candidate relations to delete. This may include
+    # relations coming from proxy models.
+    candidate_models = {opts}
+    candidate_models = candidate_models.union(opts.concrete_model._meta.proxied_children)
+    # For each model, get all candidate fields.
+    candidate_model_fields = chain.from_iterable(
+        opts.get_fields(include_hidden=True) for opts in candidate_models
+    )
+    # The candidate relations are the ones that come from N-1 and 1-1 relations.
+    # N-N  (i.e., many-to-many) relations aren't candidates for deletion.
+    return (
+        f for f in candidate_model_fields
+        if f.auto_created and not f.concrete and (f.one_to_one or f.one_to_many)
+    )
+
+
 class Collector(object):
     def __init__(self, using):
         self.using = using
-        # Initially, {model: set([instances])}, later values become lists.
+        # Initially, {model: {instances}}, later values become lists.
         self.data = {}
-        self.field_updates = {}  # {model: {(field, value): set([instances])}}
+        self.field_updates = {}  # {model: {(field, value): {instances}}}
         # fast_deletes is a list of queryset-likes that can be deleted without
         # fetching the objects into memory.
         self.fast_deletes = []
@@ -66,7 +84,7 @@ class Collector(object):
         # should be included, as the dependencies exist only between actual
         # database tables; proxy models are represented here by their concrete
         # parent.
-        self.dependencies = {}  # {model: set([models])}
+        self.dependencies = {}  # {model: {models}}
 
     def add(self, objs, source=None, nullable=False, reverse_dependency=False):
         """
@@ -134,8 +152,7 @@ class Collector(object):
             return False
         # Foreign keys pointing to this model, both from m2m and other
         # models.
-        for related in opts.get_all_related_objects(
-                include_hidden=True, include_proxy_eq=True):
+        for related in get_candidate_relations_to_delete(opts):
             if related.field.rel.on_delete is not DO_NOTHING:
                 return False
         for field in model._meta.virtual_fields:
@@ -143,6 +160,18 @@ class Collector(object):
                 # It's something like generic foreign key.
                 return False
         return True
+
+    def get_del_batches(self, objs, field):
+        """
+        Returns the objs in suitably sized batches for the used connection.
+        """
+        conn_batch_size = max(
+            connections[self.using].ops.bulk_batch_size([field.name], objs), 1)
+        if len(objs) > conn_batch_size:
+            return [objs[i:i + conn_batch_size]
+                    for i in range(0, len(objs), conn_batch_size)]
+        else:
+            return [objs]
 
     def collect(self, objs, source=None, nullable=False, collect_related=True,
             source_attr=None, reverse_dependency=False):
@@ -172,7 +201,7 @@ class Collector(object):
         model = new_objs[0].__class__
 
         # Recursively collect concrete model's parent models, but not their
-        # related objects. These will be found by meta.get_all_related_objects()
+        # related objects. These will be found by meta.get_fields()
         concrete_model = model._meta.concrete_model
         for ptr in six.itervalues(concrete_model._meta.parents):
             if ptr:
@@ -187,16 +216,17 @@ class Collector(object):
                              reverse_dependency=True)
 
         if collect_related:
-            for related in model._meta.get_all_related_objects(
-                    include_hidden=True, include_proxy_eq=True):
+            for related in get_candidate_relations_to_delete(model._meta):
                 field = related.field
                 if field.rel.on_delete == DO_NOTHING:
                     continue
-                sub_objs = self.related_objects(related, new_objs)
-                if self.can_fast_delete(sub_objs, from_field=field):
-                    self.fast_deletes.append(sub_objs)
-                elif sub_objs:
-                    field.rel.on_delete(self, field, sub_objs, self.using)
+                batches = self.get_del_batches(new_objs, field)
+                for batch in batches:
+                    sub_objs = self.related_objects(related, batch)
+                    if self.can_fast_delete(sub_objs, from_field=field):
+                        self.fast_deletes.append(sub_objs)
+                    elif sub_objs:
+                        field.rel.on_delete(self, field, sub_objs, self.using)
             for field in model._meta.virtual_fields:
                 if hasattr(field, 'bulk_related_objects'):
                     # Its something like generic foreign key.
@@ -211,7 +241,7 @@ class Collector(object):
         Gets a QuerySet of objects related to ``objs`` via the relation ``related``.
 
         """
-        return related.model._base_manager.using(self.using).filter(
+        return related.related_model._base_manager.using(self.using).filter(
             **{"%s__in" % related.field.name: objs}
         )
 
@@ -249,7 +279,7 @@ class Collector(object):
         # end of a transaction.
         self.sort()
 
-        with transaction.commit_on_success_unless_managed(using=self.using):
+        with transaction.atomic(using=self.using, savepoint=False):
             # send pre_delete signals
             for model, obj in self.instances_with_model():
                 if not model._meta.auto_created:

@@ -1,24 +1,24 @@
 from __future__ import unicode_literals
 
 import os
-from optparse import make_option
-from django.core.management.base import LabelCommand
-from django.utils.encoding import force_text
 
 from django.contrib.staticfiles import finders
+from django.core.management.base import LabelCommand
+from django.utils.encoding import force_text
 
 
 class Command(LabelCommand):
     help = "Finds the absolute paths for the given static file(s)."
-    args = "[file ...]"
     label = 'static file'
-    option_list = LabelCommand.option_list + (
-        make_option('--first', action='store_false', dest='all', default=True,
-                    help="Only return the first match for each static file."),
-    )
+
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument('--first', action='store_false', dest='all',
+            default=True,
+            help="Only return the first match for each static file.")
 
     def handle_label(self, path, **options):
-        verbosity = int(options.get('verbosity', 1))
+        verbosity = options['verbosity']
         result = finders.find(path, all=options['all'])
         path = force_text(path)
         if verbosity >= 2:

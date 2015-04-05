@@ -2,24 +2,25 @@ from __future__ import unicode_literals
 
 import datetime
 
-from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
-from django.contrib.admin.utils import (lookup_field, display_for_field,
-    display_for_value, label_for_field)
-from django.contrib.admin.views.main import (ALL_VAR, EMPTY_CHANGELIST_VALUE,
-    ORDER_VAR, PAGE_VAR, SEARCH_VAR)
 from django.contrib.admin.templatetags.admin_static import static
+from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
+from django.contrib.admin.utils import (
+    display_for_field, display_for_value, label_for_field, lookup_field,
+)
+from django.contrib.admin.views.main import (
+    ALL_VAR, EMPTY_CHANGELIST_VALUE, ORDER_VAR, PAGE_VAR, SEARCH_VAR,
+)
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import NoReverseMatch
 from django.db import models
+from django.template import Library
+from django.template.loader import get_template
 from django.utils import formats
+from django.utils.encoding import force_text
 from django.utils.html import escapejs, format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 from django.utils.translation import ugettext as _
-from django.utils.encoding import force_text
-from django.template import Library
-from django.template.loader import get_template
-from django.template.context import Context
 
 register = Library()
 
@@ -34,9 +35,9 @@ def paginator_number(cl, i):
     if i == DOT:
         return '... '
     elif i == cl.page_num:
-        return format_html('<span class="this-page">{0}</span> ', i + 1)
+        return format_html('<span class="this-page">{}</span> ', i + 1)
     else:
-        return format_html('<a href="{0}"{1}>{2}</a> ',
+        return format_html('<a href="{}"{}>{}</a> ',
                            cl.get_query_string({PAGE_VAR: i}),
                            mark_safe(' class="end"' if i == cl.paginator.num_pages - 1 else ''),
                            i + 1)
@@ -117,13 +118,13 @@ def result_headers(cl):
                 # Not sortable
                 yield {
                     "text": text,
-                    "class_attrib": format_html(' class="column-{0}"', field_name),
+                    "class_attrib": format_html(' class="column-{}"', field_name),
                     "sortable": False,
                 }
                 continue
 
         # OK, it is sortable if we got this far
-        th_classes = ['sortable', 'column-{0}'.format(field_name)]
+        th_classes = ['sortable', 'column-{}'.format(field_name)]
         order_type = ''
         new_order_type = 'asc'
         sort_priority = 0
@@ -168,14 +169,14 @@ def result_headers(cl):
             "url_primary": cl.get_query_string({ORDER_VAR: '.'.join(o_list_primary)}),
             "url_remove": cl.get_query_string({ORDER_VAR: '.'.join(o_list_remove)}),
             "url_toggle": cl.get_query_string({ORDER_VAR: '.'.join(o_list_toggle)}),
-            "class_attrib": format_html(' class="{0}"', ' '.join(th_classes)) if th_classes else '',
+            "class_attrib": format_html(' class="{}"', ' '.join(th_classes)) if th_classes else '',
         }
 
 
 def _boolean_icon(field_val):
     icon_url = static('admin/img/icon-%s.gif' %
                       {True: 'yes', False: 'no', None: 'unknown'}[field_val])
-    return format_html('<img src="{0}" alt="{1}" />', icon_url, field_val)
+    return format_html('<img src="{}" alt="{}" />', icon_url, field_val)
 
 
 def items_for_result(cl, result, form):
@@ -249,12 +250,15 @@ def items_for_result(cl, result, form):
                 value = result.serializable_value(attr)
                 result_id = escapejs(value)
                 link_or_text = format_html(
-                    '<a href="{0}"{1}>{2}</a>',
+                    '<a href="{}"{}>{}</a>',
                     url,
-                    format_html(' onclick="opener.dismissRelatedLookupPopup(window, &#39;{0}&#39;); return false;"', result_id) if cl.is_popup else '',
+                    format_html(
+                        ' onclick="opener.dismissRelatedLookupPopup(window, '
+                        '&#39;{}&#39;); return false;"', result_id
+                    ) if cl.is_popup else '',
                     result_repr)
 
-            yield format_html('<{0}{1}>{2}</{3}>',
+            yield format_html('<{}{}>{}</{}>',
                               table_tag,
                               row_class,
                               link_or_text,
@@ -268,9 +272,9 @@ def items_for_result(cl, result, form):
                     form[cl.model._meta.pk.name].is_hidden)):
                 bf = form[field_name]
                 result_repr = mark_safe(force_text(bf.errors) + force_text(bf))
-            yield format_html('<td{0}>{1}</td>', row_class, result_repr)
+            yield format_html('<td{}>{}</td>', row_class, result_repr)
     if form and not form[cl.model._meta.pk.name].is_hidden:
-        yield format_html('<td>{0}</td>', force_text(form[cl.model._meta.pk.name]))
+        yield format_html('<td>{}</td>', force_text(form[cl.model._meta.pk.name]))
 
 
 class ResultList(list):
@@ -323,7 +327,7 @@ def date_hierarchy(cl):
     """
     if cl.date_hierarchy:
         field_name = cl.date_hierarchy
-        field = cl.opts.get_field_by_name(field_name)[0]
+        field = cl.opts.get_field(field_name)
         dates_or_datetimes = 'datetimes' if isinstance(field, models.DateTimeField) else 'dates'
         year_field = '%s__year' % field_name
         month_field = '%s__month' % field_name
@@ -409,11 +413,11 @@ def search_form(cl):
 @register.simple_tag
 def admin_list_filter(cl, spec):
     tpl = get_template(spec.template)
-    return tpl.render(Context({
+    return tpl.render({
         'title': spec.title,
         'choices': list(spec.choices(cl)),
         'spec': spec,
-    }))
+    })
 
 
 @register.inclusion_tag('admin/actions.html', takes_context=True)

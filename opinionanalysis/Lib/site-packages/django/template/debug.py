@@ -1,15 +1,14 @@
-from django.template.base import Lexer, Parser, tag_re, NodeList, VariableNode, TemplateSyntaxError
+from django.template.base import (
+    Lexer, NodeList, Parser, TemplateSyntaxError, VariableNode, tag_re,
+)
 from django.utils.encoding import force_text
-from django.utils.html import conditional_escape
-from django.utils.safestring import SafeData, EscapeData
 from django.utils.formats import localize
+from django.utils.html import conditional_escape
+from django.utils.safestring import EscapeData, SafeData
 from django.utils.timezone import template_localtime
 
 
 class DebugLexer(Lexer):
-    def __init__(self, template_string, origin):
-        super(DebugLexer, self).__init__(template_string, origin)
-
     def tokenize(self):
         "Return a list of tokens from a given template_string"
         result, upto = [], 0

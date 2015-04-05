@@ -6,7 +6,8 @@ from django.http.response import (
     HttpResponseRedirect, HttpResponsePermanentRedirect,
     HttpResponseNotModified, HttpResponseBadRequest, HttpResponseForbidden,
     HttpResponseNotFound, HttpResponseNotAllowed, HttpResponseGone,
-    HttpResponseServerError, Http404, BadHeaderError, JsonResponse)
+    HttpResponseServerError, Http404, BadHeaderError, JsonResponse,
+)
 from django.http.utils import fix_location_header, conditional_content_removal
 
 __all__ = [
