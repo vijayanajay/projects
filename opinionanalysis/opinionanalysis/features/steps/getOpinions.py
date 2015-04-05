@@ -5,7 +5,8 @@ use_step_matcher("re")
 @given("a feed")
 def step_impl(context):
     context.feed = "http://www.livemint.com/rss/opinion"
-    context.browser.visit(context.server_url + '/getopinions/')
+    context.browser.visit(url='http://localhost:8082/getopinions/')
+
 
 @when("all the articles are extracted")
 def step_impl(context):
@@ -16,6 +17,7 @@ def step_impl(context, number):
     """
     :type context behave.runner.Context
     """
+
     pass
 
 

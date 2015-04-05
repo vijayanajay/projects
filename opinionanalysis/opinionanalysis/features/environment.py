@@ -5,16 +5,17 @@ import django
 import os
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'opinionanalysis.settings'
-os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'localhost:8000'
+os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'http://localhost:8082'
 
 def before_all(context):
     # Check http://www.whoisnicoleharris.com/2015/03/19/bdd-part-two.html
     # for using with PhantomJS
     from django.test import utils
+    context.config.setup_logging()
 
     utils.setup_test_environment()
     context.browser = Browser()
-    context.server_url = "http://localhost:8000/"
+    context.server_url = 'http://localhost:8082/'
 
 
 def before_scenario(context, scenario):
