@@ -38,7 +38,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'getopinions',
     'debug_toolbar',
-    'django_behave',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -118,4 +117,4 @@ LOGGING = {
     }
 }
 
-TEST_RUNNER = 'django_behave.runner.DjangoBehaveTestSuiteRunner'
+#TEST_RUNNER = 'django_behave.runner.DjangoBehaveTestSuiteRunner'
