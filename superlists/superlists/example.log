@@ -1,0 +1,139 @@
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58001/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58001/hub/session/3d01df38-8b6f-4151-9baf-4fe997e48ddc/timeouts/implicit_wait {"sessionId": "3d01df38-8b6f-4151-9baf-4fe997e48ddc", "ms": 5000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58001/hub/session/3d01df38-8b6f-4151-9baf-4fe997e48ddc/url {"url": "http://localhost:8000/", "sessionId": "3d01df38-8b6f-4151-9baf-4fe997e48ddc"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:root:This message should go to the log file
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:58001/hub/session/3d01df38-8b6f-4151-9baf-4fe997e48ddc/title {"sessionId": "3d01df38-8b6f-4151-9baf-4fe997e48ddc"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:58001/hub/session/3d01df38-8b6f-4151-9baf-4fe997e48ddc {"sessionId": "3d01df38-8b6f-4151-9baf-4fe997e48ddc"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58069/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58069/hub/session/30417b96-3f72-463b-b568-d2a9f3549368/timeouts/implicit_wait {"sessionId": "30417b96-3f72-463b-b568-d2a9f3549368", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58069/hub/session/30417b96-3f72-463b-b568-d2a9f3549368/url {"url": "http://localhost:8000/", "sessionId": "30417b96-3f72-463b-b568-d2a9f3549368"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:root:This message should go to the log file
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:58069/hub/session/30417b96-3f72-463b-b568-d2a9f3549368/title {"sessionId": "30417b96-3f72-463b-b568-d2a9f3549368"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:58069/hub/session/30417b96-3f72-463b-b568-d2a9f3549368 {"sessionId": "30417b96-3f72-463b-b568-d2a9f3549368"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58216/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58216/hub/session/88fef818-0f44-4744-a815-285beec90019/timeouts/implicit_wait {"sessionId": "88fef818-0f44-4744-a815-285beec90019", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58216/hub/session/88fef818-0f44-4744-a815-285beec90019/url {"url": "http://127.0.0.1:8000/", "sessionId": "88fef818-0f44-4744-a815-285beec90019"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:58216/hub/session/88fef818-0f44-4744-a815-285beec90019/title {"sessionId": "88fef818-0f44-4744-a815-285beec90019"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:58216/hub/session/88fef818-0f44-4744-a815-285beec90019 {"sessionId": "88fef818-0f44-4744-a815-285beec90019"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58264/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58264/hub/session/3af51db2-ff4c-41e6-8909-197593cec7cc/timeouts/implicit_wait {"sessionId": "3af51db2-ff4c-41e6-8909-197593cec7cc", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58264/hub/session/3af51db2-ff4c-41e6-8909-197593cec7cc/url {"url": "http://127.0.0.1:8000/", "sessionId": "3af51db2-ff4c-41e6-8909-197593cec7cc"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:58264/hub/session/3af51db2-ff4c-41e6-8909-197593cec7cc/title {"sessionId": "3af51db2-ff4c-41e6-8909-197593cec7cc"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:58264/hub/session/3af51db2-ff4c-41e6-8909-197593cec7cc {"sessionId": "3af51db2-ff4c-41e6-8909-197593cec7cc"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58295/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58295/hub/session/126df858-4325-4a36-9f6e-e1610f63b11c/timeouts/implicit_wait {"sessionId": "126df858-4325-4a36-9f6e-e1610f63b11c", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:58295/hub/session/126df858-4325-4a36-9f6e-e1610f63b11c/url {"url": "http://127.0.0.1:8000/", "sessionId": "126df858-4325-4a36-9f6e-e1610f63b11c"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:58295/hub/session/126df858-4325-4a36-9f6e-e1610f63b11c/title {"sessionId": "126df858-4325-4a36-9f6e-e1610f63b11c"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:58295/hub/session/126df858-4325-4a36-9f6e-e1610f63b11c {"sessionId": "126df858-4325-4a36-9f6e-e1610f63b11c"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59085/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59085/hub/session/81114caa-493e-49c6-9d4f-ef38c14ebe8e/timeouts/implicit_wait {"sessionId": "81114caa-493e-49c6-9d4f-ef38c14ebe8e", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59085/hub/session/81114caa-493e-49c6-9d4f-ef38c14ebe8e/url {"url": "http://127.0.0.1:8000/", "sessionId": "81114caa-493e-49c6-9d4f-ef38c14ebe8e"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59085/hub/session/81114caa-493e-49c6-9d4f-ef38c14ebe8e/title {"sessionId": "81114caa-493e-49c6-9d4f-ef38c14ebe8e"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:59085/hub/session/81114caa-493e-49c6-9d4f-ef38c14ebe8e {"sessionId": "81114caa-493e-49c6-9d4f-ef38c14ebe8e"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59142/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59142/hub/session/945b5070-a9d2-48d4-b9e6-0a85b3124759/timeouts/implicit_wait {"sessionId": "945b5070-a9d2-48d4-b9e6-0a85b3124759", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59142/hub/session/945b5070-a9d2-48d4-b9e6-0a85b3124759/url {"url": "http://127.0.0.1:8000/", "sessionId": "945b5070-a9d2-48d4-b9e6-0a85b3124759"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59142/hub/session/945b5070-a9d2-48d4-b9e6-0a85b3124759/title {"sessionId": "945b5070-a9d2-48d4-b9e6-0a85b3124759"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:59142/hub/session/945b5070-a9d2-48d4-b9e6-0a85b3124759 {"sessionId": "945b5070-a9d2-48d4-b9e6-0a85b3124759"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59477/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59477/hub/session/bb5a0e41-d5c1-405e-8b62-8258d29e605c/timeouts/implicit_wait {"sessionId": "bb5a0e41-d5c1-405e-8b62-8258d29e605c", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59477/hub/session/bb5a0e41-d5c1-405e-8b62-8258d29e605c/url {"url": "http://127.0.0.1:8000/", "sessionId": "bb5a0e41-d5c1-405e-8b62-8258d29e605c"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59477/hub/session/bb5a0e41-d5c1-405e-8b62-8258d29e605c/title {"sessionId": "bb5a0e41-d5c1-405e-8b62-8258d29e605c"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:59477/hub/session/bb5a0e41-d5c1-405e-8b62-8258d29e605c {"sessionId": "bb5a0e41-d5c1-405e-8b62-8258d29e605c"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59502/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59502/hub/session/8acb9975-09f8-47ce-8d79-927cbd6453ff/timeouts/implicit_wait {"sessionId": "8acb9975-09f8-47ce-8d79-927cbd6453ff", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59502/hub/session/8acb9975-09f8-47ce-8d79-927cbd6453ff/url {"url": "http://127.0.0.1:8000/", "sessionId": "8acb9975-09f8-47ce-8d79-927cbd6453ff"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59502/hub/session/8acb9975-09f8-47ce-8d79-927cbd6453ff/title {"sessionId": "8acb9975-09f8-47ce-8d79-927cbd6453ff"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:root:hello there
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:59502/hub/session/8acb9975-09f8-47ce-8d79-927cbd6453ff {"sessionId": "8acb9975-09f8-47ce-8d79-927cbd6453ff"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59526/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59526/hub/session/4b6c130d-1c9a-4c0f-9194-2c91205d222d/timeouts/implicit_wait {"sessionId": "4b6c130d-1c9a-4c0f-9194-2c91205d222d", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59526/hub/session/4b6c130d-1c9a-4c0f-9194-2c91205d222d/url {"url": "http://127.0.0.1:8000/", "sessionId": "4b6c130d-1c9a-4c0f-9194-2c91205d222d"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59526/hub/session/4b6c130d-1c9a-4c0f-9194-2c91205d222d/title {"sessionId": "4b6c130d-1c9a-4c0f-9194-2c91205d222d"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:root:hello there
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:59526/hub/session/4b6c130d-1c9a-4c0f-9194-2c91205d222d {"sessionId": "4b6c130d-1c9a-4c0f-9194-2c91205d222d"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59545/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59545/hub/session/dcc0e986-33c6-481f-83c0-3815be4a6aef/timeouts/implicit_wait {"sessionId": "dcc0e986-33c6-481f-83c0-3815be4a6aef", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59545/hub/session/dcc0e986-33c6-481f-83c0-3815be4a6aef/url {"url": "http://127.0.0.1:8000/", "sessionId": "dcc0e986-33c6-481f-83c0-3815be4a6aef"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59545/hub/session/dcc0e986-33c6-481f-83c0-3815be4a6aef/title {"sessionId": "dcc0e986-33c6-481f-83c0-3815be4a6aef"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:root:hello there
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:59545/hub/session/dcc0e986-33c6-481f-83c0-3815be4a6aef {"sessionId": "dcc0e986-33c6-481f-83c0-3815be4a6aef"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61143/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61143/hub/session/08182a6b-8c1c-4c09-87b0-ca793073b03a/timeouts/implicit_wait {"sessionId": "08182a6b-8c1c-4c09-87b0-ca793073b03a", "ms": 15000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61143/hub/session/08182a6b-8c1c-4c09-87b0-ca793073b03a/url {"url": "http://127.0.0.1:8000/", "sessionId": "08182a6b-8c1c-4c09-87b0-ca793073b03a"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:61143/hub/session/08182a6b-8c1c-4c09-87b0-ca793073b03a/title {"sessionId": "08182a6b-8c1c-4c09-87b0-ca793073b03a"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61143/hub/session/08182a6b-8c1c-4c09-87b0-ca793073b03a/element {"using": "id", "sessionId": "08182a6b-8c1c-4c09-87b0-ca793073b03a", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:61143/hub/session/08182a6b-8c1c-4c09-87b0-ca793073b03a {"sessionId": "08182a6b-8c1c-4c09-87b0-ca793073b03a"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61190/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61190/hub/session/ecfd052e-8867-4cf3-bcb3-8f145116a9d4/timeouts/implicit_wait {"sessionId": "ecfd052e-8867-4cf3-bcb3-8f145116a9d4", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61190/hub/session/ecfd052e-8867-4cf3-bcb3-8f145116a9d4/url {"url": "http://127.0.0.1:8000/", "sessionId": "ecfd052e-8867-4cf3-bcb3-8f145116a9d4"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:61190/hub/session/ecfd052e-8867-4cf3-bcb3-8f145116a9d4/title {"sessionId": "ecfd052e-8867-4cf3-bcb3-8f145116a9d4"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:61190/hub/session/ecfd052e-8867-4cf3-bcb3-8f145116a9d4/element {"using": "tag name", "sessionId": "ecfd052e-8867-4cf3-bcb3-8f145116a9d4", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:61190/hub/session/ecfd052e-8867-4cf3-bcb3-8f145116a9d4 {"sessionId": "ecfd052e-8867-4cf3-bcb3-8f145116a9d4"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
