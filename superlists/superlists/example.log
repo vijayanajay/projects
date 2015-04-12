@@ -241,3 +241,383 @@ DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57486/hu
 DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
 DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:57486/hub/session/dab48bd4-12a3-4700-8266-b7931fb261bb {"sessionId": "dab48bd4-12a3-4700-8266-b7931fb261bb"}
 DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/timeouts/implicit_wait {"sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/url {"url": "http://127.0.0.1:8000/", "sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/title {"sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element {"using": "tag name", "sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element/{1c87c7b4-fa62-4e6e-a5f7-6c1222c09086}/text {"sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "id": "{1c87c7b4-fa62-4e6e-a5f7-6c1222c09086}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element {"using": "id", "sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element/{091b72ad-ac47-4c29-a523-10d9a313d57c}/attribute/placeholder {"sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "name": "placeholder", "id": "{091b72ad-ac47-4c29-a523-10d9a313d57c}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element/{091b72ad-ac47-4c29-a523-10d9a313d57c}/value {"sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "id": "{091b72ad-ac47-4c29-a523-10d9a313d57c}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element/{091b72ad-ac47-4c29-a523-10d9a313d57c}/value {"sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "id": "{091b72ad-ac47-4c29-a523-10d9a313d57c}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element {"using": "id", "sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90/element/{25535a09-978f-490e-85a1-cc4aaffdc7d1}/element {"using": "tag name", "sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90", "id": "{25535a09-978f-490e-85a1-cc4aaffdc7d1}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:57570/hub/session/ccc589b8-b98b-4cf9-921f-65e001501e90 {"sessionId": "ccc589b8-b98b-4cf9-921f-65e001501e90"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/timeouts/implicit_wait {"sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/url {"url": "http://127.0.0.1:8000/", "sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/title {"sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element {"using": "tag name", "sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element/{6b64895b-6b2a-415f-b427-8a62b32542ec}/text {"sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "id": "{6b64895b-6b2a-415f-b427-8a62b32542ec}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element {"using": "id", "sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element/{52fae9ab-3ab9-4544-a617-7bf0b8ff09f9}/attribute/placeholder {"sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "name": "placeholder", "id": "{52fae9ab-3ab9-4544-a617-7bf0b8ff09f9}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element/{52fae9ab-3ab9-4544-a617-7bf0b8ff09f9}/value {"sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "id": "{52fae9ab-3ab9-4544-a617-7bf0b8ff09f9}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element/{52fae9ab-3ab9-4544-a617-7bf0b8ff09f9}/value {"sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "id": "{52fae9ab-3ab9-4544-a617-7bf0b8ff09f9}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element {"using": "id", "sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba/element/{d6b00368-2785-4fb8-9596-8ec304fd9be4}/element {"using": "tag name", "sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba", "id": "{d6b00368-2785-4fb8-9596-8ec304fd9be4}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:57603/hub/session/cd57acb4-3a86-4321-9ef3-0bf82cacf4ba {"sessionId": "cd57acb4-3a86-4321-9ef3-0bf82cacf4ba"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/timeouts/implicit_wait {"sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/url {"url": "http://127.0.0.1:8000/", "sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/title {"sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/element {"using": "tag name", "sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/element/{201267fd-b425-430d-a073-a1bc32b3cb3d}/text {"sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "id": "{201267fd-b425-430d-a073-a1bc32b3cb3d}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/element {"using": "id", "sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/element/{f88118b6-cbef-4378-8f24-fa3925260016}/attribute/placeholder {"sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "name": "placeholder", "id": "{f88118b6-cbef-4378-8f24-fa3925260016}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/element/{f88118b6-cbef-4378-8f24-fa3925260016}/value {"sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "id": "{f88118b6-cbef-4378-8f24-fa3925260016}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/element/{f88118b6-cbef-4378-8f24-fa3925260016}/value {"sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "id": "{f88118b6-cbef-4378-8f24-fa3925260016}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56/element {"using": "id", "sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:59453/hub/session/24cd6e6b-fd99-4bf8-b86f-dbc971d89d56 {"sessionId": "24cd6e6b-fd99-4bf8-b86f-dbc971d89d56"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/timeouts/implicit_wait {"sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/url {"url": "http://127.0.0.1:8000/", "sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/title {"sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element {"using": "tag name", "sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element/{8cecc267-62a3-4480-beca-de243bfd777e}/text {"sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "id": "{8cecc267-62a3-4480-beca-de243bfd777e}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element {"using": "id", "sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element/{c4493074-af43-46e8-8947-0990a783c37f}/attribute/placeholder {"sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "name": "placeholder", "id": "{c4493074-af43-46e8-8947-0990a783c37f}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element/{c4493074-af43-46e8-8947-0990a783c37f}/value {"sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "id": "{c4493074-af43-46e8-8947-0990a783c37f}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element/{c4493074-af43-46e8-8947-0990a783c37f}/value {"sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "id": "{c4493074-af43-46e8-8947-0990a783c37f}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element {"using": "id", "sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249/element/{d4454906-0923-42fe-813c-83f929c757c8}/element {"using": "tag name", "sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249", "id": "{d4454906-0923-42fe-813c-83f929c757c8}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:60337/hub/session/483d0c4a-8249-4a5a-81ab-a7fbcef26249 {"sessionId": "483d0c4a-8249-4a5a-81ab-a7fbcef26249"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/timeouts/implicit_wait {"sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/url {"url": "http://127.0.0.1:8000/", "sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/title {"sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element {"using": "tag name", "sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element/{a6d64903-f1d3-4f8c-bfe5-e2f7bcd2cb22}/text {"sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "id": "{a6d64903-f1d3-4f8c-bfe5-e2f7bcd2cb22}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element {"using": "id", "sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element/{3a575120-79bc-4e0d-8561-ca327017e7ac}/attribute/placeholder {"sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "name": "placeholder", "id": "{3a575120-79bc-4e0d-8561-ca327017e7ac}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element/{3a575120-79bc-4e0d-8561-ca327017e7ac}/value {"sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "id": "{3a575120-79bc-4e0d-8561-ca327017e7ac}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element/{3a575120-79bc-4e0d-8561-ca327017e7ac}/value {"sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "id": "{3a575120-79bc-4e0d-8561-ca327017e7ac}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element {"using": "id", "sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864/element/{efa2e9cd-28f2-493e-b18f-b8a7d8c605de}/element {"using": "tag name", "sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864", "id": "{efa2e9cd-28f2-493e-b18f-b8a7d8c605de}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:64300/hub/session/199baf05-7ea5-4825-9f29-e1b702d26864 {"sessionId": "199baf05-7ea5-4825-9f29-e1b702d26864"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/timeouts/implicit_wait {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/url {"url": "http://127.0.0.1:8000/", "sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/title {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element {"using": "tag name", "sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element/{5f497261-d5d9-4f9a-bf24-ff9e5d6b32a6}/text {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "id": "{5f497261-d5d9-4f9a-bf24-ff9e5d6b32a6}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element {"using": "id", "sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element/{59b69a04-83cd-4261-91e6-d98af3b1416a}/attribute/placeholder {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "name": "placeholder", "id": "{59b69a04-83cd-4261-91e6-d98af3b1416a}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element/{59b69a04-83cd-4261-91e6-d98af3b1416a}/value {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "id": "{59b69a04-83cd-4261-91e6-d98af3b1416a}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element/{59b69a04-83cd-4261-91e6-d98af3b1416a}/value {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "id": "{59b69a04-83cd-4261-91e6-d98af3b1416a}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element {"using": "id", "sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element/{bc5789e4-d6bc-414d-bb3b-2b9aaeb34cd3}/elements {"using": "tag name", "sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "id": "{bc5789e4-d6bc-414d-bb3b-2b9aaeb34cd3}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1/element/{08e53b27-913d-45ba-8325-ffb7b2f2f4ec}/text {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1", "id": "{08e53b27-913d-45ba-8325-ffb7b2f2f4ec}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:64520/hub/session/7647569c-73a9-45d9-8278-6ab8acb3ffd1 {"sessionId": "7647569c-73a9-45d9-8278-6ab8acb3ffd1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/timeouts/implicit_wait {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/url {"url": "http://127.0.0.1:8000/", "sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/title {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element {"using": "tag name", "sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element/{f22d8b97-e6c2-41ce-9ddf-1f594dcab2bb}/text {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "id": "{f22d8b97-e6c2-41ce-9ddf-1f594dcab2bb}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element {"using": "id", "sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element/{4a46f836-47f5-43e3-9842-8a277473a69a}/attribute/placeholder {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "name": "placeholder", "id": "{4a46f836-47f5-43e3-9842-8a277473a69a}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element/{4a46f836-47f5-43e3-9842-8a277473a69a}/value {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "id": "{4a46f836-47f5-43e3-9842-8a277473a69a}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element/{4a46f836-47f5-43e3-9842-8a277473a69a}/value {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "id": "{4a46f836-47f5-43e3-9842-8a277473a69a}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element {"using": "id", "sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element/{88ebe504-e98e-4f23-9dcd-79d9554fd832}/elements {"using": "tag name", "sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "id": "{88ebe504-e98e-4f23-9dcd-79d9554fd832}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element/{6d9009ce-54cc-41ae-9b3b-3f76981254b8}/text {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "id": "{6d9009ce-54cc-41ae-9b3b-3f76981254b8}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88/element/{88ebe504-e98e-4f23-9dcd-79d9554fd832}/text {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88", "id": "{88ebe504-e98e-4f23-9dcd-79d9554fd832}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:64575/hub/session/90a70fed-bf34-4a7f-9370-6fe54efd9d88 {"sessionId": "90a70fed-bf34-4a7f-9370-6fe54efd9d88"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/timeouts/implicit_wait {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/url {"url": "http://127.0.0.1:8000/", "sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/title {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element {"using": "tag name", "sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element/{f929b947-c526-4374-9152-d50e8b17253c}/text {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "id": "{f929b947-c526-4374-9152-d50e8b17253c}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element {"using": "id", "sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element/{42552dda-a0bb-4ea5-a4a1-8956efe8be30}/attribute/placeholder {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "name": "placeholder", "id": "{42552dda-a0bb-4ea5-a4a1-8956efe8be30}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element/{42552dda-a0bb-4ea5-a4a1-8956efe8be30}/value {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "id": "{42552dda-a0bb-4ea5-a4a1-8956efe8be30}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element/{42552dda-a0bb-4ea5-a4a1-8956efe8be30}/value {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "id": "{42552dda-a0bb-4ea5-a4a1-8956efe8be30}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element {"using": "id", "sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element/{c73fdf31-e427-40c7-bd4b-fce71ccc1d40}/elements {"using": "tag name", "sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "id": "{c73fdf31-e427-40c7-bd4b-fce71ccc1d40}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element/{ac68071f-58b4-4c8f-9c06-fe6f3b7ea7f6}/text {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "id": "{ac68071f-58b4-4c8f-9c06-fe6f3b7ea7f6}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64/element/{c73fdf31-e427-40c7-bd4b-fce71ccc1d40}/text {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64", "id": "{c73fdf31-e427-40c7-bd4b-fce71ccc1d40}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:64643/hub/session/b7e15abd-7909-4c1f-9949-e1a061778a64 {"sessionId": "b7e15abd-7909-4c1f-9949-e1a061778a64"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/timeouts/implicit_wait {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/url {"url": "http://127.0.0.1:8000/", "sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/title {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element {"using": "tag name", "sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element/{711a2fb2-dd27-4774-a44e-0f47ced268d0}/text {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "id": "{711a2fb2-dd27-4774-a44e-0f47ced268d0}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element {"using": "id", "sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element/{26b1b479-d0a5-4927-a625-0757602f698e}/attribute/placeholder {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "name": "placeholder", "id": "{26b1b479-d0a5-4927-a625-0757602f698e}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element/{26b1b479-d0a5-4927-a625-0757602f698e}/value {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "id": "{26b1b479-d0a5-4927-a625-0757602f698e}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element/{26b1b479-d0a5-4927-a625-0757602f698e}/value {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "id": "{26b1b479-d0a5-4927-a625-0757602f698e}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element {"using": "id", "sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element/{d3d5158b-d94c-4939-9dd9-edca2ab18d04}/elements {"using": "tag name", "sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "id": "{d3d5158b-d94c-4939-9dd9-edca2ab18d04}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7/element/{f8cad253-cbc9-4557-a439-f2e5d2952b68}/text {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7", "id": "{f8cad253-cbc9-4557-a439-f2e5d2952b68}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:64698/hub/session/1bd52f69-d78e-43eb-b21f-e24d84c570d7 {"sessionId": "1bd52f69-d78e-43eb-b21f-e24d84c570d7"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/timeouts/implicit_wait {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/url {"url": "http://127.0.0.1:8000/", "sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/title {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element {"using": "tag name", "sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element/{47927d7c-9fda-47c3-8dba-85e67c8b7bc9}/text {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "id": "{47927d7c-9fda-47c3-8dba-85e67c8b7bc9}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element {"using": "id", "sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element/{4fd3858a-4b69-43a4-af28-ade4ed1acb17}/attribute/placeholder {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "name": "placeholder", "id": "{4fd3858a-4b69-43a4-af28-ade4ed1acb17}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element/{4fd3858a-4b69-43a4-af28-ade4ed1acb17}/value {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "id": "{4fd3858a-4b69-43a4-af28-ade4ed1acb17}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element/{4fd3858a-4b69-43a4-af28-ade4ed1acb17}/value {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "id": "{4fd3858a-4b69-43a4-af28-ade4ed1acb17}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element {"using": "id", "sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element/{d5df00c4-119e-4629-ae6c-f42796ae771f}/elements {"using": "tag name", "sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "id": "{d5df00c4-119e-4629-ae6c-f42796ae771f}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17/element/{cbf4efef-804b-4ca3-94b4-9aaeecc0ba3c}/text {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17", "id": "{cbf4efef-804b-4ca3-94b4-9aaeecc0ba3c}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:64934/hub/session/dcac246b-f48f-4e06-acfa-fdf78c3ddd17 {"sessionId": "dcac246b-f48f-4e06-acfa-fdf78c3ddd17"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/timeouts/implicit_wait {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/url {"url": "http://127.0.0.1:8000/", "sessionId": "40ac3842-022b-49c9-869d-03528985e53f"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/title {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element {"using": "tag name", "sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element/{68e4a8ad-1652-471f-9488-0dd8b7cc7f36}/text {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "id": "{68e4a8ad-1652-471f-9488-0dd8b7cc7f36}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element {"using": "id", "sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element/{ecdfac75-87cd-4683-a3f3-000918395e95}/attribute/placeholder {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "name": "placeholder", "id": "{ecdfac75-87cd-4683-a3f3-000918395e95}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element/{ecdfac75-87cd-4683-a3f3-000918395e95}/value {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "id": "{ecdfac75-87cd-4683-a3f3-000918395e95}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element/{ecdfac75-87cd-4683-a3f3-000918395e95}/value {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "id": "{ecdfac75-87cd-4683-a3f3-000918395e95}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element {"using": "id", "sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element/{49780114-769f-4a21-81b5-00afecc7536d}/elements {"using": "tag name", "sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "id": "{49780114-769f-4a21-81b5-00afecc7536d}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f/element/{198f424f-55a8-42c9-aeb0-d1b56350e11a}/text {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f", "id": "{198f424f-55a8-42c9-aeb0-d1b56350e11a}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:64992/hub/session/40ac3842-022b-49c9-869d-03528985e53f {"sessionId": "40ac3842-022b-49c9-869d-03528985e53f"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/timeouts/implicit_wait {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/url {"url": "http://127.0.0.1:8000/", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/title {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element {"using": "tag name", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{3a4a6e88-f836-4abb-9393-5df02b5218e6}/text {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{3a4a6e88-f836-4abb-9393-5df02b5218e6}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element {"using": "id", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{b2820ab2-a013-4bb8-8aa7-7538bf08e16e}/attribute/placeholder {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "name": "placeholder", "id": "{b2820ab2-a013-4bb8-8aa7-7538bf08e16e}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{b2820ab2-a013-4bb8-8aa7-7538bf08e16e}/value {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{b2820ab2-a013-4bb8-8aa7-7538bf08e16e}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{b2820ab2-a013-4bb8-8aa7-7538bf08e16e}/value {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{b2820ab2-a013-4bb8-8aa7-7538bf08e16e}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element {"using": "id", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{f7169ec1-5ca1-422c-bea1-a1062f3f67be}/elements {"using": "tag name", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{f7169ec1-5ca1-422c-bea1-a1062f3f67be}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{8487f6e6-ae2d-4838-a2a0-3fb1be7b4c42}/text {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{8487f6e6-ae2d-4838-a2a0-3fb1be7b4c42}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element {"using": "id", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{d3fc002a-03db-488e-a351-c84c7ce11c26}/value {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{d3fc002a-03db-488e-a351-c84c7ce11c26}", "value": ["U", "s", "e", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s", " ", "t", "o", " ", "m", "a", "k", "e", " ", "a", " ", "f", "l", "y"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{d3fc002a-03db-488e-a351-c84c7ce11c26}/value {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{d3fc002a-03db-488e-a351-c84c7ce11c26}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element {"using": "id", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{877cd3b3-a6e5-4d6a-b65f-d9b8266f2a0a}/elements {"using": "tag name", "sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{877cd3b3-a6e5-4d6a-b65f-d9b8266f2a0a}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af/element/{8ab59c0c-02d5-40d9-8c6c-9e3ec2a0bb6e}/text {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af", "id": "{8ab59c0c-02d5-40d9-8c6c-9e3ec2a0bb6e}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:65096/hub/session/f389350a-2ed3-4e3f-a98e-edbaca15a9af {"sessionId": "f389350a-2ed3-4e3f-a98e-edbaca15a9af"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/timeouts/implicit_wait {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/url {"url": "http://127.0.0.1:8000/", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/title {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element {"using": "tag name", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{8e145ee5-29f0-4c39-ac40-87f9c774adbc}/text {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{8e145ee5-29f0-4c39-ac40-87f9c774adbc}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element {"using": "id", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{d6340389-b453-4bb0-9355-7c67214de57f}/attribute/placeholder {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "name": "placeholder", "id": "{d6340389-b453-4bb0-9355-7c67214de57f}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{d6340389-b453-4bb0-9355-7c67214de57f}/value {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{d6340389-b453-4bb0-9355-7c67214de57f}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{d6340389-b453-4bb0-9355-7c67214de57f}/value {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{d6340389-b453-4bb0-9355-7c67214de57f}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element {"using": "id", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{dd56195b-8347-49d6-bafe-38591edd559f}/elements {"using": "tag name", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{dd56195b-8347-49d6-bafe-38591edd559f}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{2c12c906-23ce-4d89-b4dd-9dfc2978d050}/text {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{2c12c906-23ce-4d89-b4dd-9dfc2978d050}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element {"using": "id", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{45eb29a4-d00b-4264-8ee8-1c9969f6af6a}/value {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{45eb29a4-d00b-4264-8ee8-1c9969f6af6a}", "value": ["U", "s", "e", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s", " ", "t", "o", " ", "m", "a", "k", "e", " ", "a", " ", "f", "l", "y"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{45eb29a4-d00b-4264-8ee8-1c9969f6af6a}/value {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{45eb29a4-d00b-4264-8ee8-1c9969f6af6a}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element {"using": "id", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{26411275-1381-4f72-a37a-7cb6f0e1aa14}/elements {"using": "tag name", "sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{26411275-1381-4f72-a37a-7cb6f0e1aa14}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74/element/{f7922464-3537-45ba-89a1-f257fb5239be}/text {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74", "id": "{f7922464-3537-45ba-89a1-f257fb5239be}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:65189/hub/session/6ad9e18e-67b3-4ceb-a443-02a98f333a74 {"sessionId": "6ad9e18e-67b3-4ceb-a443-02a98f333a74"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
