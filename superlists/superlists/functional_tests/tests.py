@@ -1,13 +1,16 @@
 __author__ = 'Ajay'
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
+from django.test import LiveServerTestCase
 import unittest
 import logging
+
 LOG_FILENAME = 'example.log'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+import os
+os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'localhost:8080'
 
-
-class NewVisitorTest(unittest.TestCase):  #1
+class NewVisitorTest(LiveServerTestCase):  #1
 
     def setUp(self):  #2
         self.browser = webdriver.Firefox()
@@ -24,7 +27,7 @@ class NewVisitorTest(unittest.TestCase):  #1
     def test_can_start_a_list_and_retrieve_it_later(self):  #4
         # Edith has heard about a cool new online to-do app. She goes
         # to check out its homepage
-        self.browser.get('http://127.0.0.1:8000/')
+        self.browser.get(self.live_server_url)
 
         # She notices the page title and header mention to-do lists
         self.assertIn('To-Do lists', self.browser.title)  #5
