@@ -2521,3 +2521,261 @@ DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:52905/hub
 DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
 DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:52905/hub/session/e8821368-0ba1-492f-9f11-60ce1c300ed8 {"sessionId": "e8821368-0ba1-492f-9f11-60ce1c300ed8"}
 DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:django.db.backends.schema:CREATE TABLE "django_migrations" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "app" varchar(255) NOT NULL, "name" varchar(255) NOT NULL, "applied" datetime NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(100) NOT NULL, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(100) NOT NULL, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL, UNIQUE ("app_label", "model")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "django_content_type__new" ("model", "app_label", "id", "name") SELECT "model", "app_label", "id", "name" FROM "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "django_content_type__new" RENAME TO "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_permission" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(50) NOT NULL, "content_type_id" integer NOT NULL REFERENCES "django_content_type" ("id"), "codename" varchar(100) NOT NULL, UNIQUE ("content_type_id", "codename")); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_group" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(80) NOT NULL UNIQUE); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_group_permissions" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "group_id" integer NOT NULL REFERENCES "auth_group" ("id"), "permission_id" integer NOT NULL REFERENCES "auth_permission" ("id"), UNIQUE ("group_id", "permission_id")); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "last_login" datetime NOT NULL, "is_superuser" bool NOT NULL, "username" varchar(30) NOT NULL UNIQUE, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "email" varchar(75) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user_groups" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" integer NOT NULL REFERENCES "auth_user" ("id"), "group_id" integer NOT NULL REFERENCES "auth_group" ("id"), UNIQUE ("user_id", "group_id")); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user_user_permissions" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" integer NOT NULL REFERENCES "auth_user" ("id"), "permission_id" integer NOT NULL REFERENCES "auth_permission" ("id"), UNIQUE ("user_id", "permission_id")); (params None)
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_permission_417f1b1c" ON "auth_permission" ("content_type_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_group_permissions_0e939a4f" ON "auth_group_permissions" ("group_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_group_permissions_8373b171" ON "auth_group_permissions" ("permission_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_groups_e8701ad4" ON "auth_user_groups" ("user_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_groups_0e939a4f" ON "auth_user_groups" ("group_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_user_permissions_e8701ad4" ON "auth_user_user_permissions" ("user_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_user_permissions_8373b171" ON "auth_user_user_permissions" ("permission_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_admin_log" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "action_time" datetime NOT NULL, "object_id" text NULL, "object_repr" varchar(200) NOT NULL, "action_flag" smallint unsigned NOT NULL, "change_message" text NOT NULL, "content_type_id" integer NULL REFERENCES "django_content_type" ("id"), "user_id" integer NOT NULL REFERENCES "auth_user" ("id")); (params None)
+DEBUG:django.db.backends.schema:CREATE INDEX "django_admin_log_417f1b1c" ON "django_admin_log" ("content_type_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "django_admin_log_e8701ad4" ON "django_admin_log" ("user_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL, "name" varchar(100) NULL, UNIQUE ("app_label", "model")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "django_content_type__new" ("model", "app_label", "id", "name") SELECT "model", "app_label", "id", "name" FROM "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "django_content_type__new" RENAME TO "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL, UNIQUE ("app_label", "model")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "django_content_type__new" ("model", "app_label", "id") SELECT "model", "app_label", "id" FROM "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "django_content_type__new" RENAME TO "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_permission__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "content_type_id" integer NOT NULL REFERENCES "django_content_type" ("id"), "codename" varchar(100) NOT NULL, "name" varchar(255) NOT NULL, UNIQUE ("content_type_id", "codename")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_permission__new" ("content_type_id", "codename", "id", "name") SELECT "content_type_id", "codename", "id", "name" FROM "auth_permission"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_permission"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_permission__new" RENAME TO "auth_permission"; (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_permission_417f1b1c" ON "auth_permission" ("content_type_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "last_login" datetime NOT NULL, "is_superuser" bool NOT NULL, "username" varchar(30) NOT NULL UNIQUE, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL, "email" varchar(254) NOT NULL); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_user__new" ("username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined") SELECT "username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined" FROM "auth_user"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_user"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_user__new" RENAME TO "auth_user"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "last_login" datetime NOT NULL, "is_superuser" bool NOT NULL, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "email" varchar(254) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL, "username" varchar(30) NOT NULL UNIQUE); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_user__new" ("username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined") SELECT "username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined" FROM "auth_user"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_user"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_user__new" RENAME TO "auth_user"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "is_superuser" bool NOT NULL, "username" varchar(30) NOT NULL UNIQUE, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "email" varchar(254) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL, "last_login" datetime NULL); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_user__new" ("username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined") SELECT "username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined" FROM "auth_user"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_user"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_user__new" RENAME TO "auth_user"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "lists_item" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "lists_item__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "text" text NOT NULL); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "lists_item__new" ("text", "id") SELECT '', "id" FROM "lists_item"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "lists_item"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "lists_item__new" RENAME TO "lists_item"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_session" ("session_key" varchar(40) NOT NULL PRIMARY KEY, "session_data" text NOT NULL, "expire_date" datetime NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE INDEX "django_session_de54fa62" ON "django_session" ("expire_date"); (params [])
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/timeouts/implicit_wait {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/url {"url": "http://localhost:8080", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/title {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element {"using": "tag name", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{f9841d16-bb9c-43fb-a593-d14ee663b9c2}/text {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{f9841d16-bb9c-43fb-a593-d14ee663b9c2}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element {"using": "id", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{76fec1a9-be9a-486e-b6b9-5b37d83a60a4}/attribute/placeholder {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "name": "placeholder", "id": "{76fec1a9-be9a-486e-b6b9-5b37d83a60a4}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{76fec1a9-be9a-486e-b6b9-5b37d83a60a4}/value {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{76fec1a9-be9a-486e-b6b9-5b37d83a60a4}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{76fec1a9-be9a-486e-b6b9-5b37d83a60a4}/value {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{76fec1a9-be9a-486e-b6b9-5b37d83a60a4}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/url {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element {"using": "id", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{b21d9171-c160-404c-abe8-527d3afaa689}/elements {"using": "tag name", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{b21d9171-c160-404c-abe8-527d3afaa689}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{654169dc-f628-4809-a7aa-e95e8fd965a8}/text {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{654169dc-f628-4809-a7aa-e95e8fd965a8}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element {"using": "id", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{ae7deef1-3114-4ea2-a303-d1a9c9db9f28}/value {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{ae7deef1-3114-4ea2-a303-d1a9c9db9f28}", "value": ["U", "s", "e", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s", " ", "t", "o", " ", "m", "a", "k", "e", " ", "a", " ", "f", "l", "y"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{ae7deef1-3114-4ea2-a303-d1a9c9db9f28}/value {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{ae7deef1-3114-4ea2-a303-d1a9c9db9f28}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element {"using": "id", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{b0868ea6-be0a-429c-a3bf-ef199354e1a4}/elements {"using": "tag name", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{b0868ea6-be0a-429c-a3bf-ef199354e1a4}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{36a527ac-170e-4e08-8136-5507365400ff}/text {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{36a527ac-170e-4e08-8136-5507365400ff}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{61d3e8e6-3497-4da3-b7f1-cab15e072392}/text {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{61d3e8e6-3497-4da3-b7f1-cab15e072392}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element {"using": "id", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{b0868ea6-be0a-429c-a3bf-ef199354e1a4}/elements {"using": "tag name", "sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{b0868ea6-be0a-429c-a3bf-ef199354e1a4}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{36a527ac-170e-4e08-8136-5507365400ff}/text {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{36a527ac-170e-4e08-8136-5507365400ff}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec/element/{61d3e8e6-3497-4da3-b7f1-cab15e072392}/text {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec", "id": "{61d3e8e6-3497-4da3-b7f1-cab15e072392}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:54349/hub/session/287f6137-2ac8-40c4-82db-43a3cd8e77ec {"sessionId": "287f6137-2ac8-40c4-82db-43a3cd8e77ec"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54397/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93/url {"url": "http://localhost:8080", "sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93/element {"using": "tag name", "sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93", "value": "body"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93/element/{6417c6b9-b4b0-4ac1-ad1e-634e480efc34}/text {"sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93", "id": "{6417c6b9-b4b0-4ac1-ad1e-634e480efc34}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93/element {"using": "id", "sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93/element/{45177716-d9bc-4d20-b8e8-de3592690dd4}/value {"sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93", "id": "{45177716-d9bc-4d20-b8e8-de3592690dd4}", "value": ["B", "u", "y", " ", "m", "i", "l", "k"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93/element/{45177716-d9bc-4d20-b8e8-de3592690dd4}/value {"sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93", "id": "{45177716-d9bc-4d20-b8e8-de3592690dd4}", "value": ["\ue007"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93/url {"sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:54397/hub/session/3ba91d4a-3b4f-47cb-aab8-30432f51bb93 {"sessionId": "3ba91d4a-3b4f-47cb-aab8-30432f51bb93"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:django.db.backends.schema:CREATE TABLE "django_migrations" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "app" varchar(255) NOT NULL, "name" varchar(255) NOT NULL, "applied" datetime NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(100) NOT NULL, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(100) NOT NULL, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL, UNIQUE ("app_label", "model")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "django_content_type__new" ("model", "app_label", "id", "name") SELECT "model", "app_label", "id", "name" FROM "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "django_content_type__new" RENAME TO "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_permission" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(50) NOT NULL, "content_type_id" integer NOT NULL REFERENCES "django_content_type" ("id"), "codename" varchar(100) NOT NULL, UNIQUE ("content_type_id", "codename")); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_group" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "name" varchar(80) NOT NULL UNIQUE); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_group_permissions" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "group_id" integer NOT NULL REFERENCES "auth_group" ("id"), "permission_id" integer NOT NULL REFERENCES "auth_permission" ("id"), UNIQUE ("group_id", "permission_id")); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "last_login" datetime NOT NULL, "is_superuser" bool NOT NULL, "username" varchar(30) NOT NULL UNIQUE, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "email" varchar(75) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user_groups" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" integer NOT NULL REFERENCES "auth_user" ("id"), "group_id" integer NOT NULL REFERENCES "auth_group" ("id"), UNIQUE ("user_id", "group_id")); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user_user_permissions" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" integer NOT NULL REFERENCES "auth_user" ("id"), "permission_id" integer NOT NULL REFERENCES "auth_permission" ("id"), UNIQUE ("user_id", "permission_id")); (params None)
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_permission_417f1b1c" ON "auth_permission" ("content_type_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_group_permissions_0e939a4f" ON "auth_group_permissions" ("group_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_group_permissions_8373b171" ON "auth_group_permissions" ("permission_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_groups_e8701ad4" ON "auth_user_groups" ("user_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_groups_0e939a4f" ON "auth_user_groups" ("group_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_user_permissions_e8701ad4" ON "auth_user_user_permissions" ("user_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_user_user_permissions_8373b171" ON "auth_user_user_permissions" ("permission_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_admin_log" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "action_time" datetime NOT NULL, "object_id" text NULL, "object_repr" varchar(200) NOT NULL, "action_flag" smallint unsigned NOT NULL, "change_message" text NOT NULL, "content_type_id" integer NULL REFERENCES "django_content_type" ("id"), "user_id" integer NOT NULL REFERENCES "auth_user" ("id")); (params None)
+DEBUG:django.db.backends.schema:CREATE INDEX "django_admin_log_417f1b1c" ON "django_admin_log" ("content_type_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "django_admin_log_e8701ad4" ON "django_admin_log" ("user_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL, "name" varchar(100) NULL, UNIQUE ("app_label", "model")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "django_content_type__new" ("model", "app_label", "id", "name") SELECT "model", "app_label", "id", "name" FROM "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "django_content_type__new" RENAME TO "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_content_type__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "app_label" varchar(100) NOT NULL, "model" varchar(100) NOT NULL, UNIQUE ("app_label", "model")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "django_content_type__new" ("model", "app_label", "id") SELECT "model", "app_label", "id" FROM "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "django_content_type__new" RENAME TO "django_content_type"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_permission__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "content_type_id" integer NOT NULL REFERENCES "django_content_type" ("id"), "codename" varchar(100) NOT NULL, "name" varchar(255) NOT NULL, UNIQUE ("content_type_id", "codename")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_permission__new" ("content_type_id", "codename", "id", "name") SELECT "content_type_id", "codename", "id", "name" FROM "auth_permission"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_permission"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_permission__new" RENAME TO "auth_permission"; (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "auth_permission_417f1b1c" ON "auth_permission" ("content_type_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "last_login" datetime NOT NULL, "is_superuser" bool NOT NULL, "username" varchar(30) NOT NULL UNIQUE, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL, "email" varchar(254) NOT NULL); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_user__new" ("username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined") SELECT "username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined" FROM "auth_user"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_user"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_user__new" RENAME TO "auth_user"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "last_login" datetime NOT NULL, "is_superuser" bool NOT NULL, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "email" varchar(254) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL, "username" varchar(30) NOT NULL UNIQUE); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_user__new" ("username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined") SELECT "username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined" FROM "auth_user"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_user"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_user__new" RENAME TO "auth_user"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "auth_user__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "password" varchar(128) NOT NULL, "is_superuser" bool NOT NULL, "username" varchar(30) NOT NULL UNIQUE, "first_name" varchar(30) NOT NULL, "last_name" varchar(30) NOT NULL, "email" varchar(254) NOT NULL, "is_staff" bool NOT NULL, "is_active" bool NOT NULL, "date_joined" datetime NOT NULL, "last_login" datetime NULL); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "auth_user__new" ("username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined") SELECT "username", "first_name", "last_name", "is_active", "email", "is_superuser", "is_staff", "last_login", "password", "id", "date_joined" FROM "auth_user"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "auth_user"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "auth_user__new" RENAME TO "auth_user"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "lists_item" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "lists_item__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "text" text NOT NULL); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "lists_item__new" ("text", "id") SELECT '', "id" FROM "lists_item"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "lists_item"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "lists_item__new" RENAME TO "lists_item"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "lists_list" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT); (params None)
+DEBUG:django.db.backends.schema:CREATE TABLE "lists_item__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "text" text NOT NULL, "list" text NOT NULL); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "lists_item__new" ("text", "list", "id") SELECT "text", '', "id" FROM "lists_item"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "lists_item"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "lists_item__new" RENAME TO "lists_item"; (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "lists_item__new" ("id" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "text" text NOT NULL, "list_id" integer NOT NULL REFERENCES "lists_list" ("id")); (params None)
+DEBUG:django.db.backends.schema:INSERT INTO "lists_item__new" ("text", "id", "list_id") SELECT "text", "id", "list" FROM "lists_item"; (params [])
+DEBUG:django.db.backends.schema:DROP TABLE "lists_item"; (params [])
+DEBUG:django.db.backends.schema:ALTER TABLE "lists_item__new" RENAME TO "lists_item"; (params [])
+DEBUG:django.db.backends.schema:CREATE INDEX "lists_item_4da3e820" ON "lists_item" ("list_id"); (params [])
+DEBUG:django.db.backends.schema:CREATE TABLE "django_session" ("session_key" varchar(40) NOT NULL PRIMARY KEY, "session_data" text NOT NULL, "expire_date" datetime NOT NULL); (params None)
+DEBUG:django.db.backends.schema:CREATE INDEX "django_session_de54fa62" ON "django_session" ("expire_date"); (params [])
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/timeouts/implicit_wait {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "ms": 2000.0}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/url {"url": "http://localhost:8080", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/title {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element {"using": "tag name", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "value": "h1"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{e527db06-1c7a-49d3-ab01-7ca216e6e9d6}/text {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{e527db06-1c7a-49d3-ab01-7ca216e6e9d6}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element {"using": "id", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{896477c2-df7a-4f1c-88df-cdff51348d99}/attribute/placeholder {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "name": "placeholder", "id": "{896477c2-df7a-4f1c-88df-cdff51348d99}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{896477c2-df7a-4f1c-88df-cdff51348d99}/value {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{896477c2-df7a-4f1c-88df-cdff51348d99}", "value": ["B", "u", "y", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{896477c2-df7a-4f1c-88df-cdff51348d99}/value {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{896477c2-df7a-4f1c-88df-cdff51348d99}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/url {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element {"using": "id", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{0100e972-9860-48d1-834d-99134d4ec94b}/elements {"using": "tag name", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{0100e972-9860-48d1-834d-99134d4ec94b}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{1bfd0bb0-fe6d-4ea3-93dd-cf8edc1217ea}/text {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{1bfd0bb0-fe6d-4ea3-93dd-cf8edc1217ea}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element {"using": "id", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{1b0817ab-8fe6-458b-aaba-cf8ff9fc9d79}/value {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{1b0817ab-8fe6-458b-aaba-cf8ff9fc9d79}", "value": ["U", "s", "e", " ", "p", "e", "a", "c", "o", "c", "k", " ", "f", "e", "a", "t", "h", "e", "r", "s", " ", "t", "o", " ", "m", "a", "k", "e", " ", "a", " ", "f", "l", "y"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{1b0817ab-8fe6-458b-aaba-cf8ff9fc9d79}/value {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{1b0817ab-8fe6-458b-aaba-cf8ff9fc9d79}", "value": ["\ue006"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element {"using": "id", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{1c51d059-20b3-4df3-bcab-eb6e4909d071}/elements {"using": "tag name", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{1c51d059-20b3-4df3-bcab-eb6e4909d071}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{7895362a-2242-404c-b87a-237e678fc257}/text {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{7895362a-2242-404c-b87a-237e678fc257}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{2dc7c026-c7c8-41d3-8c54-64eab3452f1c}/text {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{2dc7c026-c7c8-41d3-8c54-64eab3452f1c}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element {"using": "id", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "value": "id_list_table"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{1c51d059-20b3-4df3-bcab-eb6e4909d071}/elements {"using": "tag name", "sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{1c51d059-20b3-4df3-bcab-eb6e4909d071}", "value": "tr"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{7895362a-2242-404c-b87a-237e678fc257}/text {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{7895362a-2242-404c-b87a-237e678fc257}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25/element/{2dc7c026-c7c8-41d3-8c54-64eab3452f1c}/text {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25", "id": "{2dc7c026-c7c8-41d3-8c54-64eab3452f1c}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:55725/hub/session/e26a7b85-c8f7-4954-8e7e-d1d635879b25 {"sessionId": "e26a7b85-c8f7-4954-8e7e-d1d635879b25"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55775/hub/session {"desiredCapabilities": {"platform": "ANY", "browserName": "firefox", "version": "", "javascriptEnabled": true}}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad/url {"url": "http://localhost:8080", "sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad/element {"using": "tag name", "sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad", "value": "body"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad/element/{75d777f6-38d0-4b4b-a8d0-f179fddc14b7}/text {"sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad", "id": "{75d777f6-38d0-4b4b-a8d0-f179fddc14b7}"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad/element {"using": "id", "sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad", "value": "id_new_item"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad/element/{28c007a0-610e-474f-8219-4a1bb5d811a2}/value {"sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad", "id": "{28c007a0-610e-474f-8219-4a1bb5d811a2}", "value": ["B", "u", "y", " ", "m", "i", "l", "k"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:POST http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad/element/{28c007a0-610e-474f-8219-4a1bb5d811a2}/value {"sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad", "id": "{28c007a0-610e-474f-8219-4a1bb5d811a2}", "value": ["\ue007"]}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:GET http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad/url {"sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
+DEBUG:selenium.webdriver.remote.remote_connection:DELETE http://127.0.0.1:55775/hub/session/686a9b0d-c5ef-4b51-ad38-6ce39820e0ad {"sessionId": "686a9b0d-c5ef-4b51-ad38-6ce39820e0ad"}
+DEBUG:selenium.webdriver.remote.remote_connection:Finished Request
