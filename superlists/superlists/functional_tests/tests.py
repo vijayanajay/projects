@@ -1,22 +1,24 @@
 __author__ = 'Ajay'
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 import unittest
 import logging
 
 LOG_FILENAME = 'example.log'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 import os
-os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'localhost:8080'
+os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'localhost:8000'
 
-class NewVisitorTest(LiveServerTestCase):  #1
+
+class NewVisitorTest(StaticLiveServerTestCase):  #1
 
     def setUp(self):  #2
         self.browser = webdriver.Firefox()
         self.browser.implicitly_wait(2)
 
     def tearDown(self):  #3
+        self.browser.refresh()
         self.browser.quit()
 
     def check_for_row_in_list_table(self, row_text):
