@@ -38,4 +38,3 @@ def get_feed(feed):
 
     # return links_in_feed[0]['href']
     return feed_content['entries'][1]['links'][0]['href']
-

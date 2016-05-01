@@ -17,7 +17,7 @@ def step_impl(context, number):
     """
     :type context behave.runner.Context
     """
-
+    from django.db import Article
     pass
 
 

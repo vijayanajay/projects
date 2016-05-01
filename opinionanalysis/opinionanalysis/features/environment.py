@@ -31,12 +31,6 @@ def before_scenario(context, scenario):
     django.setup()
     connection.creation.create_test_db(verbosity=1, autoclobber=True)
 
-def after_scenario(context, scenario):
-    # Tear down the scenario test environment.
-    from django.db import connection
-
-    #connection.creation.destroy_test_db(settings.DATABASE_NAME, verbosity=True, keepdb=False)
-
 def after_all(context):
     from django.test import utils
     utils.teardown_test_environment()

@@ -1,9 +1,14 @@
-Feature: Getting the contents of multiple feeds and displaying to user
+Feature: Demonstrate how to use the mechanize browser to do useful things.
  
-  Scenario: Get a list of articles of the Feed
-    Given a feed
-    When all the articles are extracted
-    Then I see 50 feeds in the Article table
-    And all the fields are filled in
-
+  Scenario: Logging in to our new Django site
  
+    Given a user
+    When I log in
+    Then I see my account summary
+     And I see a warm and welcoming message
+ 
+  Scenario: Loggout out of our new Django site
+    Given a user
+    When I log in
+    And I log out
+    Then I see a cold and heartless message

@@ -10,3 +10,4 @@ class Article(models.Model):
     summary = models.CharField(max_length=1024, null=True)
     content = models.CharField(max_length=1024, null=True)
     link = models.CharField(max_length=1024)
+    
