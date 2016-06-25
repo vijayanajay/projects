@@ -1,12 +1,9 @@
 from selenium import webdriver
 
 def before_all(context):
-    # PhantomJS is used there (headless browser - meaning we can execute tests in a command-line environment, which is what we want for use with SemaphoreCI
-    # For debugging purposes, you can use the Firefox driver instead.
-
-    
+  
     context.browser = webdriver.Chrome()
-    context.browser.implicitly_wait(1)
+    context.browser.implicitly_wait(3)
     context.server_url = 'http://localhost:8000'
 
 def after_all(context):
