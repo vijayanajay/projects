@@ -5,7 +5,7 @@ from datetime import datetime, date
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from pandas.io.data import DataReader
+import pandas_datareader.data as wb
 #from pandas_datareader import web
 def relative_strength_index(df, n):
     dUp = df > 0
@@ -18,7 +18,8 @@ def relative_strength_index(df, n):
     rsi= 100.0 - (100.0 / (1.0 + RS))
     return rsi
 
-data = DataReader('MANAPPURAM.NS',  'yahoo', datetime(2010, 1, 1), date.today())
+#data = DataReader('MANAPPURAM.NS',  'yahoo', datetime(2010, 1, 1), date.today())
+data = wb.DataReader('MANAPPURAM.NS',  'yahoo', datetime(2010, 1, 1), date.today())
 
 
 X = pd.DataFrame(data = data[["Volume", "Adj Close"]])
