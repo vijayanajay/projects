@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import pandas_datareader.data as wb
+import math
+
 #from pandas_datareader import web
 def relative_strength_index(df, n):
     dUp = df > 0
@@ -41,14 +43,18 @@ def backtest(X, trend, initialAmount=1000):
     lastBuyPrice = 0
     numberoftrades = 0
     finalamount = initialAmount
-    tradeHistory = pd.DataFrame(columns=[["Buy Price", "Number of Stocks", "Sell Price", "Earned", "Final Amount", "Number of Days", "Percentage"]])
-    for n in range (len(trend)-352,len(trend)):
+    tradeHistory = pd.DataFrame(columns=[["Buy Price", "Buy Date", "Number of Stocks", 
+                                          "Sell Price", "Sell Date",
+                                          "Earned", "Final Amount", 
+                                          "Number of Days", "Percentage"]])
+    for n in range (len(trend)-252,len(trend)):
         if trend[n]==2:
             lastBuyPrice = X.iloc[n,1]
             #print ("last buy price =", lastBuyPrice)
             numberofstocks = finalamount/lastBuyPrice
             #print ("number of stocks = ", numberofstocks)
             tradeHistory.set_value(numberoftrades, "Buy Price", lastBuyPrice)
+            tradeHistory.set_value(numberoftrades, "Buy Date", X.ix[n].name)
             tradeHistory.set_value(numberoftrades, "Number of Stocks", numberofstocks)
             buyDate = X.iloc[n].name
         if trend[n]==1: 
@@ -57,12 +63,16 @@ def backtest(X, trend, initialAmount=1000):
             finalamount =  X.iloc[n,1]*numberofstocks
              #print ("final amount =", finalamount)
             tradeHistory.set_value(numberoftrades, "Sell Price", X.iloc[n,1])
-            tradeHistory.set_value(numberoftrades, "Earned",  (X.iloc[n,1]- lastBuyPrice)*numberofstocks)
+            tradeHistory.set_value(numberoftrades, "Sell Date", X.ix[n].name)
+            tradeHistory.set_value(numberoftrades, "Earned",  
+                                   (X.iloc[n,1]- lastBuyPrice)*numberofstocks)
             tradeHistory.set_value(numberoftrades, "Final Amount", finalamount)
-            tradeHistory.set_value(numberoftrades, "Number of Days", pd.Timedelta(X.iloc[n].name - buyDate).days)
-            tradeHistory.set_value(numberoftrades, "Percentage",  (X.iloc[n,1]- lastBuyPrice)*100/lastBuyPrice )
+            tradeHistory.set_value(numberoftrades, "Number of Days", 
+                                   pd.Timedelta(X.iloc[n].name - buyDate).days)
+            tradeHistory.set_value(numberoftrades, "Percentage",  
+                                   (X.iloc[n,1]- lastBuyPrice)*100/lastBuyPrice )
             numberoftrades += 1
-    return tradeHistory
+    return tradeHistory, finalamount - initialAmount
 
 def getData(symbol):
     return wb.DataReader(symbol,  'yahoo', datetime(2010, 1, 1), date.today())
@@ -74,18 +84,17 @@ def prepare_X(data):
     del X["Adj Close"]
     #filter all o volume days
     X = X[X["Volume"]!=0]
-    
-    #Configuration of days
-    rollingdays = 3
-    ewma_fast_days = 12
-    ewma_slow_days = 24
-    
-    X.insert(2, column="SMA", value = pd.Series(X["Adj_Close"]).rolling(window=rollingdays).mean())
+        
+    X.insert(2, column="SMA", value = 
+             pd.Series(X["Adj_Close"]).rolling(window=rollingdays).mean())
     X.insert(3, column="Daily_Returns", value = X.iloc[1:,1] / X.iloc[:-1, 1].values - 1)
-    X.insert(4, column="RSI3", value = relative_strength_index(X["Daily_Returns"],rollingdays))
+    X.insert(4, column="RSI3", value = relative_strength_index(X["Daily_Returns"],
+                                                               rollingdays))
     
-    emaSlow =  pd.Series(X["Adj_Close"]).ewm(adjust=True,ignore_na=False,span=ewma_slow_days,min_periods=1).mean()
-    emaFast =  pd.Series(X["Adj_Close"]).ewm(adjust=True,ignore_na=False,span=ewma_fast_days,min_periods=1).mean()
+    emaSlow =  pd.Series(X["Adj_Close"]).ewm(adjust=True,ignore_na=False,
+                        span=ewma_slow_days,min_periods=1).mean()
+    emaFast =  pd.Series(X["Adj_Close"]).ewm(adjust=True,ignore_na=False,
+                        span=ewma_fast_days,min_periods=1).mean()
     X.insert(5, column="MACD", value = emaFast - emaSlow)
     
     low_min = pd.Series(X["Adj_Close"]).rolling(window=rollingdays).min()
@@ -145,14 +154,47 @@ def predict(inputX, inputY):
     #y_pred = regressor.predict(X_test)
     return regressor
 
-data = getData("MANAPPURAM.NS")
-X = prepare_X(data)
-trend = get_trend(X)
-tradeHistory = backtest(X, trend, 20000)
-inputX = X[["SMA", "RSI3", "MACD", "K_Stok", "D_Stok", "Will_R"]].values
-inputX = inputX[rollingdays:]
-inputY = X.Adj_Close[rollingdays:].values
-regressor = predict(inputX, inputY)
-nextDay = inputX[-1].reshape(1,-1)
-print (inputX[-1,0], regressor.predict(nextDay)[0])
-        
+
+#Configuration of days
+rollingdays = 5
+ewma_fast_days = 3
+ewma_slow_days = 10
+file = open("stocklist.txt", "r") 
+stockdecision = pd.DataFrame(columns=[["Symbol", "Current_Price", 
+                                       "Expected_Price", "Last_Decision", 
+                                       "Last_Decision_Date",  "Last_Update",
+                                       "Earned"]])
+#stockdecision.append([0,0,0,0,0], ignore_index=True)
+symbols = file.readlines()
+numberOfStocks=0
+for symbol in symbols:
+    print (symbol.strip())
+    data = getData(symbol.strip())
+    X = prepare_X(data)
+    trend = get_trend(X)
+    initialAmount = 10000
+    tradeHistory, earned = backtest(X, trend, initialAmount)
+    inputX = X[["SMA", "RSI3", "MACD", "K_Stok", "D_Stok", "Will_R"]].values
+    inputX = inputX[:-rollingdays]
+    inputY = X.Adj_Close[rollingdays:].values
+    regressor = predict(inputX, inputY)
+    #nextDay = inputX[-1].reshape(1,-1)
+    #print (inputX[-1,0], regressor.predict(nextDay)[0])
+    stockdecision.set_value(numberOfStocks, "Symbol", symbol.strip())
+    stockdecision.set_value(numberOfStocks, "Current_Price", inputX[-1,0])
+    stockdecision.set_value(numberOfStocks,"Expected_Price",
+                            sum(regressor.predict(inputX[-4:-1]))/3)
+    if math.isnan(tradeHistory.iloc[-1,3]): 
+        lastDecision = "Buy"
+        lastDecisionDate = tradeHistory.iloc[-1,1]
+    else: 
+        lastDecision = "Sell"
+        lastDecisionDate = tradeHistory.iloc[-1,4]
+    stockdecision.set_value(numberOfStocks,"Last_Decision",lastDecision)
+    stockdecision.set_value(numberOfStocks,"Last_Decision_Date",lastDecisionDate.strftime("%d, %b %Y"))
+    stockdecision.set_value(numberOfStocks, "Last_Update", 
+                            pd.Timedelta(datetime.now() - lastDecisionDate).days)
+    stockdecision.set_value(numberOfStocks, "Earned", earned/initialAmount)
+    numberOfStocks += 1
+
+stockdecision= stockdecision.sort_values("Last_Update", ascending=True)
