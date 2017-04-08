@@ -42,6 +42,7 @@ def backtest(X, trend, initialAmount=1000):
     #checking earnings of last 1 year
     lastBuyPrice = 0
     numberoftrades = 0
+    days = 0
     finalamount = initialAmount
     tradeHistory = pd.DataFrame(columns=[["Buy Price", "Buy Date", "Number of Stocks", 
                                           "Sell Price", "Sell Date",
@@ -72,7 +73,8 @@ def backtest(X, trend, initialAmount=1000):
             tradeHistory.set_value(numberoftrades, "Percentage",  
                                    (X.iloc[n,1]- lastBuyPrice)*100/lastBuyPrice )
             numberoftrades += 1
-    return tradeHistory, finalamount - initialAmount
+            days +=  pd.Timedelta(X.iloc[n].name - buyDate).days
+    return tradeHistory, finalamount - initialAmount, days/len(tradeHistory)
 
 def getData(symbol):
     return wb.DataReader(symbol,  'yahoo', datetime(2010, 1, 1), date.today())
@@ -156,14 +158,15 @@ def predict(inputX, inputY):
 
 
 #Configuration of days
-rollingdays = 5
-ewma_fast_days = 3
-ewma_slow_days = 10
+rollingdays = 3
+ewma_fast_days = 5
+ewma_slow_days = 12
 file = open("stocklist.txt", "r") 
 stockdecision = pd.DataFrame(columns=[["Symbol", "Current_Price", 
                                        "Expected_Price", "Last_Decision", 
-                                       "Last_Decision_Date",  "Last_Update",
-                                       "Earned"]])
+                                       "Last_Decision_Date",  "Last_Update", 
+                                       "Last_Action_Price", "Avg_Days", "Earned", 
+                                       "Last_Earned", "Present_Earned"]])
 #stockdecision.append([0,0,0,0,0], ignore_index=True)
 symbols = file.readlines()
 numberOfStocks=0
@@ -173,7 +176,7 @@ for symbol in symbols:
     X = prepare_X(data)
     trend = get_trend(X)
     initialAmount = 10000
-    tradeHistory, earned = backtest(X, trend, initialAmount)
+    tradeHistory, earned, avgDays = backtest(X, trend, initialAmount)
     inputX = X[["SMA", "RSI3", "MACD", "K_Stok", "D_Stok", "Will_R"]].values
     inputX = inputX[:-rollingdays]
     inputY = X.Adj_Close[rollingdays:].values
@@ -187,14 +190,27 @@ for symbol in symbols:
     if math.isnan(tradeHistory.iloc[-1,3]): 
         lastDecision = "Buy"
         lastDecisionDate = tradeHistory.iloc[-1,1]
+        stockdecision.set_value(numberOfStocks,"Last_Action_Price",
+                                tradeHistory.iloc[-1,0])
+        stockdecision.set_value(numberOfStocks, "Present_Earned", 
+                                (tradeHistory.iloc[-1,3]/inputX[-1,0] - 1) 
+                                * tradeHistory.iloc[-1,2])
     else: 
         lastDecision = "Sell"
         lastDecisionDate = tradeHistory.iloc[-1,4]
+        stockdecision.set_value(numberOfStocks,"Last_Action_Price",
+                                tradeHistory.iloc[-1,3])
+        stockdecision.set_value(numberOfStocks, "Last_Earned", 
+                                (tradeHistory.iloc[-1,3]/tradeHistory.iloc[-1,0] - 1) 
+                                * tradeHistory.iloc[-1,2])
     stockdecision.set_value(numberOfStocks,"Last_Decision",lastDecision)
-    stockdecision.set_value(numberOfStocks,"Last_Decision_Date",lastDecisionDate.strftime("%d, %b %Y"))
+    stockdecision.set_value(numberOfStocks,"Last_Decision_Date",
+                            lastDecisionDate.strftime("%d, %b %Y"))
     stockdecision.set_value(numberOfStocks, "Last_Update", 
                             pd.Timedelta(datetime.now() - lastDecisionDate).days)
     stockdecision.set_value(numberOfStocks, "Earned", earned/initialAmount)
+    stockdecision.set_value(numberOfStocks, "Avg_Days", avgDays)
+    
     numberOfStocks += 1
 
 stockdecision= stockdecision.sort_values("Last_Update", ascending=True)
