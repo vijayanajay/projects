@@ -74,6 +74,7 @@ def backtest(X, trend, initialAmount=1000):
                                    (X.iloc[n,1]- lastBuyPrice)*100/lastBuyPrice )
             numberoftrades += 1
             days +=  pd.Timedelta(X.iloc[n].name - buyDate).days
+    #print ("initial amount = ", initialAmount, " final amount = ", finalamount)
     return tradeHistory, finalamount - initialAmount, days/len(tradeHistory)
 
 def getData(symbol):
@@ -118,7 +119,7 @@ def prepare_X(data):
 
 def get_trend(X):
     # Get three day sma and find out if it is increasing or decreasing series
-    smaRollingThreeDays = [X.iloc[n:n+6,2] for n in range(0, len(X["SMA"]))]
+    smaRollingThreeDays = [X.iloc[n-6:n,2] for n in range(6, len(X["SMA"]))]
     interval_trend = [pd.Series(smaRollingThreeDays[n]).is_monotonic 
                       for n in range(0,len(smaRollingThreeDays))]
     # if adjclose > sma for that period and three day sma is increasing function then buy
@@ -161,12 +162,14 @@ def predict(inputX, inputY):
 rollingdays = 3
 ewma_fast_days = 5
 ewma_slow_days = 12
-file = open("stocklist.txt", "r") 
+file = open("stocklist_original.txt", "r") 
+#file = open("stocklist.txt", "r") 
 stockdecision = pd.DataFrame(columns=[["Symbol", "Current_Price", 
                                        "Expected_Price", "Last_Decision", 
                                        "Last_Decision_Date",  "Last_Update", 
                                        "Last_Action_Price", "Avg_Days", "Earned", 
-                                       "Last_Earned", "Present_Earned"]])
+                                       "Last_Earned", "Present_Earned_Perct", 
+                                       "Present_Earned_Amt"]])
 #stockdecision.append([0,0,0,0,0], ignore_index=True)
 symbols = file.readlines()
 numberOfStocks=0
@@ -184,16 +187,19 @@ for symbol in symbols:
     #nextDay = inputX[-1].reshape(1,-1)
     #print (inputX[-1,0], regressor.predict(nextDay)[0])
     stockdecision.set_value(numberOfStocks, "Symbol", symbol.strip())
-    stockdecision.set_value(numberOfStocks, "Current_Price", inputX[-1,0])
+    stockdecision.set_value(numberOfStocks, "Current_Price", X.ix[-1,1])
     stockdecision.set_value(numberOfStocks,"Expected_Price",
                             sum(regressor.predict(inputX[-4:-1]))/3)
     if math.isnan(tradeHistory.iloc[-1,3]): 
         lastDecision = "Buy"
-        lastDecisionDate = tradeHistory.iloc[-1,1]
+        lastDecisionDate = tradeHistory.iloc[-1,1] 
         stockdecision.set_value(numberOfStocks,"Last_Action_Price",
                                 tradeHistory.iloc[-1,0])
-        stockdecision.set_value(numberOfStocks, "Present_Earned", 
-                                (tradeHistory.iloc[-1,3]/inputX[-1,0] - 1) 
+        stockdecision.set_value(numberOfStocks, "Present_Earned_Perct", 
+                                (X.ix[-1,1]/tradeHistory.iloc[-1,0] - 1) 
+                                )
+        stockdecision.set_value(numberOfStocks, "Present_Earned_Amt", 
+                                (X.ix[-1,1]/tradeHistory.iloc[-1,0] - 1) 
                                 * tradeHistory.iloc[-1,2])
     else: 
         lastDecision = "Sell"
@@ -214,3 +220,4 @@ for symbol in symbols:
     numberOfStocks += 1
 
 stockdecision= stockdecision.sort_values("Last_Update", ascending=True)
+file.close()
