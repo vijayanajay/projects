@@ -6,6 +6,9 @@ class StockSymbol(models.Model):
     symbol = models.CharField (max_length = 10)
     tickerNumber = models.IntegerField()
     
+    def __str__(self):
+       return self.name
+    
 class StockHistory(models.Model):
     symbol = models.ForeignKey (StockSymbol, 
                                 on_delete = models.CASCADE,
