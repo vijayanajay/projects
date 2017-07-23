@@ -25,3 +25,6 @@ class StockHistory(models.Model):
     spreadHighLow = models.FloatField()
     spreadCloseOpen = models.FloatField()
     
+    def __str__(self):
+        return u'%s %s' % (self.symbol)
+    
