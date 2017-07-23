@@ -2,7 +2,7 @@ from django.db import models
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 
-fs = FileSystemStorage(location = settings.BASE_DIR + '/media/csvData')
+fs = FileSystemStorage(location = settings.BASE_DIR + '\\csvData')
 
 # Create your models here.
 class StockSymbol(models.Model):
