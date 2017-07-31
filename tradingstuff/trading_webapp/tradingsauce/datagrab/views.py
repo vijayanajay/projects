@@ -2,11 +2,13 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from .models import StockSymbol, StockHistory
 import pandas as pd
+from django.conf import settings
 
 def index(request):
     symbols = StockSymbol.objects.all()   
     for symbol in symbols:
-        file_name = '/csvData/' + str(symbol.tickerNumber) + '.csv'        
+        file_name = settings.BASE_DIR + '\csvData\\' + str(
+                symbol.tickerNumber) + '.csv'        
         #csvData = Load_Data (file_name, symbol.symbol)
     return HttpResponse (file_name) 
 """try:
