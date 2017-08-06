@@ -108,7 +108,9 @@ NOSE_ARGS = ['--with-coverage',  # activate coverage report
         '--cover-xml',     # produle XML coverage info
         '--cover-xml-file=coverage.xml',  # the coverage info file
         # You may also specify the packages to be covered here
-         '--cover-package=datagrab'
+         '--cover-package=datagrab',
+         '--cover-html',
+         #'--cover-html-dir=./htmlcov',
         ]
 
 # Internationalization
