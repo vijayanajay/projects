@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import StockSymbol, StockHistory
+from datagrab.models import StockSymbol, StockHistory
 
 class DataGrab(TestCase):
     def setUp(self):
