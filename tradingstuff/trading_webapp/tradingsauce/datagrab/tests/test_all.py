@@ -1,4 +1,5 @@
 from django.test import TestCase
+import pytest
 from datagrab.models import StockSymbol, StockHistory
 
 class DataGrab(TestCase):
@@ -12,6 +13,6 @@ class DataGrab(TestCase):
                                            symbol = 'ASHOKLEY',
                                            tickerNumber = '500477')
         stock = StockSymbol.objects.get(tickerNumber = '500477')
-        self.assertEqual(str(stock), 'ASHOK Leyland')
+        assert str(stock), 'ASHOK Leyland'
         
 # Create your tests here.
