@@ -12,7 +12,7 @@ def random_number(length=6):
     return u''.join(random.choice(string.digits) for x in range(length))
 
 
-class StcokSymbolFactory(factory.DjangoModelFactory):
+class StockSymbolFactory(factory.DjangoModelFactory):
     class Meta:
         model = StockSymbol
         abstract = False
@@ -25,10 +25,13 @@ class StcokSymbolFactory(factory.DjangoModelFactory):
 class DataGrab(TestCase):
     
     def test_stocksymbol_stringrepresentation(self):
-        stock = StcokSymbolFactory.create(name = 'ASHOK Leyland', 
+        stock = StockSymbolFactory.create(name = 'ASHOK Leyland', 
                                            symbol = 'ASHOKLEY',
                                            tickerNumber = '500477')
         stock = StockSymbol.objects.get(tickerNumber = '500477')
         assert str(stock), 'ASHOK Leyland'
+        
+    
+        
         
 # Create your tests here.
