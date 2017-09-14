@@ -59,11 +59,18 @@ class DataGrab(TestCase):
              message = template.format(type(e).__name__, e.args)
              self.fail(message)             
     
-    def test_derived_csv_filename_is_not_found(self):
+    def test_derived_csv_filename_is_not_found_returns_no_issue(self):
         stock = StockSymbolFactory.create()
         csv_filename = ut.get_csv_filename(stock)
         csv_file = ut.read_csv_file(stock, csv_filename)
         self.assertEqual(csv_file, False)
+
+    def test_derived_csv_filename_is_found(self):
+        stock = StockSymbolFactory.create(name='ASHOK Leyland',
+                                          symbol='ASHOKLEY', tickerNumber='500477')
+        csv_filename = ut.get_csv_filename(stock)
+        csv_file = ut.read_csv_file(stock, csv_filename)
+        self.assertNotEquals(csv_file, False)
 
     def test_csv_file_import_to_StockHistory(self):
         stock = StockSymbolFactory.create(name = 'ASHOK Leyland',
@@ -72,9 +79,9 @@ class DataGrab(TestCase):
         try:
             with transaction.atomic():
                 ut.read_csv_file(stock, csv_filename)
-                self.assertGreaterEqual(StockHistory.objects.count(), 1)
                 print (StockHistory.objects.count())
         except:
             pass
+        self.assertGreaterEqual(StockHistory.objects.count(), 100)
 
 
