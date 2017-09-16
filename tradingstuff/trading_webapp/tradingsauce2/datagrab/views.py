@@ -3,6 +3,9 @@ from django.shortcuts import render
 from .models import StockSymbol, StockHistory
 import pandas as pd
 from django.conf import settings
+from .utils import *
+import csv
+import datetime
 
 def index(request):
     symbols = StockSymbol.objects.all()   
@@ -41,4 +44,13 @@ def Load_Data(file_name, symbol):
 
 def test(request):
     #DO NOT USE THIS FOR ANYTHING EXCEPT FOR TESTING
-    return HttpResponse("all fine")
+    stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
+    csv_filename = get_csv_filename(stock)
+    dataReader = csv.reader(open(csv_filename), delimiter=',')
+    for line in dataReader:
+        if line[0] == "Date":
+            continue
+        history = StockHistory(symbol = stock)
+        history.date = datetime.datetime.strptime(line[0], "%d-%B-%Y")
+        history.save()
+        return HttpResponse(line[1])

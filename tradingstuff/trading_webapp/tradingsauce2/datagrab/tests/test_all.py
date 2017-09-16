@@ -75,6 +75,8 @@ class DataGrab(TestCase):
     def test_csv_file_import_to_StockHistory(self):
         stock = StockSymbolFactory.create(name = 'ASHOK Leyland',
                                            symbol = 'ASHOKLEY', tickerNumber = '500477')
+        stock.save()
+        self.assertEquals(StockSymbol.objects.count(),1)
         csv_filename = ut.get_csv_filename(stock)
         try:
             with transaction.atomic():

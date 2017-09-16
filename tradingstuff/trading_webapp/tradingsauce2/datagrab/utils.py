@@ -21,11 +21,9 @@ def read_csv_file(stock, file_name):
         for line in dataReader:
             if line[0] == "Date":
                  continue
-            history = StockHistory()
-            #history.symbol = stock.symbol
-            #print (history.symbol)
-            #history.date = line[1]
-            #history.save()
+            history = StockHistory(stock = stock)
+            history.date = line[0]
+            history.save()
     except:
         return 1
     return dataReader
