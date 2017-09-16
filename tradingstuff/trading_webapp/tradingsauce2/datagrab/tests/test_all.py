@@ -78,10 +78,10 @@ class DataGrab(TestCase):
         csv_filename = ut.get_csv_filename(stock)
         try:
             with transaction.atomic():
-                ut.read_csv_file(stock, csv_filename)
-                print (StockHistory.objects.count())
+                count = ut.read_csv_file(stock, csv_filename)
         except:
             pass
+        #count = StockHistory.objects.count()
         self.assertGreaterEqual(StockHistory.objects.count(), 100)
 
 

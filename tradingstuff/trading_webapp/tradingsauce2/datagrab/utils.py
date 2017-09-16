@@ -17,13 +17,15 @@ def read_csv_file(stock, file_name):
         #assuming it's always filenotfounderror. Can be something else too, 
         #to check later
         return False
-        # for line in dataReader:
-        #     if line[0] == "Date":
-        #         continue
-        #     history = StockHistory.objects.create()
-        #     history.symbol = stock.symbol
-        #     print (history.symbol)
-        #     history.date = line[1]
-        #     history.save()
-
+    try:
+        for line in dataReader:
+            if line[0] == "Date":
+                 continue
+            history = StockHistory()
+            #history.symbol = stock.symbol
+            #print (history.symbol)
+            #history.date = line[1]
+            #history.save()
+    except:
+        return 1
     return dataReader
