@@ -82,8 +82,25 @@ class DataGrab(TestCase):
             with transaction.atomic():
                 count = ut.read_csv_file(stock, csv_filename)
         except:
-            pass
+            self.fail("exception when trying to insert")
         #count = StockHistory.objects.count()
-        self.assertGreaterEqual(StockHistory.objects.count(), 100)
+        self.assertGreater(StockHistory.objects.count(), 1)
+        lastRecord = StockHistory.objects.all().last()
+        self.assertEquals(lastRecord.openPrice, 50.5)
+        self.assertEquals(lastRecord.highPrice, 52.6)
+        self.assertEquals(lastRecord.lowPrice, 50.0)
+        self.assertEquals(lastRecord.closePrice, 52.3)
+        self.assertEquals(lastRecord.wap, 51.723125410140653536)
+        self.assertEquals(lastRecord.numberOfShares, 3035544)
+        self.assertEquals(lastRecord.numberOfTrades, 8128)
+        self.assertEquals(lastRecord.totalTurnover, 157007823)
+        self.assertEquals(lastRecord.spreadHighLow, 2.60)
+        self.assertEquals(lastRecord.spreadCloseOpen, 1.80)
+
+
+
+
+
+
 
 
