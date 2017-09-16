@@ -26,6 +26,16 @@ def read_csv_file(stock, file_name):
             history = StockHistory(symbol = stock)
             localTimeZone = pytz.timezone('Asia/Kolkata')
             history.date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
+            history.openPrice = line[1]
+            history.highPrice = line[2]
+            history.lowPrice = line[3]
+            history.closePrice = line[4]
+            history.wap = line[5]
+            history.numberOfShares = line[6]
+            history.numberOfTrades = line[7]
+            history.totalTurnover = line[8]
+            history.spreadHighLow = line[12]
+            history.spreadCloseOpen = line[13]
             history.save()
     except:
         return 1
