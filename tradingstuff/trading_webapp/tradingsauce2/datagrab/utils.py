@@ -16,7 +16,7 @@ def read_csv_file(stock, file_name):
     try:
         dataReader = csv.reader(open(file_name), delimiter=',')
     except:
-        #assuming it's always filenotfounderror. Can be something else too, 
+        #assuming it's always filenotfounderror. Can be something else too,
         #to check later
         return False
     try:
@@ -34,8 +34,8 @@ def read_csv_file(stock, file_name):
             history.numberOfShares = line[6]
             history.numberOfTrades = line[7]
             history.totalTurnover = line[8]
-            history.spreadHighLow = line[12]
-            history.spreadCloseOpen = line[13]
+            history.spreadHighLow = line[11]
+            history.spreadCloseOpen = line[12]
             history.save()
     except:
         return 1
