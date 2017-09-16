@@ -43,6 +43,7 @@ def Load_Data(file_name, symbol):
     return data
 
 def test(request):
+    return HttpResponse("nothing to test")
     #DO NOT USE THIS FOR ANYTHING EXCEPT FOR TESTING
     stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
     csv_filename = get_csv_filename(stock)
@@ -51,6 +52,8 @@ def test(request):
         if line[0] == "Date":
             continue
         history = StockHistory(symbol = stock)
-        history.date = datetime.datetime.strptime(line[0], "%d-%B-%Y")
+        localTimeZone = pytz.timezone('Asia/Kolkata')
+        history.date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
         history.save()
         return HttpResponse(line[1])
+

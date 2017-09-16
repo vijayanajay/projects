@@ -3,6 +3,8 @@ from .models import StockSymbol, StockHistory
 import os
 import pandas as pd
 import csv
+import datetime
+import pytz
 
 def get_csv_filename(stocksymbol):
     file_name = os.path.join (settings.BASE_DIR, 'datagrab/csvData', (str(
@@ -20,9 +22,10 @@ def read_csv_file(stock, file_name):
     try:
         for line in dataReader:
             if line[0] == "Date":
-                 continue
-            history = StockHistory(stock = stock)
-            history.date = line[0]
+                continue
+            history = StockHistory(symbol = stock)
+            localTimeZone = pytz.timezone('Asia/Kolkata')
+            history.date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
             history.save()
     except:
         return 1
