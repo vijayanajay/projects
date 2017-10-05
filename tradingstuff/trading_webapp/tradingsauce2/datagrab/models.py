@@ -25,6 +25,9 @@ class StockHistory(models.Model):
     totalTurnover = models.FloatField(null = True)
     spreadHighLow = models.FloatField(null = True)
     spreadCloseOpen = models.FloatField(null = True)
+    dailyReturns = models.FloatField(null = True)
+    rsi3 = models.FloatField(null = True)
+    sma3 = models.FloatField(null = True)
 
     def __str__(self):
         return u'%s %s' % (self.symbol)
