@@ -43,7 +43,7 @@ def Load_Data(file_name, symbol):
     return data
 
 def test(request):
-    #return HttpResponse("nothing to test")
+    return HttpResponse("nothing to test")
     #DO NOT USE THIS FOR ANYTHING EXCEPT FOR TESTING
     stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
     csv_filename = get_csv_filename(stock)
