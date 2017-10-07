@@ -40,3 +40,6 @@ def read_csv_file(stock, file_name):
     except:
         return 1
     return dataReader
+
+def calculate_and_store_sma3(stock):
+    return 1

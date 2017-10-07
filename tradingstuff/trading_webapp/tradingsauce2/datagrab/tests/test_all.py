@@ -97,7 +97,21 @@ class DataGrab(TestCase):
         self.assertEquals(lastRecord.spreadHighLow, 2.60)
         self.assertEquals(lastRecord.spreadCloseOpen, 1.80)
 
-
+    def test_calculated_sma3_is_correct(self):
+        stock = StockSymbolFactory.create(name = 'ASHOK Leyland',
+                                           symbol = 'ASHOKLEY', tickerNumber = '500477')
+        stock.save()
+        self.assertEquals(StockSymbol.objects.count(),1)
+        csv_filename = ut.get_csv_filename(stock)
+        try:
+            with transaction.atomic():
+                count = ut.read_csv_file(stock, csv_filename)
+        except:
+            self.fail("exception when trying to insert")
+        ut.calculate_and_store_sma3(stock)
+        lastRecord = StockHistory.objects.all().last(6)
+        self.assertEquals(lastRecord[5].sma3, 0)
+        
 
 
 
