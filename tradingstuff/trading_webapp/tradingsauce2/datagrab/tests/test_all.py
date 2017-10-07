@@ -109,7 +109,7 @@ class DataGrab(TestCase):
         except:
             self.fail("exception when trying to insert")
         ut.calculate_and_store_sma3(stock)
-        lastRecord = StockHistory.objects.all().last(6)
+        lastRecord = StockHistory.objects.all().order_by('-id')[:6]
         self.assertEquals(lastRecord[5].sma3, 0)
         
 

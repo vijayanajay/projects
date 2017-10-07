@@ -42,4 +42,5 @@ def read_csv_file(stock, file_name):
     return dataReader
 
 def calculate_and_store_sma3(stock):
-    return 1
+    stockHistoryDF = pd.DataFrame(list(StockHistory.objects.filter(symbol = stock).values('author', 'date', 'slug')))
+    return stockHistoryDF

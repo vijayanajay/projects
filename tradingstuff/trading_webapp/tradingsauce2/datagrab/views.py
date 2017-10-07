@@ -43,27 +43,11 @@ def Load_Data(file_name, symbol):
     return data
 
 def test(request):
-    return HttpResponse("nothing to test")
     #DO NOT USE THIS FOR ANYTHING EXCEPT FOR TESTING
     stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
     csv_filename = get_csv_filename(stock)
     dataReader = csv.reader(open(csv_filename), delimiter=',')
-    for line in dataReader:
-        if line[0] == "Date":
-            continue
-        history = StockHistory(symbol = stock)
-        localTimeZone = pytz.timezone('Asia/Kolkata')
-        history.date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
-        history.openPrice = line[1]
-        history.highPrice = line[2]
-        history.lowPrice = line[3]
-        history.closePrice = line[4]
-        history.wap = line[5]
-        history.numberOfShares = line[6]
-        history.numberOfTrades = line[7]
-        history.totalTurnover = line[8]
-        history.spreadHighLow = line[12]
-        history.spreadCloseOpen = line[13]
-        history.save()
-        return HttpResponse(line[1])
+    count = read_csv_file(stock, csv_filename)
+    count = calculate_and_store_sma3(stock)
+    return HttpResponse(count)
 
