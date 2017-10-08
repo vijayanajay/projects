@@ -46,5 +46,17 @@ def read_csv_file(stock, file_name):
     return dataReader
 
 def calculate_and_store_sma3(stock):
-    stockHistoryDF = pd.DataFrame(list(StockHistory.objects.filter(symbol = stock).values('closePrice')))
-    return stockHistoryDF
+    stockHistoryDF = pd.DataFrame(list(StockHistory.objects.filter(symbol = stock).order_by('date').values('date', 'closePrice')))
+    stockHistoryDF.insert(2, column="SMA", value=pd.Series(stockHistoryDF["closePrice"]).rolling(window=3).mean())
+    stockHistoryDF = stockHistoryDF.fillna(method='bfill')
+    for n in (0, len(stockHistoryDF)-1):
+        #temp = stockHistory['date']
+        row = StockHistory.objects.filter(symbol = stock, date = stockHistoryDF.iloc[n,1])
+        if row[0].sma3 == stockHistoryDF.iloc[n,2] and row[0].sma3 != None:
+            continue
+        row[0].sma3 = stockHistoryDF.iloc[n,2]
+        temp = row[0].sma3
+        row[0].save()
+
+
+    return StockHistory.objects.filter(symbol = stock, date = stockHistoryDF.iloc[1,1])
