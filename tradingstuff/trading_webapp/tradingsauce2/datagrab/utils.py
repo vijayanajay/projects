@@ -25,7 +25,11 @@ def read_csv_file(stock, file_name):
                 continue
             history = StockHistory(symbol = stock)
             localTimeZone = pytz.timezone('Asia/Kolkata')
-            history.date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
+            history_date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
+            is_existing = StockHistory.objects.filter(symbol = stock, date = history_date).count()
+            if is_existing != 0:
+                continue
+            history.date = history_date
             history.openPrice = line[1]
             history.highPrice = line[2]
             history.lowPrice = line[3]

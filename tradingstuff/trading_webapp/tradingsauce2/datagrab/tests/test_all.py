@@ -124,7 +124,7 @@ class DataGrab(TestCase):
                 count = ut.read_csv_file(stock, csv_filename)
         except:
             self.fail("exception when trying to insert")
-        self.assertEquals(StockHistory.objects.count(), 1854)
+        self.assertEquals(StockHistory.objects.count(), 1853)
 
         # second insert
         try:
@@ -132,7 +132,7 @@ class DataGrab(TestCase):
                 count = ut.read_csv_file(stock, csv_filename)
         except:
             self.fail("exception when trying to insert")
-        self.assertEquals(StockHistory.objects.count(), 1854)
+        self.assertEquals(StockHistory.objects.count(), 1853)
 
 
 
