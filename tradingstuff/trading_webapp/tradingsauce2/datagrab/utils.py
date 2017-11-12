@@ -5,6 +5,9 @@ import pandas as pd
 import csv
 import datetime
 import pytz
+import logging
+
+log = logging.getLogger(__name__)
 
 def get_csv_filename(stocksymbol):
     file_name = os.path.join (settings.BASE_DIR, 'datagrab/csvData', (str(
@@ -49,14 +52,12 @@ def calculate_and_store_sma3(stock):
     stockHistoryDF = pd.DataFrame(list(StockHistory.objects.filter(symbol = stock).order_by('date').values('date', 'closePrice')))
     stockHistoryDF.insert(2, column="SMA", value=pd.Series(stockHistoryDF["closePrice"]).rolling(window=3).mean())
     stockHistoryDF = stockHistoryDF.fillna(method='bfill')
-    for n in (0, len(stockHistoryDF)-1):
-        #temp = stockHistory['date']
+    temp_list = []
+    for n in range(0, len(stockHistoryDF), 1):
         row = StockHistory.objects.filter(symbol = stock, date = stockHistoryDF.iloc[n,1])
+        temp_list.insert(n, n)
         if row[0].sma3 == stockHistoryDF.iloc[n,2] and row[0].sma3 != None:
             continue
         row[0].sma3 = stockHistoryDF.iloc[n,2]
-        temp = row[0].sma3
         row[0].save()
-
-
-    return StockHistory.objects.filter(symbol = stock, date = stockHistoryDF.iloc[1,1])
+    return temp_list

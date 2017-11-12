@@ -6,6 +6,9 @@ from django.conf import settings
 from .utils import *
 import csv
 import datetime
+import logging
+
+log = logging.getLogger(__name__)
 
 def index(request):
     symbols = StockSymbol.objects.all()   
@@ -30,6 +33,7 @@ def index(request):
     
 
 def Load_Data(file_name, symbol):
+    log.debug("inside views.Load_Data")
     data = pd.read_csv(file_name)
     data.insert (0, column = 'symbol', value = symbol)
     data.columns = ['symbol', 'date', 'openPrice', 'highPrice', 'lowPrice', 
@@ -43,6 +47,7 @@ def Load_Data(file_name, symbol):
     return data
 
 def test(request):
+    log.debug("inside views.test")
     #DO NOT USE THIS FOR ANYTHING EXCEPT FOR TESTING
     stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
     csv_filename = get_csv_filename(stock)
