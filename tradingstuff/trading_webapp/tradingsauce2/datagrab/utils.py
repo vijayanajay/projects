@@ -17,6 +17,7 @@ def get_csv_filename(stocksymbol):
 
 def read_csv_file(stock, file_name):
     log.debug("inside read_csv_file")
+    originalDb = StockHistory.objects.filter(symbol=stock).order_by('date')
     try:
         dataReader = csv.reader(open(file_name), delimiter=',')
     except:
@@ -31,7 +32,8 @@ def read_csv_file(stock, file_name):
             history = StockHistory(symbol = stock)
             localTimeZone = pytz.timezone('Asia/Kolkata')
             history_date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
-            is_existing = StockHistory.objects.filter(symbol = stock, date = history_date).count()
+            #is_existing = StockHistory.objects.filter(symbol = stock, date = history_date).count()
+            is_existing = originalDF
             if is_existing != 0:
                 continue
             history.date = history_date
@@ -54,18 +56,20 @@ def read_csv_file(stock, file_name):
 
 def calculate_and_store_sma3(stock):
     log.debug("inside utils.calculate_and_store_sma3")
-    stockHistoryDF = pd.DataFrame(list(StockHistory.objects.filter(symbol = stock).order_by('date').values('id', 'date', 'closePrice')))
-    originalDF = pd.DataFrame(list(StockHistory.objects.filter(symbol = stock).order_by('date').values('id', 'date', 'closePrice','sma3')))
-    stockHistoryDF.insert(3, column="SMA", value=pd.Series(stockHistoryDF["closePrice"]).rolling(window=3).mean())
-    stockHistoryDF = stockHistoryDF.fillna(method='bfill')
-    temp_list = []
+    originalDF = pd.DataFrame(
+        list(StockHistory.objects.filter(symbol=stock).order_by('date').values('id', 'closePrice', 'sma3')))
+    updatedDF = originalDF[['id', 'closePrice']]
+    updatedDF.insert(2, column="sma3", value=pd.Series(updatedDF["closePrice"]).rolling(window=3).mean())
+    updatedDF = updatedDF.fillna(method='bfill')
+    insertToDbDF = pd.DataFrame(data=None, columns=['id', 'closePrice', 'sma3'])
 
-    for n in range(0, len(stockHistoryDF), 1):
-        row = StockHistory.objects.filter(id = stockHistoryDF.iloc[n,2])
-        #row_real = originalDF.loc(originalDF['id'] == stockHistoryDF.iloc[n,2])
-        #
-        if row[0].sma3 == stockHistoryDF.iloc[n,3] and row[0].sma3 != None:
+    for n in range(0, len(updatedDF), 1):
+        first_condition = updatedDF.iloc[n,2] == originalDF.iloc[n,2]
+        second_condition = originalDF.iloc[n,2] != None
+        if first_condition and second_condition:
             continue
-        row[0].sma3 = stockHistoryDF.iloc[n,3]
-        row[0].save()
-    return "true"
+        insertToDbDF.loc[n] = updatedDF.loc[n]
+        #db_row = StockHistory.objects.get(id = row_real["id"])
+        #row[0].save(
+
+    return insertToDbDF.values

@@ -21,3 +21,6 @@ print (' n = ', n, ' row[0].sma3 = ', row[0].sma3, ' stockHistoryDF.iloc[n,3] = 
 to debug:
 import pdb; pdb.set_trace()
 python -m pdb manage.py runserver
+
+
+originalDF[originalDF['id'] == stockHistoryDF.iloc[n,2]]
