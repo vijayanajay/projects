@@ -19,6 +19,8 @@ def read_csv_file(stock, file_name):
     log.debug("inside read_csv_file")
     test_DF = pd.DataFrame(
         list(StockHistory.objects.filter(symbol=stock).order_by('date').values('id', 'date')))
+    if test_DF.empty:
+        test_DF = pd.DataFrame(columns=[['id', 'date']])
     try:
         dataReader = csv.reader(open(file_name), delimiter=',')
     except:
@@ -50,7 +52,7 @@ def read_csv_file(stock, file_name):
             history.save()
     except:
         log.debug("completed read_csv_file with exception in inserting into db")
-        return 1
+        return 3
     log.debug("completed read_csv_file")
     return dataReader
 
