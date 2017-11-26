@@ -24,3 +24,4 @@ python -m pdb manage.py runserver
 
 
 originalDF[originalDF['id'] == stockHistoryDF.iloc[n,2]]
+test_DF[test_DF['date']==history_date]

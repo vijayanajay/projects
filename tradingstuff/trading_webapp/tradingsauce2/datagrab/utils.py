@@ -17,7 +17,8 @@ def get_csv_filename(stocksymbol):
 
 def read_csv_file(stock, file_name):
     log.debug("inside read_csv_file")
-    originalDb = StockHistory.objects.filter(symbol=stock).order_by('date')
+    test_DF = pd.DataFrame(
+        list(StockHistory.objects.filter(symbol=stock).order_by('date').values('id', 'date')))
     try:
         dataReader = csv.reader(open(file_name), delimiter=',')
     except:
@@ -29,13 +30,12 @@ def read_csv_file(stock, file_name):
         for line in dataReader:
             if line[0] == "Date":
                 continue
-            history = StockHistory(symbol = stock)
             localTimeZone = pytz.timezone('Asia/Kolkata')
             history_date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
-            #is_existing = StockHistory.objects.filter(symbol = stock, date = history_date).count()
-            is_existing = originalDF
-            if is_existing != 0:
+            is_existing = test_DF[test_DF['date'] == history_date]
+            if is_existing.empty == False:
                 continue
+            history = StockHistory(symbol=stock)
             history.date = history_date
             history.openPrice = line[1]
             history.highPrice = line[2]
