@@ -52,32 +52,7 @@ def test(request):
     stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
     csv_filename = get_csv_filename(stock)
     #count = read_csv_file(stock, csv_filename)
-    dataReader = csv.reader(open(csv_filename), delimiter=',')
-    test_DF = pd.DataFrame(
-        list(StockHistory.objects.filter(symbol=stock).order_by('date').values('id', 'date')))
-    if test_DF.empty:
-        test_DF = pd.DataFrame(columns=[['id', 'date']])
-    for line in dataReader:
-        if line[0] == "Date":
-            continue
-        localTimeZone = pytz.timezone('Asia/Kolkata')
-        history_date = localTimeZone.localize(datetime.datetime.strptime(line[0], "%d-%B-%Y"))
-        is_existing = test_DF[test_DF['date'] == history_date]
-        if is_existing.empty == False:
-            continue
-        history = StockHistory(symbol=stock)
-        history.date = history_date
-        history.openPrice = line[1]
-        history.highPrice = line[2]
-        history.lowPrice = line[3]
-        history.closePrice = line[4]
-        history.wap = line[5]
-        history.numberOfShares = line[6]
-        history.numberOfTrades = line[7]
-        history.totalTurnover = line[8]
-        history.spreadHighLow = line[11]
-        history.spreadCloseOpen = line[12]
-        history.save()
-    #count = calculate_and_store_sma3(stock)
+    read_csv_file(stock, csv_filename)
+    count = calculate_and_store_sma3(stock)
     return HttpResponse(count)
 

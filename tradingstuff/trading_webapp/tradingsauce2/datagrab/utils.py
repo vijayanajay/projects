@@ -66,12 +66,16 @@ def calculate_and_store_sma3(stock):
     insertToDbDF = pd.DataFrame(data=None, columns=['id', 'closePrice', 'sma3'])
 
     for n in range(0, len(updatedDF), 1):
-        first_condition = updatedDF.iloc[n,2] == originalDF.iloc[n,2]
-        second_condition = originalDF.iloc[n,2] != None
-        if first_condition and second_condition:
+        if_equal = updatedDF.iloc[n,2] == originalDF.iloc[n,2]
+        if_present = originalDF.iloc[n,2] != None
+        if if_present and if_equal:
             continue
         insertToDbDF.loc[n] = updatedDF.loc[n]
-        #db_row = StockHistory.objects.get(id = row_real["id"])
-        #row[0].save(
 
-    return insertToDbDF.values
+    insert_calculated_values_into_db(insertToDbDF, 'sma3')
+    return ('successful')
+
+def insert_calculated_values_into_db (insertToDb,fieldName):
+    #insertToDb should be a pandas dataframe with only values that needs to be inserted
+    for n in range(0, len(insertToDb)):
+        StockHistory.objects.filter(id = insertToDb.iloc[n,0]).update(**{fieldName: insertToDb.iloc[n,2]})
