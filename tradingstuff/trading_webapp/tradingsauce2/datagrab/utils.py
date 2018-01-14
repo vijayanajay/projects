@@ -65,15 +65,19 @@ def calculate_and_store_sma3(stock):
     updatedDF = updatedDF.fillna(method='bfill')
     insertToDbDF = pd.DataFrame(data=None, columns=['id', 'closePrice', 'sma3'])
 
+    insertToDbDF = find_unique_updates_in_df(originalDF, updatedDF, insertToDbDF)
+    insert_calculated_values_into_db(insertToDbDF, 'sma3')
+    return ('successful')
+
+def find_unique_updates_in_df(originalDF,updatedDF, insertToDbDF):
     for n in range(0, len(updatedDF), 1):
         if_equal = updatedDF.iloc[n,2] == originalDF.iloc[n,2]
         if_present = originalDF.iloc[n,2] != None
         if if_present and if_equal:
             continue
         insertToDbDF.loc[n] = updatedDF.loc[n]
+    return insertToDbDF
 
-    insert_calculated_values_into_db(insertToDbDF, 'sma3')
-    return ('successful')
 
 def insert_calculated_values_into_db (insertToDb,fieldName):
     #insertToDb should be a pandas dataframe with only values that needs to be inserted

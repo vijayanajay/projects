@@ -110,7 +110,7 @@ class DataGrab(TestCase):
             self.fail("exception when trying to insert")
         ut.calculate_and_store_sma3(stock)
         lastRecord = StockHistory.objects.all().order_by('-id')[:6]
-        self.assertEquals(lastRecord[5].sma3, 0)
+        self.assertAlmostEqual(lastRecord[5].sma3, 52.9333333)
 
     def test_same_data_is_not_inserted_into_db(self):
         stock = StockSymbolFactory.create(name='ASHOK Leyland',
