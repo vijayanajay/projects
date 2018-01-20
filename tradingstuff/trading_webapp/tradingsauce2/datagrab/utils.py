@@ -56,8 +56,29 @@ def read_csv_file(stock, file_name):
     log.debug("completed read_csv_file")
     return dataReader
 
+
+def find_unique_updates_in_df(originalDF,updatedDF, insertToDbDF):
+    log.debug("inside find_unique_updates_in_df")
+    for n in range(0, len(updatedDF), 1):
+        if_equal = updatedDF.iloc[n,2] == originalDF.iloc[n,2]
+        if_present = originalDF.iloc[n,2] != None
+        if if_present and if_equal:
+            continue
+        insertToDbDF.loc[n] = updatedDF.loc[n]
+    log.debug("completed find_unique_updates_in_df")
+    return insertToDbDF
+
+
+def insert_calculated_values_into_db (insertToDb,fieldName):
+    #insertToDb should be a pandas dataframe with only values that needs to be inserted
+    log.debug("inside insert_calculated_values_into_db")
+    for n in range(0, len(insertToDb)):
+        StockHistory.objects.filter(id = insertToDb.iloc[n,0]).update(**{fieldName: insertToDb.iloc[n,2]})
+    log.debug("completed insert_calculated_values_into_db")
+
+
 def calculate_and_store_sma3(stock):
-    log.debug("inside utils.calculate_and_store_sma3")
+    log.debug('inside utils.calculate_and_store_sma3')
     originalDF = pd.DataFrame(
         list(StockHistory.objects.filter(symbol=stock).order_by('date').values('id', 'closePrice', 'sma3')))
     updatedDF = originalDF[['id', 'closePrice']]
@@ -67,19 +88,10 @@ def calculate_and_store_sma3(stock):
 
     insertToDbDF = find_unique_updates_in_df(originalDF, updatedDF, insertToDbDF)
     insert_calculated_values_into_db(insertToDbDF, 'sma3')
+    log.debug("completed calculate_and_store_sma3")
     return ('successful')
 
-def find_unique_updates_in_df(originalDF,updatedDF, insertToDbDF):
-    for n in range(0, len(updatedDF), 1):
-        if_equal = updatedDF.iloc[n,2] == originalDF.iloc[n,2]
-        if_present = originalDF.iloc[n,2] != None
-        if if_present and if_equal:
-            continue
-        insertToDbDF.loc[n] = updatedDF.loc[n]
-    return insertToDbDF
 
 
-def insert_calculated_values_into_db (insertToDb,fieldName):
-    #insertToDb should be a pandas dataframe with only values that needs to be inserted
-    for n in range(0, len(insertToDb)):
-        StockHistory.objects.filter(id = insertToDb.iloc[n,0]).update(**{fieldName: insertToDb.iloc[n,2]})
+
+
