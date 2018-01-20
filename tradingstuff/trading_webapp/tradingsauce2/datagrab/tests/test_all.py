@@ -111,6 +111,10 @@ class DataGrab(TestCase):
         ut.calculate_and_store_sma3(stock)
         lastRecord = StockHistory.objects.all().order_by('-id')[:6]
         self.assertAlmostEqual(lastRecord[5].sma3, 52.9333333)
+        self.assertAlmostEqual(lastRecord[4].sma3, 52.5333333)
+        self.assertAlmostEqual(lastRecord[3].sma3, 51.9666666)
+        self.assertAlmostEqual(lastRecord[2].sma3, 51.8333333)
+        self.assertAlmostEqual(lastRecord[1].sma3, 51.8333333)
 
     def test_same_data_is_not_inserted_into_db(self):
         stock = StockSymbolFactory.create(name='ASHOK Leyland',
