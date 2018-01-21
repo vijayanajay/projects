@@ -112,7 +112,7 @@ class DataGrab(TestCase):
         lastRecord = StockHistory.objects.all().order_by('-id')[:6]
         self.assertAlmostEqual(lastRecord[5].sma3, 52.9333333)
         self.assertAlmostEqual(lastRecord[4].sma3, 52.5333333)
-        self.assertAlmostEqual(lastRecord[3].sma3, 51.9666666)
+        self.assertAlmostEqual(lastRecord[3].sma3, 51.96666666)
         self.assertAlmostEqual(lastRecord[2].sma3, 51.8333333)
         self.assertAlmostEqual(lastRecord[1].sma3, 51.8333333)
 
