@@ -53,6 +53,6 @@ def test(request):
     csv_filename = get_csv_filename(stock)
     #count = read_csv_file(stock, csv_filename)
     read_csv_file(stock, csv_filename)
-    count = calculate_and_store_sma3(stock)
+    count = calculate_and_store_daily_returns(stock)
     return HttpResponse(count)
 

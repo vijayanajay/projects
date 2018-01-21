@@ -22,6 +22,4 @@ to debug:
 import pdb; pdb.set_trace()
 python -m pdb manage.py runserver
 
-
-originalDF[originalDF['id'] == stockHistoryDF.iloc[n,2]]
-test_DF[test_DF['date']==history_date]
+pytest -k CalculatedColumns   #to test a particular classname
