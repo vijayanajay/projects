@@ -6,7 +6,7 @@ from django.conf import settings
 from .utils import *
 import csv
 import datetime
-import logging
+import logging, quandl
 
 log = logging.getLogger(__name__)
 
@@ -48,11 +48,14 @@ def Load_Data(file_name, symbol):
 
 def test(request):
     log.debug("inside views.test")
+    quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
+    end_date = datetime.datetime.now().strftime("%Y-%m-%d")
+    dataReader = quandl.get('NSE/ASHOKLEY', start_date='2010-01-01', end_date=end_date)
+    log.debug(dataReader)
     #DO NOT USE THIS FOR ANYTHING EXCEPT FOR TESTING
-    stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
-    csv_filename = get_csv_filename(stock)
-    #count = read_csv_file(stock, csv_filename)
-    read_csv_file(stock, csv_filename)
-    count = calculate_and_store_daily_returns(stock)
-    return HttpResponse(count)
+    #stock =  StockSymbol.objects.get(symbol = 'ASHOKLEY')
+    #csv_filename = get_csv_filename(stock)
+    #read_csv_file(stock, csv_filename)
+    #count = calculate_and_store_daily_returns(stock)
+    return HttpResponse(dataReader)
 

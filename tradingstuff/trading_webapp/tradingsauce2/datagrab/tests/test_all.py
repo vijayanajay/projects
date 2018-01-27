@@ -97,25 +97,6 @@ class DataGrab(TestCase):
         self.assertEquals(lastRecord.spreadHighLow, 2.60)
         self.assertEquals(lastRecord.spreadCloseOpen, 1.80)
 
-    def test_calculated_sma3_is_correct(self):
-        stock = StockSymbolFactory.create(name = 'ASHOK Leyland',
-                                           symbol = 'ASHOKLEY', tickerNumber = '500477')
-        stock.save()
-        self.assertEquals(StockSymbol.objects.count(),1)
-        csv_filename = ut.get_csv_filename(stock)
-        try:
-            with transaction.atomic():
-                count = ut.read_csv_file(stock, csv_filename)
-        except:
-            self.fail("exception when trying to insert")
-        ut.calculate_and_store_sma3(stock)
-        lastRecord = StockHistory.objects.all().order_by('-id')[:6]
-        self.assertAlmostEqual(lastRecord[5].sma3, 52.9333333)
-        self.assertAlmostEqual(lastRecord[4].sma3, 52.5333333)
-        self.assertAlmostEqual(lastRecord[3].sma3, 51.96666666)
-        self.assertAlmostEqual(lastRecord[2].sma3, 51.8333333)
-        self.assertAlmostEqual(lastRecord[1].sma3, 51.8333333)
-
     def test_same_data_is_not_inserted_into_db(self):
         stock = StockSymbolFactory.create(name='ASHOK Leyland',
                                           symbol='ASHOKLEY', tickerNumber='500477')
@@ -139,7 +120,64 @@ class DataGrab(TestCase):
         self.assertEquals(StockHistory.objects.count(), 1854)
 
 
+class AlternateSourceDataGrab(TestCase):
 
+    def test_quandl_stock_not_found_returns_no_issue(self):
+        stock = StockSymbolFactory.create()
+        stock_details = ut.read_from_quandl(stock)
+        self.assertEqual(stock_details, False)
+
+    def test_quandl_stock_not_found_returns_no_issue(self):
+        stock = StockSymbolFactory.create(name='ASHOK Leyland',
+                                          symbol='ASHOKLEY', tickerNumber='500477')
+        stock_details = ut.read_from_quandl(stock)
+        self.assertEqual(stock_details, True)
+
+    def test_quandl_stock_import_to_StockHistory(self):
+        stock = StockSymbolFactory.create(name='ASHOK Leyland',
+                                          symbol='ASHOKLEY', tickerNumber='500477')
+        stock.save()
+        self.assertEquals(StockSymbol.objects.count(), 1)
+        try:
+            with transaction.atomic():
+                count = ut.read_from_quandl(stock)
+        except:
+            self.fail("exception when trying to insert")
+        # count = StockHistory.objects.count()
+        self.assertGreater(StockHistory.objects.count(), 1)
+        lastRecord = StockHistory.objects.all().last()
+        self.assertEquals(lastRecord.openPrice, 50.5)
+        self.assertEquals(lastRecord.highPrice, 52.6)
+        self.assertEquals(lastRecord.lowPrice, 50.0)
+        self.assertEquals(lastRecord.closePrice, 52.3)
+        self.assertEquals(lastRecord.wap, 51.723125410140653536)
+        self.assertEquals(lastRecord.numberOfShares, 3035544)
+        self.assertEquals(lastRecord.numberOfTrades, 8128)
+        self.assertEquals(lastRecord.totalTurnover, 157007823)
+        self.assertEquals(lastRecord.spreadHighLow, 2.60)
+        self.assertEquals(lastRecord.spreadCloseOpen, 1.80)
+
+    def test_same_data_is_not_inserted_into_db(self):
+        stock = StockSymbolFactory.create(name='ASHOK Leyland',
+                                          symbol='ASHOKLEY', tickerNumber='500477')
+        stock.save()
+        self.assertEquals(StockSymbol.objects.count(), 1)
+        csv_filename = ut.get_csv_filename(stock)
+        # first insert
+        try:
+            with transaction.atomic():
+                count = ut.read_csv_file(stock, csv_filename)
+        except:
+            self.fail("exception when trying to insert")
+        self.assertEquals(StockHistory.objects.count(), 1854)
+
+        # second insert
+        try:
+            with transaction.atomic():
+                count = ut.read_csv_file(stock, csv_filename)
+        except:
+            self.fail("exception when trying to insert")
+        self.assertEquals(StockHistory.objects.count(), 1854)
 
 
 

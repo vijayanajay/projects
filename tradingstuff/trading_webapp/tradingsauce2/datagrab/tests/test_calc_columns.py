@@ -50,7 +50,3 @@ class CalculatedColumns(TestCase):
             self.assertAlmostEqual(lastRecord[2].dailyReturns * 1000, 1.93986421)
             self.assertAlmostEqual(lastRecord[1].dailyReturns * 1000, -14.34034417)
 
-class AlternateDataSource(TestCase):
-
-    def test(self):
-        return True

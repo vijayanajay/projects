@@ -23,3 +23,5 @@ import pdb; pdb.set_trace()
 python -m pdb manage.py runserver
 
 pytest -k CalculatedColumns   #to test a particular classname
+
+NotFoundError
