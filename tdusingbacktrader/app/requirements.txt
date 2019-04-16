@@ -1,0 +1,4 @@
+pandas
+backtrader
+oandapy
+django
