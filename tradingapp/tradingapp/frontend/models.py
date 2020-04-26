@@ -2,7 +2,8 @@ from django.db import models
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
-    bom_id = models.CharField(unique=True, null=False)
+    bom_id = models.CharField(max_length = 20, 
+                              unique=True, null=False)
 
     def __str__(self):
         return self.name + "/" + bom_id
