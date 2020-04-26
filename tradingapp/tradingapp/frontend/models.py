@@ -6,7 +6,7 @@ class Company(models.Model):
                               unique=True, null=False)
 
     def __str__(self):
-        return self.name + "/" + bom_id
+        return self.name + "/" + self.bom_id
     
 class Price(models.Model):
     date = models.DateField(null=False)
