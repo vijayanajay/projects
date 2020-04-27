@@ -10,3 +10,9 @@ quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
 def test(request):
     stock_price = quandl.get('BSE/BOM500325')
     return HttpResponse(len(stock_price))
+
+def refresh_data(request):
+    test_data = "Ajay"
+    context = {'test_data': test_data}
+    return render(request,'frontend/refresh_data.html', context)
+
