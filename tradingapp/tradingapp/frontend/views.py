@@ -17,3 +17,8 @@ def refresh_data(request):
     context = {'test_data': test_data}
     return render(request,'frontend/refresh_data.html', context)
 
+
+def data_index(request):
+    test_data = "Ajay"
+    context = {'test_data': test_data}
+    return render(request,'frontend/data_index.html', context)
