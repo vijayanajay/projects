@@ -3,7 +3,7 @@
 <head>
     <title>My Trading Apps</title>
     <link rel="stylesheet" href="{% static 'frontend\bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'frontend\bootstrap-theme.min.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend\bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'frontend\site.css' %}">
 </head>
 <body>
@@ -27,13 +27,9 @@
     </nav>
     
 
-    <div class="content container">
-        <div class="row">
-            <div class="col-md-8">
+    <div class="content">
                 {% block content %}
                 {% endblock %}
-            </div>
-        </div>
     </div>
 </body>
 </html>

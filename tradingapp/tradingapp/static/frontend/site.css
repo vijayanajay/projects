@@ -24,3 +24,14 @@ body {
 
 .navbar-collapse {
     justify-content: flex-end;
+}
+
+.db_table {
+    top: 15%;
+    left: 5%;
+    right: 10%;
+    position: absolute;
+    text-align: left;
+    border: 3px solid green
+}
+
