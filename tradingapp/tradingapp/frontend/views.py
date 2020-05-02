@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Price, Company
 import pandas as pd
@@ -12,10 +12,10 @@ def test(request):
     #text = len(stock_price)
     return HttpResponse(text)
 
-def refresh_data(request):
-    test_data = "Ajay"
-    context = {'test_data': test_data}
-    return render(request,'frontend/refresh_data.html', context)
+def refresh_data(request, id):
+    all_companies = Company.objects.all()
+    context = {'all_companies': all_companies}
+    return render(request,'frontend/data_index.html', context)
 
 
 def data_index(request):
