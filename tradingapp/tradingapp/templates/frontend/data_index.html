@@ -15,18 +15,15 @@
                 </tr>
             </thead>
             <tbody>
+                {% for company in all_companies %}
                 <tr>
-                    <th scope="row">1</th>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                    <td>@mdo</td>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ company.name }}</td>
+                    <td>{{ company.bom_id }}</td>
+                    <td>{{ company.last_updated_date }}</td>
+                    <td>{% url 'refresh_data' company.id %}</td>
                 </tr>
-                <tr>
-                    <th scope="row">2</th>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                    <td>@fat</td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
