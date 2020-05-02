@@ -8,7 +8,11 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name + "/" + self.bom_id
-    
+
+    def update_status(self):
+        if self.last_updated_date is None:
+            return ("Never Updated. Refresh ?")
+           
 class Price(models.Model):
     date = models.DateField(null=False)
     open_price = models.FloatField()
