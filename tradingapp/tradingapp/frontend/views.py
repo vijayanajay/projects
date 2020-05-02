@@ -19,6 +19,6 @@ def refresh_data(request):
 
 
 def data_index(request):
-    test_data = "Ajay"
-    context = {'test_data': test_data}
+    all_companies = Company.objects.all()
+    context = {'all_companies': all_companies}
     return render(request,'frontend/data_index.html', context)
