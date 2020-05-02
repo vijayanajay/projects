@@ -35,3 +35,13 @@ body {
     border: 3px solid green
 }
 
+
+.debug-tb {
+    bottom: 35%;
+    left: 5%;
+    right: 10%;
+    position: absolute;
+    text-align: left;
+    border: 3px solid green
+}
+

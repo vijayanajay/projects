@@ -14,7 +14,15 @@ def test(request):
 
 def refresh_data(request, id):
     all_companies = Company.objects.all()
-    context = {'all_companies': all_companies}
+    company = Company.objects.get(id=id)
+    if company.last_updated_date is None:
+        company_info = 'BSE/' + company.bom_id
+        stock_price = quandl.get(company_info)
+        debuginfo = stock_price 
+    else:
+        debiginfo = "nothing"
+    context = {'all_companies': all_companies,
+               'debuginfo' : debuginfo}
     return render(request,'frontend/data_index.html', context)
 
 

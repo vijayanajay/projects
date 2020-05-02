@@ -25,11 +25,15 @@
             </ul>
         </div>
     </nav>
-    
+
 
     <div class="content">
-                {% block content %}
-                {% endblock %}
+        {% block content %}
+        {% endblock %}
     </div>
+    <div class="debug-tb">
+        <p>{{ debuginfo }}</p>
+    </div>
+
 </body>
 </html>
