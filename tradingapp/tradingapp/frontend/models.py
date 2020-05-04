@@ -31,12 +31,12 @@ class Price(models.Model):
     sma_periodSmall = models.FloatField(null=True)
     sma_periodBig = models.FloatField(null=True)
 
-    bom_id = models.ForeignKey(
+    company = models.ForeignKey(
         'Company',
         on_delete = models.CASCADE)
 
     class Meta:
-        unique_together = ['bom_id', 'date']
+        unique_together = ['company', 'date']
                
     def __str__(self):
-        return (self.bom_id + " " + self.date + " " + self.open_price)
+        return (self.Company.bom_id + " " + self.date + " " + self.open_price)
