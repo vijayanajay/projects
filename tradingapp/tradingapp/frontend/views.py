@@ -48,12 +48,14 @@ def insert_into_db(stock_history, id):
                                      'Spread H-L': 'spread_highLow',
                                      'Spread C-O': 'spread_closeOpen'})
     stock_history['date'] = stock_history.index
-    stock_history['bom_id'] = id
+    stock_history['company_id'] = id
     
     entries = []
     for e in stock_history.T.to_dict().values():
         entries.append(Price(**e))
     Price.objects.bulk_create(entries)
+    company = Company.objects.get(id=id)
+    company.last_updated_date = datetime.datetime.today()
     
     return stock_history
     
