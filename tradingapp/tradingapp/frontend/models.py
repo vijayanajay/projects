@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
@@ -39,4 +40,4 @@ class Price(models.Model):
         unique_together = ['company', 'date']
                
     def __str__(self):
-        return (self.company.bom_id + " " + self.date + " " + self.open_price)
+        return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
