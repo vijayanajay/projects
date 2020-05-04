@@ -17,8 +17,9 @@ def refresh_data(request, id):
     company = Company.objects.get(id=id)
     if company.last_updated_date is None:
         company_info = 'BSE/' + company.bom_id
-        stock_price = quandl.get(company_info)
-        debuginfo = stock_price 
+        stock_history = quandl.get(company_info)
+        #debuginfo = stock_history.head()
+        debuginfo = insert_into_db(stock_history, company.id).head()
     else:
         debiginfo = "nothing"
     context = {'all_companies': all_companies,
@@ -30,3 +31,29 @@ def data_index(request):
     all_companies = Company.objects.all()
     context = {'all_companies': all_companies}
     return render(request,'frontend/data_index.html', context)
+
+
+def insert_into_db(stock_history, id):
+    stock_history = stock_history.dropna()
+    stock_history = stock_history.rename(columns={'Open': 'open_price',
+                                     'High': 'high_price',
+                                     'Low': 'low_price',
+                                     'Close': 'close_price',
+                                     'WAP': 'wap',
+                                     'No. of Shares': 'volume',
+                                     'No. of Trades': 'trades',
+                                     'Total Turnover': 'turnover',
+                                     'Deliverable Quantity': 'deliverable_quantity',
+                                     '% Deli. Qty to Traded Qty': 'percent_del_traded_qty',
+                                     'Spread H-L': 'spread_highLow',
+                                     'Spread C-O': 'spread_closeOpen'})
+    stock_history['date'] = stock_history.index
+    stock_history['bom_id'] = id
+    
+    entries = []
+    for e in stock_history.T.to_dict().values():
+        entries.append(Price(**e))
+    Price.objects.bulk_create(entries)
+    
+    return stock_history
+    

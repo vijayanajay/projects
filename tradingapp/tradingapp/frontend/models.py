@@ -27,9 +27,9 @@ class Price(models.Model):
     percent_del_traded_qty = models.FloatField()
     spread_highLow = models.FloatField()
     spread_closeOpen = models.FloatField()
-    rsi = models.FloatField()
-    sma_periodSmall = models.FloatField()
-    sma_periodBig = models.FloatField()
+    rsi = models.FloatField(null=True)
+    sma_periodSmall = models.FloatField(null=True)
+    sma_periodBig = models.FloatField(null=True)
 
     bom_id = models.ForeignKey(
         'Company',
@@ -39,4 +39,4 @@ class Price(models.Model):
         unique_together = ['bom_id', 'date']
                
     def __str__(self):
-        return self.bom_id + " " + self.date + " " + self.open_price
+        return (self.bom_id + " " + self.date + " " + self.open_price)
