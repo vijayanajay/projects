@@ -56,6 +56,7 @@ def insert_into_db(stock_history, id):
     Price.objects.bulk_create(entries)
     company = Company.objects.get(id=id)
     company.last_updated_date = datetime.datetime.today()
+    company.save()
     
     return stock_history
     

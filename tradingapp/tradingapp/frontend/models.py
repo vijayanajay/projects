@@ -13,6 +13,8 @@ class Company(models.Model):
     def update_status(self):
         if self.last_updated_date is None:
             return ("Never Updated. Refresh ?")
+        else:
+            return (self.last_updated_date)
            
 class Price(models.Model):
     date = models.DateField(null=False)
