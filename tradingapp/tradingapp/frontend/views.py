@@ -18,10 +18,9 @@ def refresh_data(request, id):
     if company.last_updated_date is None:
         company_info = 'BSE/' + company.bom_id
         stock_history = quandl.get(company_info)
-        #debuginfo = stock_history.head()
         debuginfo = insert_into_db(stock_history, company.id).head()
     else:
-        debiginfo = "nothing"
+        debuginfo = "nothing"
     context = {'all_companies': all_companies,
                'debuginfo' : debuginfo}
     return render(request,'frontend/data_index.html', context)

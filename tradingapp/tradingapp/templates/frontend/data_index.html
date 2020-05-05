@@ -20,7 +20,7 @@
                     <th scope="row">{{ forloop.counter }}</th>
                     <td>{{ company.name }}</td>
                     <td>{{ company.bom_id }}</td>
-                    <td>{{ company.last_updated_date }}</td>
+                    <td>{{ company.last_updated_date|timesince }}</td>
                     <td><a href="{% url 'refresh_data' company.id %}">{{ company.update_status }}</a></td>
                 </tr>
                 {% endfor %}
