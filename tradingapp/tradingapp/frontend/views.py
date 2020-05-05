@@ -23,12 +23,15 @@ def refresh_data(request, id):
         debuginfo = "nothing"
     context = {'all_companies': all_companies,
                'debuginfo' : debuginfo}
-    return render(request,'frontend/data_index.html', context)
+    request.session['debuginfo'] = debuginfo
+    return redirect('data_index')
 
 
 def data_index(request):
     all_companies = Company.objects.all()
     context = {'all_companies': all_companies}
+    if 'debuginfo' in request.session and request.session['debuginfo'] is not None:
+        context['debuginfo'] = request.session['debuginfo']
     return render(request,'frontend/data_index.html', context)
 
 
