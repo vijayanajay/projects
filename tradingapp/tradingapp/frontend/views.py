@@ -20,9 +20,7 @@ def refresh_data(request, id):
         stock_history = quandl.get(company_info)
         debuginfo = insert_into_db(stock_history, company.id).head()
     else:
-        debuginfo = "nothing"
-    context = {'all_companies': all_companies,
-               'debuginfo' : debuginfo}
+        debuginfo = str(type(company.last_updated_date))
     request.session['debuginfo'] = debuginfo
     return redirect('data_index')
 
