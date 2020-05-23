@@ -5,26 +5,43 @@ import pandas as pd
 import numpy as np
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn import preprocessing
+#from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import *
 from pycaret.classification import *
+import talib
+import matplotlib.pyplot as plt
 
 
-percent_return_expected = 0.03
-ewma_fast_days = 12
-ewma_slow_days = 26
-ewma_signal_days =9
+
+percent_return_expected = 0.025
+small_period = 3
+large_period = 10
 
 
-def relative_strength_index(df, n):
-    dUp = df > 0
-    dDown = df < 0
+def test_svm_model(X,y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
     
-    RollUp=pd.Series(dUp).rolling(window=n).mean() 
-    RollDown=pd.Series(dDown).rolling(window=n).mean().abs()
+    min_max_scaler = preprocessing.MinMaxScaler()
+    X_train_scaled = min_max_scaler.fit_transform(X_train)
+    X_test_scaled = min_max_scaler.fit_transform(X_test)
     
-    RS = RollUp / RollDown
-    rsi= 100.0 - (100.0 / (1.0 + RS))
-    return rsi
-
+    #model = SVC(kernel = 'rbf')
+    model = SVC(kernel = 'rbf',
+                C = 500,
+                random_state=0)
+    model.fit(X_train_scaled, y_train)
+    y_pred_acc = model.predict(X_test_scaled)
+    
+    #model.fit(X_train_scaled, y_train)
+    #y_pred = model.predict(X_test_scaled)
+    
+    
+    print("Confusion Matrix")
+    print(confusion_matrix(y_test,y_pred_acc))
+    print(pd.crosstab(y_test, y_pred_acc, rownames=['True'], 
+                      colnames=['Predicted'], margins=True))        
+    return True
 
 def create_graphs(info):
     source = pd.DataFrame()
@@ -119,54 +136,134 @@ def create_graphs(info):
     
     
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
-stock_price = quandl.get('BSE/BOM500325', start_date='2001-01-01', 
+stock_price = quandl.get('BSE/BOM500325', start_date='2010-01-01', 
                          end_date='2019-12-31')
-info = stock_price[{'Open','WAP'}]
+
+info = stock_price[{'Open','High', 'Close', 'Low', 'WAP'}]
+info.loc[:,'Volume'] = stock_price.loc[:, 'No. of Trades']
 info.loc[:, 'Date'] = pd.to_datetime(info.index, format='%m/%d/%Y')
 info.loc[:,"daily_returns"] = info.iloc[3:,1] / info.iloc[:-3, 1].values - 1
 info.daily_returns = info.daily_returns.shift(periods=-3)
 
 
-info.loc[:,'SMA3']= pd.Series(info.Open).rolling(window=3).mean()
-info.loc[:,'SMA6']= pd.Series(info.Open).rolling(window=6).mean()
+#info.loc[:,'SMA3']= talib.SMA()
+#info.loc[:,'SMA6']= pd.Series(info.Open).rolling(window=6).mean()
 #info.loc[:,'SMA7']= pd.Series(info.Open).rolling(window=7).mean()
 #info.loc[:,'SMA15']= pd.Series(info.Open).rolling(window=15).mean()
-info.loc[:,'RSI3'] = relative_strength_index(info.daily_returns,3)
-emaSlow =  pd.Series(info.loc[:,'Open']).ewm(adjust=True,ignore_na=False,
-                    span=ewma_slow_days,min_periods=1).mean()
-emaFast =  pd.Series(info.loc[:,'Open']).ewm(adjust=True,ignore_na=False,
-                    span=ewma_fast_days,min_periods=1).mean()
-emaSignal =  pd.Series(info.loc[:,'Open']).ewm(adjust=True,ignore_na=False,
-                    span=ewma_signal_days,min_periods=1).mean()
-low_min = pd.Series(info.loc[:, "Open"]).rolling(window=3).min()
-high_max = pd.Series(info.loc[:, "Open"]).rolling(window=3).max()
-info.loc[:,'WillR'] = 100 * (high_max - info['Open'])/(high_max - low_min)
-info.loc[:,'MACD'] = emaFast - emaSlow
+info.loc[:,'RSI3'] = talib.RSI(info.daily_returns,small_period)
+info.loc[:,'RSI10'] = talib.RSI(info.daily_returns,large_period)
+info.loc[:,'WillR'] = talib.WILLR(info.High, info.Low, info.Close, timeperiod=large_period)
+macd, macdsignal, macdhist = talib.MACD(info.Close, 12, 26,9)
+info.loc[:,'MACD'] = macd
+info.loc[:,'MACDSIGNAL'] = macdsignal
+del [macd, macdsignal, macdhist]
+info.loc[:,'MFI'] =  talib.MFI(info.High, info.Low, info.Close, info.Volume, timeperiod=14)
+info.loc[:,'PLUS_DI'] = talib.PLUS_DI(info.High, info.Low, info.Close, large_period)
+info.loc[:,'PLUS_DM'] = talib.PLUS_DM(info.High, info.Low, large_period)
+info.loc[:,'ADX'] = talib.ADX(info.High, info.Low, info.Close, 15)
+info.loc[:,'TRIX'] = talib.TRIX(info.Close, 15)
+info.loc[:,'OBV']= talib.OBV(info.Close, info.Volume)
+
 info = info.dropna()
 
 info = info.drop(info[info.daily_returns >= 0.065].index)
 info = info.drop(info[info.daily_returns <= -0.055].index)
 
 
-#X = info[{'RSI3','MACD', 'WillR'}]
 y = info['daily_returns'].apply(lambda x: 1 if x>=percent_return_expected else 0)
 
 
-#X = info[{'RSI3','MACD', 'WillR'}]
-
-data = info[{'RSI3','MACD', 'WillR'}]
-data.loc[:,'daily_returns'] = y
-
-clf1 = setup(data = data, target = 'daily_returns', normalize=True)
-
+X = info[{'Close', 'RSI3','RSI10', 'MACD', 
+          'WillR', 'MACD', 'MACDSIGNAL', 
+          'MFI', 'PLUS_DI', 'PLUS_DM',
+          'ADX', 'TRIX', 'OBV'}]
+#data.loc[:,'daily_returns'] = y
 
 
-#Create graphs
-#p = create_graphs(info)
-#show (p)
+#X = np.asarray(X)
+#y = np.asarray(y)
+
+#svm_model_return = test_svm_model(X,y)
 
 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
+
+min_max_scaler = preprocessing.MinMaxScaler()
+X_train_scaled = min_max_scaler.fit_transform(X_train)
+X_test_scaled = min_max_scaler.fit_transform(X_test)
+
+'''
+#for gridsearch
+tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-1, 1e-2],
+                     'C': [0.01,.09, 1, 10, 100, 250, 500, 750, 1000]},
+                    {'kernel': ['linear'], 
+                     'C': [0.01,.09, 1, 10, 100, 250, 500, 750, 1000]},
+                     {'kernel': ['poly'], 
+                     'C': [0.01,.09, 1, 10, 100, 250, 500, 750, 1000],
+                     'degree':[2, 3, 4, 5]}]
+
+scores = ['precision', 'recall']
+
+for score in scores:
+    print("# Tuning hyper-parameters for %s" % score)
+    print()
+
+    clf = GridSearchCV(
+        SVC(), tuned_parameters, scoring='%s_macro' % score
+    )
+    clf.fit(X_train_scaled, y_train)
+
+    print("Best parameters set found on development set:")
+    print()
+    print(clf.best_params_)
+    print()
+    print("Grid scores on development set:")
+    print()
+    means = clf.cv_results_['mean_test_score']
+    stds = clf.cv_results_['std_test_score']
+    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+        print("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params))
+    print()
+
+    print("Detailed classification report:")
+    print()
+    print("The model is trained on the full development set.")
+    print("The scores are computed on the full evaluation set.")
+    print()
+    y_true, y_pred = y_test, clf.predict(X_test_scaled)
+    print(classification_report(y_true, y_pred))
+    print()
 
 
+model = SVC(kernel = 'poly',
+            C = 600,
+            degree=3,
+            class_weight = 'balanced',
+            random_state=64)
 
 
+y_score = model.fit(X_train_scaled, y_train).decision_function(X_test_scaled)
+y_pred = model.predict(X_test_scaled)
+
+#model.fit(X_train_scaled, y_train)
+#y_pred = model.predict(X_test_scaled)
+fpr, tpr, thresholds = roc_curve(y_test, y_score)
+
+
+print("Confusion Matrix")
+print(confusion_matrix(y_test,y_pred))
+print(pd.crosstab(y_test, y_pred, rownames=['True'], 
+                  colnames=['Predicted'], margins=True))  
+
+print("Detailed classification report:")
+print()
+print("The model is trained on the full development set.")
+print("The scores are computed on the full evaluation set.")
+print()
+print(classification_report(y_test, y_pred))
+print()
+print ("Area under the curve (ROC)")
+print (auc(fpr, tpr))
+
+'''

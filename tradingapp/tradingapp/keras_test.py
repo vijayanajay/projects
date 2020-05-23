@@ -8,7 +8,7 @@ from keras import optimizers
 from keras.utils import to_categorical
 from bokeh.plotting import figure, show
 from bokeh.layouts import column 
-
+from keras.callbacks import TensorBoard
 
 
 history_points = 60
@@ -83,6 +83,7 @@ info.loc[:,"returns"] = info.iloc[period_of_returns:,0] / info.iloc[:-period_of_
 info.returns = info.returns.shift(periods=-period_of_returns)
 
 info = info.dropna()
+info = info.loc[:12800,]
 
 #p = create_graphs(info)
 #show (p)
@@ -107,7 +108,7 @@ y =  np.asarray(y)
 X = X.astype('float32')
 y = y.astype('float32')
 
-test_data = 0.2 
+test_data = 0.5
 X_train = X[:int(len(X)*test_data)]
 y_train = y[:int(len(X)*test_data)]
 X_test = X[int(len(X)*test_data):]  
@@ -123,10 +124,10 @@ model.add(Dense(50, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 model.compile(loss= 'binary_crossentropy', optimizer='sgd', metrics=['accuracy'])
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir="./logs")
-model.fit(X_test,y_test,epochs=1, 
-          batch_size=128,
+tensorboard = TensorBoard(log_dir="./logs")
+model.fit(X_test,y_test,epochs=3, 
+          batch_size=256,
           validation_split = 0.2,
-          callbacks=[tensorboard_callback])
+          callbacks=[tensorboard])
 
 
