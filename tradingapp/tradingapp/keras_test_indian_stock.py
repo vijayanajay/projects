@@ -14,6 +14,7 @@ import talib
 from matplotlib import pyplot
 from sklearn.metrics import *
 import quandl
+from keras import regularizers
 
 
 history_points = 60
@@ -94,17 +95,11 @@ print (len(X_train[y_train==1])/len(X_train) * 100)
 print ("Percentage of y=1 in test data")
 print (len(X_test[y_test==1])/len(X_test) * 100)
 
-
+'''
 model = Sequential()
-model.add(LSTM(60, activation='relu', input_shape = (60,13)))
-model.add(Dense(500, activation='relu'))
-model.add(Dense(1000, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(500, activation='relu'))
-model.add(Dense(500, activation='relu'))
-model.add(Dense(500, activation='relu'))
-model.add(Dense(500, activation='relu'))
-model.add(Dense(100, activation='relu'))
+model.add(LSTM(60, activation='relu', return_sequences=True, input_shape = (60,13)))
+model.add(LSTM(50, return_sequences= False))
+model.add(Dense(50, activation='relu',kernel_regularizer=regularizers.l2(0.009)))
 model.add(Dense(1, activation='sigmoid'))
 
 
@@ -115,7 +110,7 @@ model.compile(loss= 'binary_crossentropy', optimizer='adam',
 
 tensorboard = TensorBoard(log_dir="./logs")
 
-history = model.fit(X_train,y_train,epochs=50, 
+history = model.fit(X_train,y_train,epochs=20, 
                     validation_split = 0.2)
                     
 yhat_probs = model.predict(X_test, verbose=0)
@@ -167,4 +162,4 @@ pyplot.plot(history.history['val_accuracy'], label='val')
 pyplot.legend()
 pyplot.show()
 
-
+'''

@@ -5,7 +5,7 @@ class Company(models.Model):
     name = models.CharField(max_length=200)
     bom_id = models.CharField(max_length = 20, 
                               unique=True, null=False)
-    last_updated_date = models.DateField(null=True)
+    last_updated_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.name + "/" + self.bom_id

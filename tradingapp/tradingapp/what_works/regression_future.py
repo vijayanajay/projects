@@ -1,3 +1,7 @@
+# This is basic regression model for future prediction. 
+# loss: 2.7448e-05 - mean_squared_error: 2.7448e
+# so-so accuracy
+
 from sklearn import preprocessing
 import numpy as np
 import pandas as pd
@@ -15,14 +19,13 @@ from matplotlib import pyplot
 from sklearn.metrics import *
 import quandl
 import pickle
-from sklearn.model_selection import train_test_split
-import seaborn as sns
+
 
 physical_devices = tf.config.list_physical_devices('GPU') 
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 history_points = 60
-period_of_returns = 30
+period_of_returns = 60
 expected_returns = 0.001
 small_period = 3
 large_period = 10
@@ -121,34 +124,42 @@ info = info.loc[:len(info)/2,:]
 # using the last {history_points} open high low close volume data points, predict the next open value
 
 
+
+
+
+
 scalerX = preprocessing.MinMaxScaler(feature_range=(0,1))
-#scalery = preprocessing.MinMaxScaler(feature_range=(0,1))
+scalery = preprocessing.MinMaxScaler(feature_range=(0,1))
 X_data_normalised = scalerX.fit_transform(info.drop('exp_C', axis=1))
-X_data_normalised = info.drop('exp_C', axis=1).values
 X = np.array([X_data_normalised[i:i+history_points].copy() for i in range(len(X_data_normalised) - history_points)])
-#y = info.exp_C[:len(X_data_normalised) - history_points].values
-y = info.returns[:len(X_data_normalised) - history_points].apply(lambda x: 1 if x>=expected_returns else 0)
 
+train_data = 0.8
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
+y = info.exp_C[:len(X_data_normalised) - history_points].values
+y_test = y[int(len(X)*train_data):]  
+y = y.reshape(-1,1)
+y = scalery.fit_transform(y)
 
-#y = scalery.fit_transform(y)
-
-#with open('scalerX.pkl', 'wb') as f:
-#    pickle.dump(scalerX, f)
-#with open('scalery.pkl', 'wb') as f:
-#    pickle.dump(scalery, f)    
+with open('scalerX.pkl', 'wb') as f:
+    pickle.dump(scalerX, f)
+with open('scalery.pkl', 'wb') as f:
+    pickle.dump(scalery, f)    
 
 
 X = X.astype('float32')
 y = y.astype('float32')
 
+X_train = X[:int(len(X)*train_data)]
+y_train = y[:int(len(X)*train_data)]
+X_test = X[int(len(X)*train_data):]  
 
-'''
+
+
 # for indian stock data
+'''
 model = Sequential()
-model.add(BatchNormalization(input_shape=(history_points,14)))
-model.add(LSTM(60, activation='relu', return_sequences=True))
+model.add(LSTM(60, activation='relu', return_sequences=True, 
+               input_shape = (history_points,14)))
 model.add(LSTM(60, activation='relu', return_sequences=False))
 model.add(Dropout(0.15))
 model.add(Dense(30, activation='relu'))
@@ -161,62 +172,56 @@ epochs=14
 '''
 
 #for forex data
-epochs=15
 model = Sequential()
-model.add(LSTM(60, activation='relu', return_sequences=True, input_shape=(history_points,14)))
+model.add(LSTM(60, activation='relu', return_sequences=True, 
+               input_shape = (history_points,14)))
 model.add(LSTM(60, activation='relu', return_sequences=False))
-#model.add(Dropout(0.25))
-model.add(Dense(1 50, activation='relu'))
-model.add(Dense(1, activation='sigmoid'))
+model.add(Dropout(0.25))
+model.add(Dense(50, activation='relu'))
+model.add(Dense(1))
 
-model.compile(loss= 'binary_crossentropy', optimizer='adam', 
-              metrics=['accuracy'])
+model.compile(loss= 'mean_squared_error', optimizer='adam', 
+              metrics=['mean_squared_error'])
+epochs=20
+history = model.fit(X_train,y_train,epochs=epochs, batch_size=512)
 
-history = model.fit(X_train,y_train,epochs=epochs, batch_size=512, 
-                    shuffle=True, validation_split=0.2)
+y_pred = model.predict(X_test)
 
-Y_pred = model.predict(X_test)
-
-#y_pred_actuals = scalery.inverse_transform(y_pred)
-y_pred = np.argmax(Y_pred, axis=1)
-print ("Confusion Matrix")
-cm = confusion_matrix(y_test, y_pred)
-print(cm)
-sns.heatmap(cm)
-
-_, train_acc = model.evaluate(X_train, y_train, verbose=0)
-_, test_acc = model.evaluate(X_test, y_test, verbose=0)
-print('Train: %.3f, Test: %.3f' % (train_acc, test_acc))
+y_pred_actuals = scalery.inverse_transform(y_pred)
 
 
+print ("RMSE")
+#print (np.sqrt(np.mean(((y_pred_actuals - y_test) ** 2))))
 
 
-x_axis = list(range(history_points,len(y_pred)+1))
+x_axis = list(range(1,len(y_test)+1))
 
-s1=figure(title='Loss', 
+s1 = figure(title='Open Price', 
+           plot_width=1000, 
+           plot_height=300,
+           x_axis_label="datetime",
+           y_axis_label = 'Open Price')
+
+s1.line(x_axis,y_pred_actuals[:,0], line_width=2, color ='red')
+s1.line(x_axis,y_test, line_width=2, color ='blue')
+
+s2=figure(title='Loss/error', 
            plot_width=1000, 
            plot_height=300,
            x_axis_label="epoch",
-           y_axis_label = 'loss')
-
-s1.line(list(range(3,epochs+1)), history.history['loss'][2:],color='red')
+           y_axis_label = 'loss/error')
 
 
-s2=figure(title='Error', 
-           plot_width=1000, 
-           plot_height=300,
-           x_axis_label="epoch",
-           y_axis_label = 'val_loss')
-
-s2.line(list(range(3,epochs+1)), history.history['val_loss'][2:], color='blue')
+s2.line(list(range(1,epochs+1)), history.history['loss'],color='red')
+s2.line(list(range(1,epochs+1)), history.history['mean_squared_error'], color='blue')
 
 show(column(s1, s2))
 
 '''
 model_json = model.to_json()
-with open("model.json", "w") as json_file:
+with open("regression_future_model.json", "w") as json_file:
     json_file.write(model_json)
 # serialize weights to HDF5
-model.save_weights("model.h5")
+model.save_weights("regression_future_model.h5")
 print("Saved model to disk")
 '''
