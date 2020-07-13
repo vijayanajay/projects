@@ -30,10 +30,10 @@ pio.renderers.default = "browser"
 physical_devices = tf.config.list_physical_devices('GPU') 
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
-history_points = 60
-period_of_returns = 60
-small_period = int(.2 * period_of_returns)
-large_period = int(.6 * period_of_returns)
+history_points = 90
+period_of_returns = 5
+small_period = int(.3 * history_points)
+large_period = int(.9 * history_points)
 
     
 data = pd.read_csv("data.csv", sep=';')
@@ -45,33 +45,36 @@ info = data[{'Open', 'High', 'Low','Close'}]
 info.loc[:,'exp_C'] = info.Close.shift(periods=-period_of_returns)
 info.loc[:, 'SMA'] = talib.SMA(info.Close,small_period)
 info.loc[:, 'EMA'] = talib.EMA(info.Close,small_period)
-info.loc[:,'APO'] = talib.APO(info.Close, fastperiod=small_period, slowperiod=large_period)
+#info.loc[:,'APO'] = talib.APO(info.Close, fastperiod=small_period, slowperiod=large_period)
 info.loc[:,'RSI'] = talib.RSI(info.Close,small_period)
-info.loc[:,'WillR'] = talib.WILLR(info.High, info.Low, info.Close, timeperiod=large_period)
+#info.loc[:,'WillR'] = talib.WILLR(info.High, info.Low, info.Close, timeperiod=large_period)
 info.loc[:,'STDDEV'] = talib.STDDEV(info.Close, 
                                     timeperiod=small_period, nbdev=1)
 info.loc[:,'MOM'] = talib.MOM(info.Close, timeperiod=small_period)
-macd, macdsignal, macdhist = talib.MACD(info.Close, 12, 26,9)
-info.loc[:,'MACD'] = macd
-info.loc[:,'MACDSIGNAL'] = macdsignal
-del [macd, macdsignal, macdhist]
+#macd, macdsignal, macdhist = talib.MACD(info.Close, 12, 26,9)
+#info.loc[:,'MACD'] = macd
+#info.loc[:,'MACDSIGNAL'] = macdsignal
+#del [macd, macdsignal, macdhist]
+
 #info.loc[:,'PLUS_DI'] = talib.PLUS_DI(info.High, info.Low, info.Close, large_period)
 #info.loc[:,'PLUS_DM'] = talib.PLUS_DM(info.High, info.Low, large_period)
 
-
+del data
 
 info = info.dropna()
 info = info.loc[:len(info)/2,:]
 
 
-scalerX = preprocessing.MinMaxScaler(feature_range=(0,1))
-scalery = preprocessing.MinMaxScaler(feature_range=(0,1))
-X_data_normalised = scalerX.fit_transform(info.drop('exp_C', axis=1))
-X = np.array([X_data_normalised[i:i+history_points].copy() for i in range(len(X_data_normalised) - history_points)])
+scalerX = preprocessing.StandardScaler()
+scalery = preprocessing.StandardScaler()
+X_data_normalised = scalerX.fit_transform(info.drop({'exp_C', 'Low', 'High'}, axis=1))
+X = np.array([X_data_normalised[i-history_points:i].copy() for i in range(history_points,len(X_data_normalised))])
 
 train_data = 0.8
 
-y = info.exp_C[:len(X_data_normalised) - history_points].values
+
+y = info.exp_C[history_points:len(X_data_normalised)].values
+real_C =info.Close[history_points:len(X_data_normalised)].values
 y_test = y[int(len(X)-2000):]  
 y = y.reshape(-1,1)
 y = scalery.fit_transform(y)
@@ -109,16 +112,17 @@ epochs=14
 
 #for forex data using LTSM
 model = Sequential()
-model.add(LSTM(60, activation='relu', return_sequences=True, 
+model.add(LSTM(history_points, activation='relu', return_sequences=True, 
                input_shape = (history_points,X.shape[2])))
-model.add(LSTM(60, activation='relu', return_sequences=False))
-model.add(Dropout(0.25))
-model.add(Dense(50, activation='relu'))
+model.add(LSTM(history_points, activation='relu', return_sequences=False))
+model.add(Dropout(0.3))
+model.add(Dense(100, activation='relu'))
 model.add(Dense(1))
+opt = optimizers.Adam(learning_rate=6e-5)
 
-model.compile(loss= 'mean_squared_error', optimizer='adam', 
-              metrics=['mean_squared_error'])
-epochs=14
+model.compile(loss= 'mae', optimizer=opt, 
+              metrics=['mae'])
+epochs=50
 history = model.fit(X_train,y_train,epochs=epochs, batch_size=512)
 
 y_pred = model.predict(X_test)
@@ -134,7 +138,7 @@ x_axis = list(range(1,len(y_test)+1))
 
 
 
-fig = make_subplots(rows=10, cols=1, shared_xaxes=True, vertical_spacing=0.02,
+fig = make_subplots(rows=4, cols=1, vertical_spacing=0.02,
                     subplot_titles=('Actuals', 'Loss', 'MSE'))
 
 
@@ -143,20 +147,30 @@ fig.add_trace(go.Scatter(x=x_axis, y=y_pred_actuals[:,0], mode='lines',
 fig.add_trace(go.Scatter(x=x_axis, y=y_test, mode='lines', 
                          name='Y_real'), row=1,col=1)
 
-fig.add_trace(go.Scatter(x=x_axis, y=history.history['loss'], mode='lines', 
+
+
+fig.add_trace(go.Scatter(x=x_axis, y=history.history['loss'][18:], mode='lines', 
                          name='Y_real'), row=2,col=1)
 
-fig.add_trace(go.Scatter(x=x_axis, y=history.history['mean_squared_error'], 
+fig.add_trace(go.Scatter(x=x_axis, y=history.history['mae'][18:], 
                          mode='lines', name='Y_real'), row=3,col=1)
 
-fig.update_layout(height=2000, width=1000)
+fig.add_trace(go.Scatter(y=real_C[-500:], 
+                         mode='lines', name='infoClose'), row=4,col=1)
+fig.add_trace(go.Scatter(y=y_pred_actuals[:,0][-500:], 
+                         mode='lines', name='Ypred'), row=4,col=1)
+fig.add_trace(go.Scatter(y=y_test[-500:], 
+                          mode='lines', name='Y_real'), row=4,col=1)
+
+fig.update_layout(height=2000, width=2000)
 fig.show()
 
-
+'''
 with open('models_mse_values.txt', 'a') as f:
     np.savetxt(fname=f,X=history.history['mean_squared_error'], 
                comments='LTSM60-LTSM60-DO0.25-DE-50, adam')
 f.close()
+'''
 
 '''
 s1 = figure(title='Open Price', 

@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 from sklearn.metrics import *
-from pycaret.classification import *
 import talib
 import matplotlib.pyplot as plt
 import plotly
@@ -59,7 +58,7 @@ info.loc[:,'TRIX'] = talib.TRIX(info.Close, 15)
 
 
 info = info.dropna()
-info = info.loc[len(info)-5000:,:]
+info = info.loc[:len(info)/2,:]
 
 X = info.values
 y = info.Close.shift(periods=-period_of_returns).values
