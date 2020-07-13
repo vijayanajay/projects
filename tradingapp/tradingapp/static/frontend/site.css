@@ -1,16 +1,16 @@
 body {
     padding: 0;
     margin: 0;
-    background: #f2f6e9;
+    
 }
 /*--- navigation bar ---*/
 .navbar {
-    background: #6ab446;
+    background: LightGrey;
 }
 
 .nav-link,
 .navbar-brand {
-    color: #fff;
+    color: Black;
     cursor: pointer;
 }
 
@@ -32,7 +32,7 @@ body {
     right: 10%;
     position: absolute;
     text-align: left;
-    border: 3px solid green
+    border: 3px solid DimGray
 }
 
 
@@ -42,6 +42,6 @@ body {
     right: 10%;
     position: absolute;
     text-align: left;
-    border: 3px solid green
+    border: 3px solid DimGray
 }
 

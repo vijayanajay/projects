@@ -1,5 +1,7 @@
 from django.db import models
 from datetime import datetime
+from django.utils.translation import gettext_lazy as _
+
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
@@ -19,6 +21,14 @@ class Company(models.Model):
             return (None)
            
 class Price(models.Model):
+
+    class Period (models.TextChoices):
+        one_min = '1M', _('1minute')
+        five_min = '5M', _('5minute')
+        fifteen_min = '15M', _('15minute')
+        thirty_min = '30M', _('30minute')
+        one_day = '1D', _('1 Day')
+
     date = models.DateField(null=False)
     open_price = models.FloatField()
     high_price = models.FloatField()
@@ -35,13 +45,15 @@ class Price(models.Model):
     rsi = models.FloatField(null=True, blank=True)
     sma_periodSmall = models.FloatField(null=True, blank=True)
     sma_periodBig = models.FloatField(null=True, blank=True)
+    period = models.CharField(max_length=3, choices=Period.choices,
+                              default=Period.one_day)
 
     company = models.ForeignKey(
         'Company',
-        on_delete = models.CASCADE)
+        on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['company', 'date']
-               
+
     def __str__(self):
         return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
