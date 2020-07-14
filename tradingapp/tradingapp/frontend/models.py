@@ -16,12 +16,13 @@ class Company(models.Model):
 
     def update_status(self):
         if self.last_updated_date is None:
-            return ("Never Updated. Refresh ?")
-        elif datetime.today().date()  > self.last_updated_date:
-            return ("Refresh?")
+            return "Never Updated. Refresh ?"
+        elif datetime.today().date() > self.last_updated_date:
+            return "Refresh?"
         else:
-            return (None)
-           
+            return None
+
+
 class Price(models.Model):
 
     class Period (models.TextChoices):
