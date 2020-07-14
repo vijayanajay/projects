@@ -4,6 +4,7 @@ from .models import Price, Company
 import pandas as pd
 from django.conf import settings
 import csv, datetime, quandl
+from yahoo_finance import YahooFinance as yf
 
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
 
@@ -13,7 +14,6 @@ def test(request):
     return HttpResponse(text)
 
 def refresh_data(request, id):
-    all_companies = Company.objects.all()
     company = Company.objects.get(id=id)
     if company.last_updated_date is None:
         company_info = 'BSE/' + company.bom_id
