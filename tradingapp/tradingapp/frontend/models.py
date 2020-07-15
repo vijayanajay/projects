@@ -1,7 +1,9 @@
 from django.db import models
 from datetime import datetime
 from django.utils.translation import gettext_lazy as _
+import pytz
 
+tz = pytz.timezone('Asia/Kolkata')
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
@@ -17,7 +19,7 @@ class Company(models.Model):
     def update_status(self):
         if self.last_updated_date is None:
             return "Never Updated. Refresh ?"
-        elif datetime.today().date() > self.last_updated_date:
+        elif datetime.now(tz) > self.last_updated_date:
             return "Refresh?"
         else:
             return None
