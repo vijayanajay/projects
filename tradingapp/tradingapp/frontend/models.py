@@ -9,7 +9,7 @@ class Company(models.Model):
                               unique=True, null=False)
     yahoo_id = models.CharField(max_length=20, unique=True,
                                 null=True, blank=True)
-    last_updated_date = models.DateField(null=True, blank=True)
+    last_updated_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.name + "/" + self.bom_id
@@ -32,7 +32,7 @@ class Price(models.Model):
         thirty_min = '30M', _('30minute')
         one_day = '1D', _('1 Day')
 
-    date = models.DateField(null=False)
+    date = models.DateTimeField(null=False)
     open_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
