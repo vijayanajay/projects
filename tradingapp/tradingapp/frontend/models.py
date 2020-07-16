@@ -13,6 +13,7 @@ class Company(models.Model):
                                 null=True, blank=True)
     last_updated_date = models.DateTimeField(null=True, blank=True)
 
+
     def __str__(self):
         return self.name + "/" + self.bom_id
 
@@ -52,6 +53,8 @@ class Price(models.Model):
     sma_periodBig = models.FloatField(null=True, blank=True)
     period = models.CharField(max_length=3, choices=Period.choices,
                               default=Period.one_day)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
 
     company = models.ForeignKey(
         'Company',
