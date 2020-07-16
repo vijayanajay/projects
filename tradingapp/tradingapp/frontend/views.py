@@ -23,8 +23,17 @@ def refresh_data(request, id):
         stock_history = yf(company.yahoo_id, result_range='7d', interval='1m').result
         debuginfo = insert_into_db(stock_history, company.id, 'yahoo')
     else:
-        price_history
-        debuginfo = str(type(company.last_updated_date))
+        stock_history = pd.DataFrame()
+        latest_price_history = Price.objects.latest('created_at').created_at
+        difference = datetime.date.today() - latest_price_history.date()
+
+        if difference > 0:
+            start = max(latest_price_history, datetime.datetime.today().astimezone(tz) - datetime.timedelta(days=7))
+            stock_history = yf(company.yahoo_id, start=start,
+                               end=datetime.datetime.today(), interval='1m').result
+
+            debuginfo = str(stock_history)
+
     request.session['debuginfo'] = debuginfo
     return redirect('data_index')
 
