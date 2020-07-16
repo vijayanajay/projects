@@ -23,6 +23,7 @@ def refresh_data(request, id):
         stock_history = yf(company.yahoo_id, result_range='7d', interval='1m').result
         debuginfo = insert_into_db(stock_history, company.id, 'yahoo')
     else:
+        price_history
         debuginfo = str(type(company.last_updated_date))
     request.session['debuginfo'] = debuginfo
     return redirect('data_index')

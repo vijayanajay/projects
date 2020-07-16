@@ -53,8 +53,8 @@ class Price(models.Model):
     sma_periodBig = models.FloatField(null=True, blank=True)
     period = models.CharField(max_length=3, choices=Period.choices,
                               default=Period.one_day)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
 
     company = models.ForeignKey(
         'Company',
