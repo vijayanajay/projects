@@ -6,6 +6,7 @@ from django.conf import settings
 import csv, datetime, quandl
 from yahoo_finance import YahooFinance as yf
 import pytz
+import frontend.utils as utils
 
 tz = pytz.timezone('Asia/Kolkata')
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
@@ -21,7 +22,7 @@ def refresh_data(request, id):
     if company.last_updated_date is None:
         company_info = 'BSE/' + company.bom_id
         stock_history = yf(company.yahoo_id, result_range='7d', interval='1m').result
-        debuginfo = insert_into_db(stock_history, company.id, 'yahoo')
+        debuginfo = utils.insert_into_db(stock_history, company.id, 'yahoo')
     else:
         stock_history = pd.DataFrame()
         latest_price_history = Price.objects.latest('created_at').created_at.astimezone(tz=tz)
@@ -30,7 +31,7 @@ def refresh_data(request, id):
         stock_history.date = pd.to_datetime(stock_history.date, unit='s')
         max_date = stock_history.date[-1].to_pydatetime().astimezone(tz=tz)
         stock_history = stock_history[(stock_history.date > latest_price_history) & (stock_history.date <= max_date)]
-        debuginfo = insert_into_db(stock_history, company.id, 'yahoo')
+        debuginfo = utils.insert_into_db(stock_history, company.id, 'yahoo')
     request.session['debuginfo'] = debuginfo
     return redirect('data_index')
 
@@ -43,45 +44,5 @@ def data_index(request):
     return render(request,'frontend/data_index.html', context)
 
 
-def insert_into_db(stock_history, id, source):
-    stock_history = stock_history.dropna()
-    if source == 'quandl':
-        stock_history = stock_history.rename(columns={'Open': 'open_price',
-                                         'High': 'high_price',
-                                         'Low': 'low_price',
-                                         'Close': 'close_price',
-                                         'WAP': 'wap',
-                                         'No. of Shares': 'volume',
-                                         'No. of Trades': 'trades',
-                                         'Total Turnover': 'turnover',
-                                         'Deliverable Quantity': 'deliverable_quantity',
-                                         '% Deli. Qty to Traded Qty': 'percent_del_traded_qty',
-                                         'Spread H-L': 'spread_highLow',
-                                         'Spread C-O': 'spread_closeOpen'})
-        stock_history['date'] = stock_history.index
-        stock_history['company_id'] = id
-
-    elif source == 'yahoo':
-        stock_history = stock_history.rename(columns={'Open': 'open_price',
-                                                      'High': 'high_price',
-                                                      'Low': 'low_price',
-                                                      'Close': 'close_price',
-                                                      'Volume': 'volume'})
-
-        stock_history['date'] = stock_history.index
-        stock_history.date = pd.to_datetime(stock_history.date, unit='s')
-        stock_history['company_id'] = id
-        stock_history['period'] = Price.Period.one_min
-        #return str(stock_history.date[0])
-
-
-    entries = []
-    for e in stock_history.T.to_dict().values():
-        entries.append(Price(**e))
-    Price.objects.bulk_create(entries)
-    company = Company.objects.get(id=id)
-    company.last_updated_date = datetime.datetime.now(tz)
-    company.save()
-    
-    return stock_history.head().to_json()
-    
+def analysis_index(request):
+    return render(request,'frontend/analysis_index.html')
