@@ -46,3 +46,7 @@ def data_index(request):
 
 def analysis_index(request):
     return render(request,'frontend/analysis_index.html')
+
+
+def mf_index(request):
+    return render(request,'frontend/mf_index.html')
