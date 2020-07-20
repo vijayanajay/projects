@@ -33,27 +33,21 @@ def refresh_data(request, id):
         stock_history = stock_history[(stock_history.date > latest_price_history) & (stock_history.date <= max_date)]
         debuginfo = utils.insert_into_db(stock_history, company.id, 'yahoo')
     request.session['debuginfo'] = debuginfo
-    request.session['debugpage'] = 'data_index'
     return redirect('data_index')
 
 
 def data_index(request):
     all_companies = Company.objects.all()
-    context = {'all_companies': all_companies, 'page': 'data_index'}
-    if request.session['debugpage'] == 'data_index' and request.session['debugpage'] is not None:
-        if 'debuginfo' in request.session and request.session['debuginfo'] is not None:
+    context = {'all_companies': all_companies}
+    if 'debuginfo' in request.session and request.session['debuginfo'] is not None:
             context['debuginfo'] = request.session['debuginfo']
     return render(request,'frontend/data_index.html', context)
 
 
 def analysis_index(request):
-    del request.session['debuginfo']
-    context = {'page': 'analysis_index'}
     return render(request,'frontend/analysis_index.html')
 
 
 def mf_index(request):
-    del request.session['debuginfo']
-    context = {'page': 'mf_index'}
     context = {'debuginfo': utils.scrap_webpage(url=None)}
     return render(request,'frontend/mf_index.html', context)
