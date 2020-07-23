@@ -65,3 +65,16 @@ class Price(models.Model):
 
     def __str__(self):
         return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
+
+
+class DailyStockStats(models.Model):
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE)
+
+    date = models.DateTimeField(null=False)
+    mean = models.FloatField(null=True, blank=True)
+    std_dev = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ['company', 'date']
