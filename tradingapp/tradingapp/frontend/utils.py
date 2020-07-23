@@ -66,3 +66,8 @@ def scrap_webpage(url):
     #     file.write(str(soup))
     debuginfo = table
     return debuginfo
+
+
+def get_single_stock_data(id):
+    stock_data = Company.objects.get(id=id)
+    return stock_data
