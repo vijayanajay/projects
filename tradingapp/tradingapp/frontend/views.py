@@ -45,7 +45,7 @@ def data_index(request):
     return render(request,'frontend/data_index.html', context)
 
 
-def analysis_index(request):
+def analysis_index(request, id):
     if request.method == 'POST':
         form=frontend.forms.SelectCompany(request.POST)
         if form.is_valid():
@@ -53,9 +53,15 @@ def analysis_index(request):
     else:
         form = frontend.forms.SelectCompany()
         context = {'form': form}
+        context['debuginfo'] = "clicked"
     return render(request,'frontend/analysis_index.html', context)
 
 
 def mf_index(request):
     context = {'debuginfo': utils.scrap_webpage(url=None)}
     return render(request,'frontend/mf_index.html', context)
+
+
+def analysis_single_stock(request, id):
+    context = {'debuginfo': id}
+    return render(request, 'frontend/analysis_index.html', context)
