@@ -3,14 +3,16 @@
 {% block content %}
 
 <div class="container-fluid">
-   <p><h1> Analysis </h1></p>
+    <p>
+    <h3>Analysis</h3></p>
 </div>
 <div class="container-fluid">
-
-    <form>
-    <p>Select the company: </p>
+    <form action="/frontend/analysis" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
 </div>
-
 
 
 {% endblock %}

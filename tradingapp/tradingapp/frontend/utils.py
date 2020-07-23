@@ -6,9 +6,8 @@ from django.conf import settings
 import csv, datetime, quandl
 from yahoo_finance import YahooFinance as yf
 import pytz
-from lxml import html
 import requests
-import re
+from bs4 import BeautifulSoup
 
 tz = pytz.timezone('Asia/Kolkata')
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
@@ -57,11 +56,13 @@ def insert_into_db(stock_history, id, source):
 
 
 def scrap_webpage(url):
-    url = 'https://www.morningstar.in/mutualfunds/f00000pcqc/axis-banking-n-psu-debt-fund-direct-plan-daily-dividend-reinvestment-option/detailed-portfolio.aspx'
+    url = 'https://www.moneycontrol.com/mutual-funds/axis-long-term-equity-fund-direct-plan/portfolio-holdings/MAA192'
 
     page = requests.get(url)
-    tree = html.fromstring(page.content)
-
-    table = tree.xpath('/html/body/form/div[4]/div[2]/div/div/div[3]/div[1]/div/div[2]/div/div[2]/div[2]/div[1]/div[1]/table')
+    soup = BeautifulSoup(page.content, features='lxml')
+    rows = soup.find_all("span", attrs={"class":"port_right"})
+    table = rows[1].text.strip()
+    # with open("output1.html", "w") as file:
+    #     file.write(str(soup))
     debuginfo = table
     return debuginfo

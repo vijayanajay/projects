@@ -7,6 +7,7 @@ import csv, datetime, quandl
 from yahoo_finance import YahooFinance as yf
 import pytz
 import frontend.utils as utils
+import frontend.forms
 
 tz = pytz.timezone('Asia/Kolkata')
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
@@ -45,7 +46,14 @@ def data_index(request):
 
 
 def analysis_index(request):
-    return render(request,'frontend/analysis_index.html')
+    if request.method == 'POST':
+        form=frontend.forms.SelectCompany(request.POST)
+        if form.is_valid():
+            context = {'debuginfo':'success'}
+    else:
+        form = frontend.forms.SelectCompany()
+        context = {'form': form}
+    return render(request,'frontend/analysis_index.html', context)
 
 
 def mf_index(request):
