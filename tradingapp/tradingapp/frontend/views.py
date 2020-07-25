@@ -45,7 +45,7 @@ def data_index(request):
     return render(request,'frontend/data_index.html', context)
 
 
-def analysis_index(request, id, type='intraday'):
+def analysis_index(request, id):
     if request.method == 'POST':
         form=frontend.forms.SelectCompany(request.POST)
         if form.is_valid():
@@ -53,7 +53,7 @@ def analysis_index(request, id, type='intraday'):
     else:
         form = frontend.forms.SelectCompany()
         context = {'form': form}
-        stock_data = frontend.utils.get_single_stock_data(id, 'intraday')
+        stock_data = frontend.utils.get_single_stock_data(id)
         context['debuginfo'] = "clicked"
         context['stock_data'] = stock_data
     return render(request,'frontend/analysis_index.html', context)

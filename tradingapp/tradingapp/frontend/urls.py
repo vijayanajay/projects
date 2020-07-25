@@ -7,6 +7,6 @@ urlpatterns = [
         path('refresh_data/', refresh_data, name='refresh_data'),
         path('', data_index, name='data_index'),
         path('analysis', analysis_index, name='analysis_index'),
-        path('analysis/<int:id>/<str:type>', analysis_index, name='analysis_index'),
+        path('analysis/<int:id>', analysis_index, name='analysis_index'),
         path('mf', mf_index, name='mf_index'),
 ]
