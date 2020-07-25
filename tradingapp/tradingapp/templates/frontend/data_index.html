@@ -19,7 +19,7 @@
                 {% for company in all_companies %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
-                    <td><a href="{% url 'analysis_index' company.id %}">{{ company.name }}</a></td>
+                    <td><a href="{% url 'analysis_index' company.id 'intraday' %}">{{ company.name }}</a></td>
                     <td>{{ company.bom_id }}</td>
                     <td>{{ company.yahoo_id }}</td>
                     <td>{{ company.last_updated_date|timesince }}</td>

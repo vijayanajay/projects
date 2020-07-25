@@ -68,6 +68,6 @@ def scrap_webpage(url):
     return debuginfo
 
 
-def get_single_stock_data(id):
+def get_single_stock_data(id, type='intraday'):
     stock_data = Company.objects.get(id=id)
     return stock_data
