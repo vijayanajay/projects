@@ -3,8 +3,14 @@
 {% block content %}
 
 <div class="container-fluid">
-    <p>
-    <h3>Analysis - {{ stock_data.name }}</h3></p>
+    <div class='row'>
+        <div class="col-xl-9">
+            <h3>Analysis - {{ stock_data.name }}</h3>
+        </div>
+        <div class="col-xl-3">
+            <h5>Overall Status:</h5>
+        </div>
+    </div>
 </div>
 <div class="container-fluid">
     <form action="/frontend/analysis" method="post">
@@ -14,5 +20,67 @@
     </form>
 </div>
 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xl-6">
+            <p>Chart Image</p>
+        </div>
+        <div class="col-xl-6">
+            <div class="row">
+                <div class="col-xl-6">
+                    <p>Day High: </p>
+                </div>
+                <div class="col-xl-6">
+                    <p>Day Low: </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <p>Mean: </p>
+                </div>
+                <div class="col-xl-6">
+                    <p>Standard Dev: </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <p>RSI: </p>
+                </div>
+                <div class="col-xl-6">
+                    <p>MACD: </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <p>Stochastic: </p>
+                </div>
+                <div class="col-xl-6">
+                    <p>ROC: </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <p>Williamson%R: </p>
+                </div>
+                <div class="col-xl-6">
+                    <p>MFI: </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <p>ATR: </p>
+                </div>
+                <div class="col-xl-6">
+                    <p>ADX: </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <p>Bollinger: </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <p></p>
 {% endblock %}

@@ -73,8 +73,26 @@ class DailyStockStats(models.Model):
         on_delete=models.CASCADE)
 
     date = models.DateTimeField(null=False)
+    day_high = models.FloatField(null=True, blank=True)
+    day_low = models.FloatField(null=True, blank=True)
     mean = models.FloatField(null=True, blank=True)
     std_dev = models.FloatField(null=True, blank=True)
+    rsi = models.FloatField(null=True, blank=True)
+    macd = models.FloatField(null=True, blank=True)
+    stochastic = models.FloatField(null=True, blank=True)
+    roc = models.FloatField(null=True, blank=True)
+    willr = models.FloatField(null=True, blank=True)
+    mfi = models.FloatField(null=True, blank=True)
+    atr = models.FloatField(null=True, blank=True)
+    adx = models.FloatField(null=True, blank=True)
+    bol_high = models.FloatField(null=True, blank=True)
+    bol_low = models.FloatField(null=True, blank=True)
+    sma_5 = models.FloatField(null=True, blank=True)
+    sma_10 = models.FloatField(null=True, blank=True)
+    sma_20 = models.FloatField(null=True, blank=True)
+    sma_50 = models.FloatField(null=True, blank=True)
+    sma_100 = models.FloatField(null=True, blank=True)
+    sma_200 = models.FloatField(null=True, blank=True)
 
     class Meta:
         unique_together = ['company', 'date']
