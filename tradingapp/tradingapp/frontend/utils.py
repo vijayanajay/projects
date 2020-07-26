@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Price, Company
+from .models import *
 import pandas as pd
 from django.conf import settings
 import csv, datetime, quandl
@@ -8,6 +8,7 @@ from yahoo_finance import YahooFinance as yf
 import pytz
 import requests
 from bs4 import BeautifulSoup
+import talib
 
 tz = pytz.timezone('Asia/Kolkata')
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
@@ -69,5 +70,17 @@ def scrap_webpage(url):
 
 
 def get_single_stock_data(id, type='intraday'):
-    stock_data = Company.objects.get(id=id)
-    return stock_data
+    price_data = Price.objects.filter(company__id=id)
+    price_data = price_data.to_dataframe()
+    daily_data = DailyStockStats.objects.filter(company__id=id)
+    daily_data = daily_data.to_dataframe()
+    #earliest_date = daily_data.date.min().to_pydatetime().astimezone(tz=tz)
+
+    #test = Price.objects.filter(company__id=id).dates('date', 'day')
+    test = Price.objects.filter(company__id=id).order_by('date').dates('date', 'day').last()
+    if test < datetime.date.today():
+        debuginfo = "Empty"
+    else:
+        debuginfo = "filled in"
+
+    return debuginfo

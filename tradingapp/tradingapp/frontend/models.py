@@ -2,17 +2,20 @@ from django.db import models
 from datetime import datetime
 from django.utils.translation import gettext_lazy as _
 import pytz
+from django_pandas.managers import DataFrameManager
 
 tz = pytz.timezone('Asia/Kolkata')
 
+
 class Company(models.Model):
     name = models.CharField(max_length=200)
-    bom_id = models.CharField(max_length = 20, 
+    bom_id = models.CharField(max_length=20,
                               unique=True, null=False)
     yahoo_id = models.CharField(max_length=20, unique=True,
                                 null=True, blank=True)
     last_updated_date = models.DateTimeField(null=True, blank=True)
 
+    objects = DataFrameManager()
 
     def __str__(self):
         return self.name + "/" + self.bom_id
@@ -27,8 +30,7 @@ class Company(models.Model):
 
 
 class Price(models.Model):
-
-    class Period (models.TextChoices):
+    class Period(models.TextChoices):
         one_min = '1M', _('1minute')
         five_min = '5M', _('5minute')
         fifteen_min = '15M', _('15minute')
@@ -55,10 +57,11 @@ class Price(models.Model):
                               default=Period.one_day)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
-
     company = models.ForeignKey(
         'Company',
         on_delete=models.CASCADE)
+
+    objects = DataFrameManager()
 
     class Meta:
         unique_together = ['company', 'date']
@@ -93,6 +96,8 @@ class DailyStockStats(models.Model):
     sma_50 = models.FloatField(null=True, blank=True)
     sma_100 = models.FloatField(null=True, blank=True)
     sma_200 = models.FloatField(null=True, blank=True)
+
+    objects = DataFrameManager()
 
     class Meta:
         unique_together = ['company', 'date']

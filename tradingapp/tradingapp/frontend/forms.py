@@ -1,5 +1,5 @@
 from django import forms
-from frontend.models import Company
+from frontend.models import *
 
 
 class SelectCompany(forms.Form):
