@@ -78,16 +78,27 @@ def get_single_stock_data(id, type='intraday'):
     else:
         price_data = Price.objects.filter(company__id=id, date__gte=start_date)
     price_data = price_data.to_dataframe()
-    end_date = price_data.date.max().date()
-    n=0
-    while start_date <= end_date:
-        n = n + 1
-        df = pd.DataFrame()
-        df = price_data[price_data['date'].dt.date == start_date]
-        l = price_data.date[1].date()
-        start_date = start_date + datetime.timedelta(days=1)
-        if n > 3:
-            break
+    price_data['date'] = price_data['date'].dt.date
+    end_date = price_data.date.max()
 
-    debuginfo = df.to_json()
+    df = pd.DataFrame()
+    while start_date <= end_date:
+        df = price_data[price_data['date'] == start_date]
+        if len(df) > 0:
+            mean = df.close_price.mean()
+            day_high = df.close_price.max()
+            day_low = df.close_price.min()
+            std_dev = df.close_price.std()
+            rsi = talib.RSI(df.close_price, 14)
+            macd, macdsignal, macdhist = talib.MACD(df.close_price, 12, 26, 9)
+            slowk, slowd = talib.STOCH(df.high_price, df.low_price, df.close_price)
+            roc = talib.ROC(df.close_price,20)
+            willr = talib.WILLR(df.high_price, df.low_price, df.close_price)
+            mfi = talib.MFI(df.high_price, df.low_price, df.close_price, df.volume, 14)
+            atr = talib.ATR(df.high_price, df.low_price, df.close_price, 14)
+            adx = talib.ADX(df.high_price, df.low_price, df.close_price, 14)
+            upperband, middleband, lowerband = talib.BBANDS(df.close_price)
+        start_date = start_date + datetime.timedelta(days=1)
+
+    debuginfo = upperband
     return debuginfo
