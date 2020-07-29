@@ -70,17 +70,24 @@ def scrap_webpage(url):
 
 
 def get_single_stock_data(id, type='intraday'):
-    price_data = Price.objects.filter(company__id=id)
-    price_data = price_data.to_dataframe()
-    daily_data = DailyStockStats.objects.filter(company__id=id)
-    daily_data = daily_data.to_dataframe()
-    #earliest_date = daily_data.date.min().to_pydatetime().astimezone(tz=tz)
 
-    #test = Price.objects.filter(company__id=id).dates('date', 'day')
-    test = Price.objects.filter(company__id=id).order_by('date').dates('date', 'day').last()
-    if test < datetime.date.today():
-        debuginfo = "Empty"
+    start_date = DailyStockStats.objects.filter(company__id=id).order_by('date').dates('date', 'day').last()
+    if start_date == None:
+        price_data = Price.objects.filter(company__id=id)
+        start_date = price_data.order_by('date').dates('date', 'day').first()
     else:
-        debuginfo = "filled in"
+        price_data = Price.objects.filter(company__id=id, date__gte=start_date)
+    price_data = price_data.to_dataframe()
+    end_date = price_data.date.max().date()
+    n=0
+    while start_date <= end_date:
+        n = n + 1
+        df = pd.DataFrame()
+        df = price_data[price_data['date'].dt.date == start_date]
+        l = price_data.date[1].date()
+        start_date = start_date + datetime.timedelta(days=1)
+        if n > 3:
+            break
 
+    debuginfo = df.to_json()
     return debuginfo

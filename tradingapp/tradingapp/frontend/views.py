@@ -54,7 +54,7 @@ def analysis_index(request, id):
         form = frontend.forms.SelectCompany()
         context = {'form': form}
         debuginfo = frontend.utils.get_single_stock_data(id)
-        context['debuginfo'] = type(debuginfo)
+        context['debuginfo'] = debuginfo
         #context['price_data'] = price_data
     return render(request,'frontend/analysis_index.html', context)
 
