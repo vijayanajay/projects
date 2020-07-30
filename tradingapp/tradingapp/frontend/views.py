@@ -26,7 +26,7 @@ def refresh_data(request, id):
         debuginfo = utils.insert_into_db(stock_history, company.id, 'yahoo')
     else:
         stock_history = pd.DataFrame()
-        latest_price_history = Price.objects.latest('created_at').created_at.astimezone(tz=tz)
+        latest_price_history = IntradayPrice.objects.latest('created_at').created_at.astimezone(tz=tz)
         stock_history = yf(company.yahoo_id, result_range='7d', interval='1m').result
         stock_history['date'] = stock_history.index.tz_localize(tz=tz)
         stock_history.date = pd.to_datetime(stock_history.date, unit='s')
