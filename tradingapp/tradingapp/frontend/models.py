@@ -29,14 +29,7 @@ class Company(models.Model):
             return None
 
 
-class Price(models.Model):
-    class Period(models.TextChoices):
-        one_min = '1M', _('1minute')
-        five_min = '5M', _('5minute')
-        fifteen_min = '15M', _('15minute')
-        thirty_min = '30M', _('30minute')
-        one_day = '1D', _('1 Day')
-
+class IntradayPrice(models.Model):
     date = models.DateTimeField(null=False)
     open_price = models.FloatField()
     high_price = models.FloatField()
@@ -50,11 +43,6 @@ class Price(models.Model):
     percent_del_traded_qty = models.FloatField(null=True, blank=True)
     spread_highLow = models.FloatField(null=True, blank=True)
     spread_closeOpen = models.FloatField(null=True, blank=True)
-    rsi = models.FloatField(null=True, blank=True)
-    sma_periodSmall = models.FloatField(null=True, blank=True)
-    sma_periodBig = models.FloatField(null=True, blank=True)
-    period = models.CharField(max_length=3, choices=Period.choices,
-                              default=Period.one_day)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     company = models.ForeignKey(

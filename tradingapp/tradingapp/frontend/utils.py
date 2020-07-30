@@ -42,13 +42,12 @@ def insert_into_db(stock_history, id, source):
         stock_history['date'] = stock_history.index
         stock_history.date = pd.to_datetime(stock_history.date, unit='s')
         stock_history['company_id'] = id
-        stock_history['period'] = Price.Period.one_min
         # return str(stock_history.date[0])
 
     entries = []
     for e in stock_history.T.to_dict().values():
-        entries.append(Price(**e))
-    Price.objects.bulk_create(entries)
+        entries.append(IntradayPrice(**e))
+    IntradayPrice.objects.bulk_create(entries)
     company = Company.objects.get(id=id)
     company.last_updated_date = datetime.datetime.now(tz)
     company.save()
@@ -73,10 +72,10 @@ def get_single_stock_data(id, type='intraday'):
 
     start_date = DailyStockStats.objects.filter(company__id=id).order_by('date').dates('date', 'day').last()
     if start_date == None:
-        price_data = Price.objects.filter(company__id=id)
+        price_data = IntradayPrice.objects.filter(company__id=id)
         start_date = price_data.order_by('date').dates('date', 'day').first()
     else:
-        price_data = Price.objects.filter(company__id=id, date__gte=start_date)
+        price_data = IntradayPrice.objects.filter(company__id=id, date__gte=start_date)
     price_data = price_data.to_dataframe()
     price_data['date'] = price_data['date'].dt.date
     end_date = price_data.date.max()
