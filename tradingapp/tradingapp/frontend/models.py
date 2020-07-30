@@ -58,6 +58,63 @@ class IntradayPrice(models.Model):
         return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
 
 
+class DailyPrice(models.Model):
+    date = models.DateTimeField(null=False)
+    open_price = models.FloatField()
+    high_price = models.FloatField()
+    low_price = models.FloatField()
+    close_price = models.FloatField()
+    wap = models.FloatField(null=True, blank=True)
+    volume = models.PositiveIntegerField(null=True, blank=True)
+    trades = models.PositiveIntegerField(null=True, blank=True)
+    turnover = models.FloatField(null=True, blank=True)
+    deliverable_quantity = models.IntegerField(null=True, blank=True)
+    percent_del_traded_qty = models.FloatField(null=True, blank=True)
+    spread_highLow = models.FloatField(null=True, blank=True)
+    spread_closeOpen = models.FloatField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE)
+
+    objects = DataFrameManager()
+
+    class Meta:
+        unique_together = ['company', 'date']
+
+    def __str__(self):
+        return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
+
+
+class WeeklyPrice(models.Model):
+    date = models.DateTimeField(null=False)
+    open_price = models.FloatField()
+    high_price = models.FloatField()
+    low_price = models.FloatField()
+    close_price = models.FloatField()
+    wap = models.FloatField(null=True, blank=True)
+    volume = models.PositiveIntegerField(null=True, blank=True)
+    trades = models.PositiveIntegerField(null=True, blank=True)
+    turnover = models.FloatField(null=True, blank=True)
+    deliverable_quantity = models.IntegerField(null=True, blank=True)
+    percent_del_traded_qty = models.FloatField(null=True, blank=True)
+    spread_highLow = models.FloatField(null=True, blank=True)
+    spread_closeOpen = models.FloatField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE)
+
+    objects = DataFrameManager()
+
+    class Meta:
+        unique_together = ['company', 'date']
+
+    def __str__(self):
+        return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
+
 class DailyStockStats(models.Model):
     company = models.ForeignKey(
         'Company',
