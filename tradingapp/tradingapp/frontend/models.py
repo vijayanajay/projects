@@ -1,8 +1,10 @@
 from django.db import models
-from datetime import datetime
+import datetime
 from django.utils.translation import gettext_lazy as _
 import pytz
 from django_pandas.managers import DataFrameManager
+import pandas as pd
+import talib
 
 tz = pytz.timezone('Asia/Kolkata')
 
@@ -23,10 +25,43 @@ class Company(models.Model):
     def update_status(self):
         if self.last_updated_date is None:
             return "Never Updated. Refresh ?"
-        elif datetime.now(tz) > self.last_updated_date:
+        elif datetime.datetime.now(tz) > self.last_updated_date:
             return "Refresh?"
         else:
             return None
+
+    def update_daily_stats(self):
+        start_date = DailyStockStats.objects.filter(company__id=self.id).order_by('date').dates('date', 'day').last()
+        if start_date == None:
+            price_data = DailyPrice.objects.filter(company__id=self.id)
+            start_date = price_data.order_by('date').dates('date', 'day').first()
+        else:
+            price_data = DailyPrice.objects.filter(company__id=self.id, date__gte=start_date)
+        price_data = price_data.to_dataframe()
+        price_data['date'] = price_data['date'].dt.date
+        end_date = price_data.date.max()
+
+        df = pd.DataFrame()
+        while start_date <= end_date:
+            df = price_data[price_data['date'] == start_date]
+            if len(df) > 0:
+                mean = df.close_price.mean()
+                day_high = df.close_price.max()
+                day_low = df.close_price.min()
+                std_dev = df.close_price.std()
+                rsi = talib.RSI(df.close_price, 14)
+                macd, macdsignal, macdhist = talib.MACD(df.close_price, 12, 26, 9)
+                slowk, slowd = talib.STOCH(df.high_price, df.low_price, df.close_price)
+                roc = talib.ROC(df.close_price, 20)
+                willr = talib.WILLR(df.high_price, df.low_price, df.close_price)
+                mfi = talib.MFI(df.high_price, df.low_price, df.close_price, df.volume, 14)
+                atr = talib.ATR(df.high_price, df.low_price, df.close_price, 14)
+                adx = talib.ADX(df.high_price, df.low_price, df.close_price, 14)
+                upperband, middleband, lowerband = talib.BBANDS(df.close_price)
+            start_date = start_date + datetime.timedelta(days=1)
+
+        debuginfo = upperband
+        return debuginfo
 
 
 class IntradayPrice(models.Model):
@@ -115,6 +150,8 @@ class WeeklyPrice(models.Model):
     def __str__(self):
         return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
 
+
+
 class DailyStockStats(models.Model):
     company = models.ForeignKey(
         'Company',
@@ -146,3 +183,5 @@ class DailyStockStats(models.Model):
 
     class Meta:
         unique_together = ['company', 'date']
+
+
