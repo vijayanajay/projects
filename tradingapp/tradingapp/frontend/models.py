@@ -5,9 +5,10 @@ import pytz
 from django_pandas.managers import DataFrameManager
 import pandas as pd
 import talib
+import logging
 
 tz = pytz.timezone('Asia/Kolkata')
-
+logger = logging.getLogger(__name__)
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
@@ -65,8 +66,12 @@ class Company(models.Model):
         df['bol_high'], middleband, df['bol_low'] = talib.BBANDS(price_data.close_price)
         if type == 'daily':
             stat = DailyStockStats()
-        df = df[(df.date >= start_date) & df.date == end_date]
-        df.to_csv('data_dump.csv')
+        df = df[(df.date >= start_date) & (df.date <= end_date)]
+
+        entries = []
+        for e in df.T.to_dict().values():
+            entries.append(DailyStockStats(**e))
+        DailyStockStats.objects.bulk_create(entries)
         debuginfo = str(start_date) + " end date = " + str(end_date)
         return debuginfo
 
