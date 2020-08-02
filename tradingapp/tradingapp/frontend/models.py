@@ -34,33 +34,40 @@ class Company(models.Model):
         start_date = DailyStockStats.objects.filter(company__id=self.id).order_by('date').dates('date', 'day').last()
         if start_date == None:
             price_data = DailyPrice.objects.filter(company__id=self.id)
-            start_date = price_data.order_by('date').dates('date', 'day').first()
+            start_date = price_data.order_by('date').dates('date',  'day').first()
         else:
-            price_data = DailyPrice.objects.filter(company__id=self.id, date__gte=start_date)
+            start_date = start_date + datetime.timedelta(days=1)
+            price_data = DailyPrice.objects.filter(company__id=self.id,
+                                                   date__gte=start_date - datetime.timedelta(days=40))
         price_data = price_data.to_dataframe()
+        debuginfo = self.insert_daily_stats_into_db(price_data, start_date, "daily")
+        return debuginfo
+
+    def insert_daily_stats_into_db(self, price_data, start_date, type):
         price_data['date'] = price_data['date'].dt.date
         end_date = price_data.date.max()
-
         df = pd.DataFrame()
-        while start_date <= end_date:
-            df = price_data[price_data['date'] == start_date]
-            if len(df) > 0:
-                mean = df.close_price.mean()
-                day_high = df.close_price.max()
-                day_low = df.close_price.min()
-                std_dev = df.close_price.std()
-                rsi = talib.RSI(df.close_price, 14)
-                macd, macdsignal, macdhist = talib.MACD(df.close_price, 12, 26, 9)
-                slowk, slowd = talib.STOCH(df.high_price, df.low_price, df.close_price)
-                roc = talib.ROC(df.close_price, 20)
-                willr = talib.WILLR(df.high_price, df.low_price, df.close_price)
-                mfi = talib.MFI(df.high_price, df.low_price, df.close_price, df.volume, 14)
-                atr = talib.ATR(df.high_price, df.low_price, df.close_price, 14)
-                adx = talib.ADX(df.high_price, df.low_price, df.close_price, 14)
-                upperband, middleband, lowerband = talib.BBANDS(df.close_price)
-            start_date = start_date + datetime.timedelta(days=1)
-
-        debuginfo = upperband
+        df['date'] = price_data.date
+        df['company_id'] = self.id
+        df['day_high'] = price_data.close_price.rolling(14).max()
+        df['day_low'] = price_data.close_price.rolling(14).min()
+        df['mean'] = price_data.close_price.rolling(14).mean()
+        df['std_dev'] = price_data.close_price.rolling(14).std()
+        df['rsi'] = talib.RSI(price_data.close_price, 14)
+        df['macd'], macdsignal, macdhist = talib.MACD(price_data.close_price, 12, 26, 9)
+        df['stochastic'], slowd = talib.STOCH(price_data.high_price, price_data.low_price, price_data.close_price)
+        df['roc'] = talib.ROC(price_data.close_price, 20)
+        df['willr'] = talib.WILLR(price_data.high_price, price_data.low_price, price_data.close_price)
+        df['mfi'] = talib.MFI(price_data.high_price, price_data.low_price, price_data.close_price,
+                              price_data.volume, 14)
+        df['atr'] = talib.ATR(price_data.high_price, price_data.low_price, price_data.close_price, 14)
+        df['adx'] = talib.ADX(price_data.high_price, price_data.low_price, price_data.close_price, 14)
+        df['bol_high'], middleband, df['bol_low'] = talib.BBANDS(price_data.close_price)
+        if type == 'daily':
+            stat = DailyStockStats()
+        df = df[(df.date >= start_date) & df.date == end_date]
+        df.to_csv('data_dump.csv')
+        debuginfo = str(start_date) + " end date = " + str(end_date)
         return debuginfo
 
 
@@ -151,7 +158,6 @@ class WeeklyPrice(models.Model):
         return (self.company.bom_id + " " + self.date.strftime("%m/%d/%Y") + " " + str(self.open_price))
 
 
-
 class DailyStockStats(models.Model):
     company = models.ForeignKey(
         'Company',
@@ -183,5 +189,3 @@ class DailyStockStats(models.Model):
 
     class Meta:
         unique_together = ['company', 'date']
-
-
