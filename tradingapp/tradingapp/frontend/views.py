@@ -7,9 +7,11 @@ from yahoo_finance import YahooFinance as yf
 import pytz
 import frontend.utils as utils
 import frontend.forms
+import logging
 
 tz = pytz.timezone('Asia/Kolkata')
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
+logger = logging.getLogger(__name__)
 
 
 def test(request):
@@ -52,6 +54,7 @@ def data_index(request):
     context = {'all_companies': all_companies}
     if 'debuginfo' in request.session and request.session['debuginfo'] is not None:
         context['debuginfo'] = request.session['debuginfo']
+    logger.info('inside data_index')
     return render(request, 'frontend/data_index.html', context)
 
 

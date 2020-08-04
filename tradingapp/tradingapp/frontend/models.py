@@ -35,7 +35,7 @@ class Company(models.Model):
         start_date = DailyStockStats.objects.filter(company__id=self.id).order_by('date').dates('date', 'day').last()
         if start_date == None:
             price_data = DailyPrice.objects.filter(company__id=self.id)
-            start_date = price_data.order_by('date').dates('date',  'day').first()
+            start_date = price_data.order_by('date').dates('date',  'day').first() - datetime.timedelta(days=1)
         else:
             start_date = start_date + datetime.timedelta(days=1)
             price_data = DailyPrice.objects.filter(company__id=self.id,
