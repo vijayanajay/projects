@@ -51,7 +51,7 @@ class Company(models.Model):
 
     def insert_daily_stats_into_db(self, price_data, start_date, type):
         logger.debug("inside models.insert_daily_stats_into_db")
-        price_data['date'] = price_data['date'].dt.date
+        #price_data['date'] = price_data['date'].dt.date
         logger.debug(" price_data['date'] = " + price_data['date'].to_json())
         end_date = price_data.date.max()
         logger.debug("end_date = "+str(end_date))
@@ -118,7 +118,7 @@ class IntradayPrice(models.Model):
 
 
 class DailyPrice(models.Model):
-    date = models.DateTimeField(null=False)
+    date = models.DateField(null=False)
     open_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
@@ -147,7 +147,7 @@ class DailyPrice(models.Model):
 
 
 class WeeklyPrice(models.Model):
-    date = models.DateTimeField(null=False)
+    date = models.DateField(null=False)
     open_price = models.FloatField()
     high_price = models.FloatField()
     low_price = models.FloatField()
@@ -180,7 +180,7 @@ class DailyStockStats(models.Model):
         'Company',
         on_delete=models.CASCADE)
 
-    date = models.DateTimeField(null=False)
+    date = models.DateField(null=False)
     day_high = models.FloatField(null=True, blank=True)
     day_low = models.FloatField(null=True, blank=True)
     mean = models.FloatField(null=True, blank=True)
