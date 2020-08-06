@@ -32,21 +32,30 @@ class Company(models.Model):
             return None
 
     def update_daily_stats(self):
+        logger.debug("inside models.update_daily_stats")
         start_date = DailyStockStats.objects.filter(company__id=self.id).order_by('date').dates('date', 'day').last()
+        logger.debug("intial start_date = " + str(start_date))
         if start_date == None:
             price_data = DailyPrice.objects.filter(company__id=self.id)
             start_date = price_data.order_by('date').dates('date',  'day').first() - datetime.timedelta(days=1)
+            logger.debug("intial start_date when none = " + str(start_date))
         else:
             start_date = start_date + datetime.timedelta(days=1)
             price_data = DailyPrice.objects.filter(company__id=self.id,
                                                    date__gte=start_date - datetime.timedelta(days=40))
+            logger.debug("intial start_date when already present = " + str(start_date))
         price_data = price_data.to_dataframe()
         debuginfo = self.insert_daily_stats_into_db(price_data, start_date, "daily")
+        logger.debug("outside models.update_daily_stats")
         return debuginfo
 
     def insert_daily_stats_into_db(self, price_data, start_date, type):
+        logger.debug("inside models.insert_daily_stats_into_db")
         price_data['date'] = price_data['date'].dt.date
+        logger.debug(" price_data['date'] = " + price_data['date'].to_json())
         end_date = price_data.date.max()
+        logger.debug("end_date = "+str(end_date))
+
         df = pd.DataFrame()
         df['date'] = price_data.date
         df['company_id'] = self.id
@@ -65,14 +74,17 @@ class Company(models.Model):
         df['adx'] = talib.ADX(price_data.high_price, price_data.low_price, price_data.close_price, 14)
         df['bol_high'], middleband, df['bol_low'] = talib.BBANDS(price_data.close_price)
         if type == 'daily':
-            stat = DailyStockStats()
+            stat = pd.DataFrame()
         df = df[(df.date >= start_date) & (df.date <= end_date)]
-
+        logger.debug("df data = "+ str(df.date))
+        logger.debug("df len = " + str(len(df)))
         entries = []
         for e in df.T.to_dict().values():
             entries.append(DailyStockStats(**e))
-        DailyStockStats.objects.bulk_create(entries)
+        logger.debug("entries dict values = " + str(entries))
+        DailyStockStats.objects.bulk_create(entries, ignore_conflicts=True)
         debuginfo = str(start_date) + " end date = " + str(end_date)
+        logger.debug("outside models.insert_daily_stats_into_db")
         return debuginfo
 
 
