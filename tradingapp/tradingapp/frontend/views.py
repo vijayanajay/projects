@@ -68,7 +68,6 @@ def analysis_index(request, id):
         context = {'form': form}
         company = Company.objects.get(id=id)
         debuginfo = company.update_daily_stats()
-        #debuginfo = frontend.utils.get_single_stock_data(id)
         context['debuginfo'] = debuginfo
         # context['price_data'] = price_data
     return render(request, 'frontend/analysis_index.html', context)

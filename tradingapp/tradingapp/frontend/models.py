@@ -49,6 +49,24 @@ class Company(models.Model):
         logger.debug("outside models.update_daily_stats")
         return debuginfo
 
+    def update_weekly_stats(self):
+        logger.debug("inside models.update_weekly_stats")
+        start_date = DailyStockStats.objects.filter(company__id=self.id).order_by('date').dates('date', 'day').last()
+        logger.debug("intial start_date = " + str(start_date))
+        if start_date == None:
+            price_data = DailyPrice.objects.filter(company__id=self.id)
+            start_date = price_data.order_by('date').dates('date',  'day').first() - datetime.timedelta(days=1)
+            logger.debug("intial start_date when none = " + str(start_date))
+        else:
+            start_date = start_date + datetime.timedelta(days=1)
+            price_data = DailyPrice.objects.filter(company__id=self.id,
+                                                   date__gte=start_date - datetime.timedelta(days=40))
+            logger.debug("intial start_date when already present = " + str(start_date))
+        price_data = price_data.to_dataframe()
+        debuginfo = self.insert_daily_stats_into_db(price_data, start_date, "daily")
+        logger.debug("outside models.update_weekly_stats")
+        return debuginfo
+
     def insert_daily_stats_into_db(self, price_data, start_date, type):
         logger.debug("inside models.insert_daily_stats_into_db")
         #price_data['date'] = price_data['date'].dt.date
@@ -175,6 +193,39 @@ class WeeklyPrice(models.Model):
 
 
 class DailyStockStats(models.Model):
+    company = models.ForeignKey(
+        'Company',
+        on_delete=models.CASCADE)
+
+    date = models.DateField(null=False)
+    day_high = models.FloatField(null=True, blank=True)
+    day_low = models.FloatField(null=True, blank=True)
+    mean = models.FloatField(null=True, blank=True)
+    std_dev = models.FloatField(null=True, blank=True)
+    rsi = models.FloatField(null=True, blank=True)
+    macd = models.FloatField(null=True, blank=True)
+    stochastic = models.FloatField(null=True, blank=True)
+    roc = models.FloatField(null=True, blank=True)
+    willr = models.FloatField(null=True, blank=True)
+    mfi = models.FloatField(null=True, blank=True)
+    atr = models.FloatField(null=True, blank=True)
+    adx = models.FloatField(null=True, blank=True)
+    bol_high = models.FloatField(null=True, blank=True)
+    bol_low = models.FloatField(null=True, blank=True)
+    sma_5 = models.FloatField(null=True, blank=True)
+    sma_10 = models.FloatField(null=True, blank=True)
+    sma_20 = models.FloatField(null=True, blank=True)
+    sma_50 = models.FloatField(null=True, blank=True)
+    sma_100 = models.FloatField(null=True, blank=True)
+    sma_200 = models.FloatField(null=True, blank=True)
+
+    objects = DataFrameManager()
+
+    class Meta:
+        unique_together = ['company', 'date']
+
+
+class WeeklyStockStats(models.Model):
     company = models.ForeignKey(
         'Company',
         on_delete=models.CASCADE)
