@@ -81,7 +81,6 @@ class Company(models.Model):
         entries = []
         for e in df.T.to_dict().values():
             entries.append(DailyStockStats(**e))
-        logger.debug("entries dict values = " + str(entries))
         DailyStockStats.objects.bulk_create(entries, ignore_conflicts=True)
         debuginfo = str(start_date) + " end date = " + str(end_date)
         logger.debug("outside models.insert_daily_stats_into_db")

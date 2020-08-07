@@ -25,7 +25,7 @@ def refresh_data(request, id):
     if company.last_updated_date is None:
         stock_history = yf(company.yahoo_id, result_range='7d', interval='1m').result
         utils.insert_into_db(stock_history, company.id, 'yahoo', '1m')
-        stock_history_daily = yf(company.yahoo_id, result_range='6mo', interval='1d').result
+        stock_history_daily = yf(company.yahoo_id, result_range='5y', interval='1d').result
         debuginfo = utils.insert_into_db(stock_history_daily, company.id, 'yahoo', '1d')
     else:
         stock_history = pd.DataFrame()
@@ -33,7 +33,7 @@ def refresh_data(request, id):
         latest_price_history = IntradayPrice.objects.latest('created_at').created_at.astimezone(tz=tz)
         latest_daily_price_history = DailyPrice.objects.latest('created_at').created_at.astimezone(tz=tz)
         stock_history = yf(company.yahoo_id, result_range='7d', interval='1m').result
-        stock_history_daily = yf(company.yahoo_id, result_range='6mo', interval='1d').result
+        stock_history_daily = yf(company.yahoo_id, result_range='5y', interval='1d').result
         stock_history['date'] = stock_history.index.tz_localize(tz=tz)
         stock_history_daily['date'] = stock_history_daily.index.tz_localize(tz=tz)
         stock_history.date = pd.to_datetime(stock_history.date, unit='s')
