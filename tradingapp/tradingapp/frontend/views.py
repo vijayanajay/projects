@@ -8,6 +8,8 @@ import pytz
 import frontend.utils as utils
 import frontend.forms
 import logging
+from bokeh.plotting import figure, output_file, show
+from bokeh.embed import components
 
 tz = pytz.timezone('Asia/Kolkata')
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
@@ -15,9 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 def test(request):
-    stock_price = quandl.get('BSE/BOM500325')
-    text = len(stock_price)
-    return HttpResponse(text)
+    plot = figure()
+    plot.circle([1, 2], [3, 4])
+    script, div = components(plot)
+    context = {'debuginfo': 'hello'}
+    context['script'] = script
+    context['div'] = div
+    return render(request, 'frontend/test.html', context)
 
 
 def refresh_data(request, id):
@@ -68,7 +74,16 @@ def analysis_index(request, id):
         context = {'form': form}
         company = Company.objects.get(id=id)
         debuginfo = company.update_daily_stats()
-        context['debuginfo'] = debuginfo
+
+        plot = figure(title='Something',
+                      x_axis_label='X-Axis',
+                      y_axis_label='Y-Axis',
+                      plot_width=800,
+                      plot_height=400)
+        x = DailyPrice.objects.filter(company__id=id).values('date', 'close_price').to_dataframe()
+        plot.line(x.date, x.close_price, line_width=2)
+        context['script'], context['div'] = components(plot)
+        context['debuginfo'] = x
         # context['price_data'] = price_data
     return render(request, 'frontend/analysis_index.html', context)
 

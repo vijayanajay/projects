@@ -5,6 +5,10 @@
     <link rel="stylesheet" href="{% static 'frontend\bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'frontend\bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'frontend\site.css' %}">
+    <script src="{% static 'frontend\bokeh-2.1.1.min.js' %}" crossorigin="anonymous"></script>
+    <script src="{% static 'frontend\bokeh-widgets-2.1.1.min.js' %}" crossorigin="anonymous"></script>
+    <script src="{% static 'frontend\bokeh-tables-2.1.1.min.js' %}" crossorigin="anonymous"></script>
+    <script src="{% static 'frontend\bokeh-api-2.1.1.min.js' %}" crossorigin="anonymous"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-md">
@@ -39,4 +43,5 @@
     </div>
 
 </body>
+ {{ script | safe }}
 </html>
