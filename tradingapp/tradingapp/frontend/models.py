@@ -6,9 +6,18 @@ from django_pandas.managers import DataFrameManager
 import pandas as pd
 import talib
 import logging
+from bokeh.plotting import figure, output_file, show
+from bokeh.embed import components
+from bokeh.models import HoverTool, DataRange1d
 
 tz = pytz.timezone('Asia/Kolkata')
 logger = logging.getLogger(__name__)
+TOOLTIPS = [
+            ("index", "$index"),
+            ("(x,y)", "($x, $y)"),
+            ("desc", "@desc"),
+        ]
+
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
@@ -53,7 +62,7 @@ class Company(models.Model):
         logger.debug("inside models.update_weekly_stats")
         start_date = DailyStockStats.objects.filter(company__id=self.id).order_by('date').dates('date', 'day').last()
         logger.debug("intial start_date = " + str(start_date))
-        if start_date == None:
+        if start_date is None:
             price_data = DailyPrice.objects.filter(company__id=self.id)
             start_date = price_data.order_by('date').dates('date',  'day').first() - datetime.timedelta(days=1)
             logger.debug("intial start_date when none = " + str(start_date))
@@ -69,7 +78,6 @@ class Company(models.Model):
 
     def insert_daily_stats_into_db(self, price_data, start_date, type):
         logger.debug("inside models.insert_daily_stats_into_db")
-        #price_data['date'] = price_data['date'].dt.date
         logger.debug(" price_data['date'] = " + price_data['date'].to_json())
         end_date = price_data.date.max()
         logger.debug("end_date = "+str(end_date))
@@ -103,6 +111,31 @@ class Company(models.Model):
         debuginfo = str(start_date) + " end date = " + str(end_date)
         logger.debug("outside models.insert_daily_stats_into_db")
         return debuginfo
+
+    def get_main_chart(self):
+        logger.debug('inside get_main_chart')
+        df = DailyPrice.objects.filter(company__id=self.id).values('date', 'close_price').to_dataframe()
+        logger.debug('df date type = ' + str(type(df.date[1])))
+        logger.debug('dt date = ' + str(df.date[:10]))
+        df = df[-100:]
+        title = "Last 100 data points"
+        plot = figure(title=title,
+                      x_axis_label='X-Axis',
+                      y_axis_label='Y-Axis',
+                      x_axis_type = 'datetime',
+                      plot_width=800,
+                      plot_height=400,
+                      toolbar_location='above',
+                      tools="pan,wheel_zoom,box_zoom,reset")
+        hover_tool = HoverTool(tooltips=[
+            ('x','$df.date'),
+            ('y', '$y'),
+        ])
+        plot.tools.append(hover_tool)
+        plot.x_range = DataRange1d(range_padding=0.0)
+        plot.line(df.date, df.close_price, line_width=2)
+        logger.debug('end of get_main_chart')
+        return components(plot)
 
 
 class IntradayPrice(models.Model):

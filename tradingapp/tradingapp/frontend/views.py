@@ -11,6 +11,7 @@ import logging
 from bokeh.plotting import figure, output_file, show
 from bokeh.embed import components
 
+
 tz = pytz.timezone('Asia/Kolkata')
 quandl.ApiConfig.api_key = 'fRsTyQJZaBbXBcKsnahq'
 logger = logging.getLogger(__name__)
@@ -73,17 +74,7 @@ def analysis_index(request, id):
         form = frontend.forms.SelectCompany()
         context = {'form': form}
         company = Company.objects.get(id=id)
-        debuginfo = company.update_daily_stats()
-
-        plot = figure(title='Something',
-                      x_axis_label='X-Axis',
-                      y_axis_label='Y-Axis',
-                      plot_width=800,
-                      plot_height=400)
-        x = DailyPrice.objects.filter(company__id=id).values('date', 'close_price').to_dataframe()
-        plot.line(x.date, x.close_price, line_width=2)
-        context['script'], context['div'] = components(plot)
-        context['debuginfo'] = x
+        context['script'], context['div'] = company.get_main_chart()
         # context['price_data'] = price_data
     return render(request, 'frontend/analysis_index.html', context)
 
