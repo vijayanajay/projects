@@ -75,7 +75,6 @@ def analysis_index(request, id):
         context = {'form': form}
         company = Company.objects.get(id=id)
         context['script'], context['div'] = company.get_main_chart()
-        # context['price_data'] = price_data
     return render(request, 'frontend/analysis_index.html', context)
 
 
