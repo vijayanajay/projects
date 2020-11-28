@@ -20,67 +20,103 @@
     </form>
 </div>
 
-<div class="container-fluid small">
+<div class="container-fluid small ">
     <div class="row">
         <div class="col-xl-6">
             <p>Chart Image</p>
 
-            <div class ="row">
+            <div class="row">
 
                 {{ div | safe}}
             </div>
         </div>
-        <div class="col-xl-6">
+        <div class="col-xl-6 text-right">
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <p>Day High: </p>
                 </div>
-                <div class="col-xl-6">
+                <div class="col-xl-3 float-right">
+                    <p>{{ dailystats.day_high|floatformat:3}}</p>
+                </div>
+                <div class="col-xl-3">
                     <p>Day Low: </p>
                 </div>
+                <div class="col-xl-3 float-right">
+                    <p>{{ dailystats.day_low|floatformat:3 }}</p>
+                </div>
             </div>
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <p>Mean: </p>
                 </div>
-                <div class="col-xl-6">
+                <div class="col-xl-3">
+                    <p>{{ dailystats.mean|floatformat:3 }}</p>
+                </div>
+                <div class="col-xl-3">
                     <p>Standard Dev: </p>
                 </div>
+                <div class="col-xl-3">
+                    <p>{{ dailystats.std_dev|floatformat:3 }}</p>
+                </div>
             </div>
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <p>RSI: </p>
                 </div>
-                <div class="col-xl-6">
+                <div class="col-xl-3">
+                    <p>{{ dailystats.rsi|floatformat:3 }}</p>
+                </div>
+                <div class="col-xl-3">
                     <p>MACD: </p>
                 </div>
+                <div class="col-xl-3">
+                    <p>{{ dailystats.macd|floatformat:3 }}</p>
+                </div>
             </div>
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <p>Stochastic: </p>
                 </div>
-                <div class="col-xl-6">
+                <div class="col-xl-3">
+                    <p>{{ dailystats.stochastic|floatformat:3 }}</p>
+                </div>
+                <div class="col-xl-3">
                     <p>ROC: </p>
                 </div>
+                <div class="col-xl-3">
+                    <p>{{ dailystats.roc|floatformat:3 }}</p>
+                </div>
             </div>
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <p>Williamson%R: </p>
                 </div>
-                <div class="col-xl-6">
+                <div class="col-xl-3">
+                    <p>{{ dailystats.willr|floatformat:3 }}</p>
+                </div>
+                <div class="col-xl-3">
                     <p>MFI: </p>
                 </div>
+                <div class="col-xl-3">
+                    <p>{{ dailystats.mfi|floatformat:3 }}</p>
+                </div>
             </div>
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <p>ATR: </p>
                 </div>
-                <div class="col-xl-6">
+                <div class="col-xl-3">
+                    <p>{{ dailystats.atr|floatformat:3 }}</p>
+                </div>
+                <div class="col-xl-3">
                     <p>ADX: </p>
+                </div>
+                <div class="col-xl-3">
+                    <p>{{ dailystats.adx|floatformat:3 }}</p>
                 </div>
             </div>
             <div class="row">
-                <div class="col-xl-6">
+                <div class="col-xl-3">
                     <p>Bollinger: </p>
                 </div>
             </div>
