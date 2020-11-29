@@ -141,15 +141,21 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': '../../tradingapp-debug.log',
+            'formatter': 'verbose'
         },
     },
     'loggers': {
-        '': {
+        'frontend': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'django': {
+        #'django': {
+        #    'handlers': ['file'],
+        #    'level': 'DEBUG',
+        #    'propagate': True,
+        #},
+        'django.db.backends': {
             'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
