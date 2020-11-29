@@ -9,6 +9,8 @@ import logging
 from bokeh.plotting import figure, output_file, show
 from bokeh.embed import components
 from bokeh.models import HoverTool, DataRange1d
+from plotly.offline import plot
+import plotly.graph_objs as go
 
 tz = pytz.timezone('Asia/Kolkata')
 logger = logging.getLogger(__name__)
@@ -113,29 +115,39 @@ class Company(models.Model):
         return debuginfo
 
     def get_main_chart(self):
-        logger.debug('inside get_main_chart')
+        logger.debug('inside models.get_main_chart')
         df = DailyPrice.objects.filter(company__id=self.id).values('date', 'close_price').to_dataframe()
-        logger.debug('df date type = ' + str(type(df.date[1])))
-        logger.debug('dt date = ' + str(df.date[:10]))
-        df = df[-100:]
-        title = "Last 100 data points"
-        plot = figure(title=title,
-                      x_axis_label='X-Axis',
-                      y_axis_label='Y-Axis',
-                      x_axis_type = 'datetime',
-                      plot_width=800,
-                      plot_height=400,
-                      toolbar_location='above',
-                      tools="pan,wheel_zoom,box_zoom,reset")
-        hover_tool = HoverTool(tooltips=[
-            ('x','$df.date'),
-            ('y', '$y'),
-        ])
-        plot.tools.append(hover_tool)
-        plot.x_range = DataRange1d(range_padding=0.0)
-        plot.line(df.date, df.close_price, line_width=2)
-        logger.debug('end of get_main_chart')
-        return components(plot)
+        #logger.debug('df date type = ' + str(type(df.date[1])))
+        #logger.debug('dt date = ' + str(df.date[:10]))
+        df = df[-50:]
+        title = "Last 50 data points"
+        # ---- start of bokeh chart
+        #plot = figure(title=title,
+        #              x_axis_label='X-Axis',
+        #              y_axis_label='Y-Axis',
+        #              x_axis_type = 'datetime',
+        #              plot_width=800,
+        #              plot_height=400,
+        #              toolbar_location='above',
+        #              tools="pan,wheel_zoom,box_zoom,reset")
+        #hover_tool = HoverTool(tooltips=[
+        #    ('x','$df.date'),
+        #    ('y', '$y'),
+        #])
+        #plot.tools.append(hover_tool)
+        #plot.x_range = DataRange1d(range_padding=0.0)
+        #plot.line(df.date, df.close_price, line_width=2)
+        #return components(plot)
+        # ---- end of bokeh chart
+
+        fig = go.Figure()
+        scatter = go.Scatter(x=df.date.values, y=df.close_price.values, mode='lines')
+        fig.add_trace(scatter)
+        plt_div = plot(fig, output_type='div', include_plotlyjs=False, 
+                       show_link=False, link_text="")
+        logger.debug('end of models.get_main_chart')
+        return plt_div
+        
 
 
 class IntradayPrice(models.Model):

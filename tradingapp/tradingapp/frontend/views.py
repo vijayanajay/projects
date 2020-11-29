@@ -84,7 +84,8 @@ def analysis_index(request, id):
         context['company'] = company
         dailystats = DailyStockStats.objects.filter(company__id=company.id).order_by('date').last()
         context['dailystats'] = dailystats
-        context['script'], context['div'] = company.get_main_chart()
+        #context['script'], context['div'] = company.get_main_chart()
+        context['div'] = company.get_main_chart()
     return render(request, 'frontend/analysis_index.html', context)
 
 
