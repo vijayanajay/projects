@@ -1,6 +1,6 @@
 alabaster==0.7.10
 astroid==1.4.8
-Babel==2.3.4
+Babel==2.9.1
 beautifulsoup4==4.6.0
 bleach==1.5.0
 certifi==2016.2.28
