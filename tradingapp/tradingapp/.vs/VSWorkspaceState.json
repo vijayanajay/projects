@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\frontend",
+    "\\static",
+    "\\static\\frontend",
+    "\\templates",
+    "\\templates\\frontend",
+    "\\tradingapp"
+  ],
+  "SelectedNode": "\\frontend\\models.py",
+  "PreviewInSolutionExplorer": false
+}

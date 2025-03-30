@@ -1,0 +1,47 @@
+body {
+    padding: 0;
+    margin: 0;
+    
+}
+/*--- navigation bar ---*/
+.navbar {
+    background: LightGrey;
+}
+
+.nav-link,
+.navbar-brand {
+    color: Black;
+    cursor: pointer;
+}
+
+.nav-link {
+    margin-right: 1em !important;
+}
+
+    .nav-link:hover {
+        color: #000;
+    }
+
+.navbar-collapse {
+    justify-content: flex-end;
+}
+
+.db_table {
+    top: 15%;
+    left: 5%;
+    right: 10%;
+    position: absolute;
+    text-align: left;
+    border: 3px solid DimGray
+}
+
+
+.debug-tb {
+    bottom: 35%;
+    left: 5%;
+    right: 10%;
+    position: absolute;
+    text-align: left;
+    border: 3px solid DimGray
+}
+

@@ -1,0 +1,46 @@
+﻿{% load static %}
+<!doctype html>
+<html>
+<head>
+    <title>My Trading Apps</title>
+    <link rel="stylesheet" href="{% static 'frontend\bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend\bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'frontend\site.css' %}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="{% static 'frontend\bokeh-2.1.1.min.js' %}" crossorigin="anonymous"></script>
+    <script src="{% static 'frontend\bokeh-widgets-2.1.1.min.js' %}" crossorigin="anonymous"></script>
+    <script src="{% static 'frontend\bokeh-tables-2.1.1.min.js' %}" crossorigin="anonymous"></script>
+    <script src="{% static 'frontend\bokeh-api-2.1.1.min.js' %}" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-md">
+        <button class="navbar-toggler navbar-dark" type="button" data-toggle="collapse" data-target="#main-navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="main-navigation">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'data_index' %}">Data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'analysis_index' %}">Analysis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Training</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Realtime</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+
+</html>
