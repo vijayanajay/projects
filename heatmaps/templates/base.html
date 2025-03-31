@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Stock Market Heatmap{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/dist/tailwind.css' %}">
+    {% block styles %}{% endblock %}
+</head>
+<body class="min-h-screen bg-gray-50">
+    <header class="header">
+        <div class="container mx-auto px-4">
+            <h1 class="text-2xl font-bold">Stock Market Heatmap</h1>
+            {% block header %}{% endblock %}
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; {% now "Y" %} Stock Market Heatmap. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/alpine.js' %}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

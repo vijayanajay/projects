@@ -1,0 +1,322 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# cursor.yaml - Django on Render Coding Standards
+# Inspired by Sindre Sorhus, Ryan Dahl, Dan Abramov, Armin Ronacher, Kenneth Reitz
+
+### Directory Structure
+directory_structure:
+  rules:
+    - "Follow Django's recommended project structure"
+    - "Keep apps modular and self-contained"
+    - "Separate templates, static files, and media with dedicated folders"
+  structure:
+    root:
+      - "manage.py"
+      - "requirements.txt"
+      - "README.md"
+      - ".env.example"
+      - ".gitignore"
+      - "project_name/":
+          - "__init__.py"
+          - "settings/": ["base.py", "dev.py", "prod.py"]
+          - "urls.py"
+          - "wsgi.py"
+          - "asgi.py"
+      - "apps/":
+          - "app_name/": ["models.py", "views.py", "urls.py", "tests/"]
+      - "templates/"
+      - "static/"
+      - "media/"
+      - "render.yaml"
+
+### File Naming Conventions
+file_naming:
+  rules:
+    - "Use lowercase snake_case for Python files and directories"
+    - "Use kebab-case for templates, CSS, and JS files"
+    - "Prefix test files with test_"
+    - "Model classes should be singular CamelCase nouns"
+    - "View classes should end with View"
+
+### Module Organization
+module_organization:
+  imports:
+    order:
+      - "Standard library imports"
+      - "Third-party imports"
+      - "Django imports"
+      - "Local application imports"
+
+### Component Architecture
+component_architecture:
+  rules:
+    - "Follow Django's MTV (Model-Template-View) architecture"
+    - "Implement fat models, thin views, stupid templates"
+    - "Use class-based views when appropriate"
+    - "Keep business logic in models or dedicated service classes"
+
+### Code Splitting Strategies
+code_splitting:
+  strategies:
+    - "Split complex applications into smaller Django apps"
+    - "Create utility modules for shared functionality"
+    - "Use service modules for complex business logic"
+
+### Design Patterns
+design_patterns:
+  recommended:
+    - "Repository Pattern: Use model managers for database queries"
+    - "Factory Method: Create objects without specifying concrete classes"
+    - "Decorator Pattern: Use Django's @login_required and custom decorators"
+    - "Template Method: Leverage Django's class-based views"
+
+### Recommended Approaches
+recommended_approaches:
+  principles:
+    - "DRY: Don't Repeat Yourself"
+    - "KISS: Keep It Simple, Stupid"
+    - "YAGNI: You Aren't Gonna Need It"
+    - "Explicit is better than implicit"
+  practices:
+    - "Use Django's built-in authentication"
+    - "Prefer Django's ORM over raw SQL"
+    - "Use Django REST Framework for APIs"
+    - "Cache expensive operations"
+
+### Anti-patterns and Code Smells
+antipatterns:
+  avoid:
+    - "Fat Views: Business logic in views instead of models/services"
+    - "God Objects: Models with too many responsibilities"
+    - "N+1 Query Problem: Making additional queries for each result"
+    - "Query in Templates: Database operations in template code"
+
+### State Management
+state_management:
+  recommendations:
+    - "Use Django sessions for user state"
+    - "Use Redis or Django cache for shared application state"
+    - "Prefer database transactions for critical operations"
+    - "Avoid global state when possible"
+
+### Error Handling
+error_handling:
+  rules:
+    - "Use try/except blocks sparingly with specific exceptions"
+    - "Log all exceptions with proper context"
+    - "Return user-friendly error messages"
+    - "Use custom exception classes for domain-specific errors"
+
+### Optimization Techniques
+optimization:
+  database:
+    - "Use select_related() and prefetch_related() to reduce queries"
+    - "Create appropriate indexes on frequently queried fields"
+    - "Batch operations with bulk_create() and bulk_update()"
+  caching:
+    - "Use Django's cache framework for expensive operations"
+    - "Implement template fragment caching for complex templates"
+    - "Use Redis as cache backend for Render deployments"
+
+### Memory Management
+memory_management:
+  rules:
+    - "Close file handles and external resources properly"
+    - "Use iterators for large datasets instead of loading into memory"
+    - "Avoid keeping unnecessary data in memory"
+
+### Rendering Optimization
+rendering_optimization:
+  django:
+    - "Use template inheritance effectively"
+    - "Implement template fragment caching"
+    - "Avoid expensive computations in templates"
+    - "Use Django's cached template loader in production"
+
+### Lazy Loading Strategies
+lazy_loading:
+  rules:
+    - "Implement pagination for large datasets"
+    - "Use infinite scroll or 'load more' patterns for UX"
+    - "Lazy load images and heavy content"
+
+### Common Vulnerabilities
+vulnerabilities:
+  prevention:
+    - "XSS: Use Django's template escaping and form validation"
+    - "CSRF: Always use Django's CSRF protection middleware"
+    - "SQL Injection: Use Django's ORM and avoid raw queries"
+    - "Sensitive Data Exposure: Use Render environment variables"
+
+### Input Validation
+input_validation:
+  rules:
+    - "Always validate user input with Django forms or DRF serializers"
+    - "Implement model-level validation with clean methods"
+    - "Validate on both client and server sides"
+
+### Authentication and Authorization
+auth:
+  authentication:
+    - "Use Django's built-in authentication system"
+    - "Use JWT for API authentication"
+  authorization:
+    - "Use Django's permission system"
+    - "Implement object-level permissions when needed"
+    - "Use @login_required and @permission_required decorators"
+
+### Data Protection
+data_protection:
+  rules:
+    - "Store sensitive data in encrypted form"
+    - "Use Django's SECRET_KEY for cryptographic operations"
+    - "Store secrets in Render environment variables"
+    - "Use Render's built-in SSL"
+
+### Secure API Communication
+api_security:
+  rules:
+    - "Always use HTTPS for API communication"
+    - "Implement proper authentication for all API endpoints"
+    - "Rate limit API requests to prevent abuse"
+    - "Validate and sanitize all API inputs"
+
+### Unit Testing
+unit_testing:
+  rules:
+    - "Write tests for all models, views, and forms"
+    - "Use Django's TestCase class for database tests"
+    - "Use pytest for more flexible testing"
+    - "Test edge cases and failure scenarios"
+
+### Integration Testing
+integration_testing:
+  rules:
+    - "Test interactions between components"
+    - "Test API endpoints with realistic data"
+    - "Test form submissions and validation"
+    - "Test middleware and request/response cycle"
+
+### End-to-End Testing
+e2e_testing:
+  rules:
+    - "Use Selenium or Cypress for browser-based testing"
+    - "Test critical user flows from start to finish"
+    - "Use headless browsers for CI/CD pipelines"
+
+### Test Organization
+test_organization:
+  structure:
+    - "tests/unit/"
+    - "tests/integration/"
+    - "tests/e2e/"
+    - "tests/factories.py"
+    - "tests/fixtures.py"
+
+### Mocking and Stubbing
+mocking:
+  rules:
+    - "Use mocking for external services and APIs"
+    - "Use Django's RequestFactory for view testing"
+    - "Implement proper test data factories"
+    - "Avoid excessive mocking that breaks realistic testing"
+
+### Common Pitfalls and Gotchas
+pitfalls:
+  django_specific:
+    - "N+1 query problems"
+    - "Using count() instead of exists() for checking existence"
+    - "Not using select_related/prefetch_related for related objects"
+  render_specific:
+    - "Not configuring environment variables properly in Render"
+    - "Ignoring Render's resource limits"
+    - "Not setting up automated database backups"
+
+### Frequent Mistakes
+frequent_mistakes:
+  code_quality:
+    - "Not following PEP 8 style guidelines"
+    - "Writing overly complex views or models"
+    - "Copy-pasting code instead of creating reusable components"
+  django_specific:
+    - "Manual SQL queries instead of using the ORM"
+    - "Not using Django's built-in features (forms, auth, etc.)"
+
+### Edge Cases
+edge_cases:
+  considerations:
+    - "Handle empty querysets gracefully"
+    - "Test with unexpected or malformed input"
+    - "Handle long-running requests and timeouts"
+    - "Test with very large datasets"
+
+### Version-Specific Issues
+version_issues:
+  django:
+    - "4.0+: Removed deprecated features, new security improvements"
+    - "4.1+: Async views and middleware, template-based form rendering"
+  python:
+    - "3.9+: Use typed hints, dictionary union operator, new string methods"
+
+### Compatibility Concerns
+compatibility:
+  database:
+    - "Render uses PostgreSQL by default"
+    - "Use Django's database abstraction layer"
+    - "Test with the same database engine as production"
+  deployment:
+    - "Consider containerization compatibility with Render"
+    - "Test with the same Python version as production"
+
+### Debugging Strategies
+debugging:
+  tools:
+    - "Django Debug Toolbar"
+    - "Python Debugger (pdb)"
+    - "Logging with different log levels"
+    - "Render logs"
+
+### Recommended Development Tools
+development_tools:
+  essentials:
+    - "Cursor.com (with this ruleset)"
+    - "Django Debug Toolbar"
+    - "black (code formatter)"
+    - "isort (import formatter)"
+    - "pytest with pytest-django"
+    - "Render CLI"
+
+### Build Configuration
+build_configuration:
+  render:
+    - "Use render.yaml for Blueprint configuration"
+    - "Configure build commands in Render dashboard"
+    - "Set up proper environment variables"
+
+### Linting and Formatting
+linting:
+  tools:
+    - "flake8 for linting"
+    - "black for code formatting"
+    - "isort for import sorting"
+    - "mypy for type checking"
+
+### Deployment Best Practices
+deployment:
+  render:
+    - "Use pipenv or Poetry for dependency management"
+    - "Set DEBUG=False in production"
+    - "Use environment variables for secrets"
+    - "Configure Render's logging settings"
+    - "Enable automated database backups"
+
+### CI/CD Integration
+cicd:
+  render:
+    - "Render Auto-Deploy from connected Git repository"
+    - "Use separate Render services for staging and production"
+    - "Implement health checks and deploy hooks"
+    - "Configure proper branch protections in Git"

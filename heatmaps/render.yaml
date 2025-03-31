@@ -1,0 +1,22 @@
+services:
+  # Web service
+  - type: web
+    name: heatmaps
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn heatmaps.wsgi:application"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: heatmaps.settings.prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: heatmaps_db
+          property: connectionString
+    autoDeploy: true
+
+# Database service
+databases:
+  - name: heatmaps_db
+    plan: free

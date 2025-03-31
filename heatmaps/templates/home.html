@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Stock Market Heatmap{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-2xl font-bold mb-4">Welcome to the Indian Stock Market Heatmap</h2>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <p class="mb-4">
+            This application provides a visual representation of the Indian stock market performance
+            in a heatmap format, allowing you to quickly identify market trends and opportunities.
+        </p>
+
+        <p class="mb-4">
+            Features coming soon:
+        </p>
+
+        <ul class="list-disc ml-6 mb-4">
+            <li>Interactive heatmap of Nifty 50 stocks</li>
+            <li>Real-time price updates</li>
+            <li>Sector-based filtering</li>
+            <li>Performance metrics and historical data</li>
+        </ul>
+
+        <p>
+            <a href="/test-db/" class="text-blue-600 hover:underline">Check database connection</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
