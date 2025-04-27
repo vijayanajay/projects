@@ -35,3 +35,18 @@ def classify_market_regime(prices: pd.Series) -> str:
         return 'calm'
     # Ranging: oscillates between two values
     return 'ranging'
+
+def detect_market_regime_series(prices: pd.Series, window: int = 50) -> pd.Series:
+    """
+    Computes the market regime for each date using a rolling window.
+    Returns a pd.Series indexed by date, with regime labels.
+    """
+    regimes = []
+    index = prices.index
+    for i in range(len(prices)):
+        # Use a rolling window ending at current index
+        start = max(0, i - window + 1)
+        window_prices = prices.iloc[start:i+1]
+        regime = classify_market_regime(window_prices)
+        regimes.append(regime)
+    return pd.Series(regimes, index=index, name="regime")

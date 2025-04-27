@@ -45,6 +45,12 @@ All core modules and features for the technical analysis reporting system are co
 **Trade Log Regime Logging Update (2025-04-28):**
 - Each trade log entry in the portfolio backtest (tech_analysis/backtest.py) now always includes a regime string, computed using classify_market_regime. This ensures regime summary reporting is robust and no regime is ever None or Unknown.
 
+**Regime Series Table Reporting (2025-04-28):**
+- Added detect_market_regime_series in tech_analysis/market_regimes.py to compute a regime label for every date using a rolling window.
+- pipeline.py now calls detect_market_regime_series after data fetch/clean and stores the result in stats['regime_series'].
+- The regime summary section in the Markdown report now includes a table of regime labels for every date, not just trade dates, ensuring full timeline visibility.
+- This enables the report to show market regime context even for periods with no trades, increasing analytical coverage.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 

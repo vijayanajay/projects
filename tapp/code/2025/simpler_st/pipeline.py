@@ -4,6 +4,7 @@ from tech_analysis.data.fetcher import fetch_stock_data, clean_and_validate_data
 from tech_analysis.backtest import portfolio_backtest, calculate_performance_metrics, correlate_performance_with_regimes
 from report_generator import generate_markdown_report
 import json
+from tech_analysis.market_regimes import detect_market_regime_series
 
 def run_pipeline(tickers, output_dir=None):
     """
@@ -50,6 +51,12 @@ def run_pipeline(tickers, output_dir=None):
             print(f"[WARN] Skipping {ticker}: no valid data.")
     if not data_dict:
         raise ValueError("No valid data for any ticker. Cannot generate unified report.")
+    # After fetching and cleaning data for all tickers, aggregate close prices for regime detection
+    # For simplicity, use the first ticker's close prices (or aggregate as needed for your use case)
+    sample_ticker = next(iter(data_dict))
+    close_prices = data_dict[sample_ticker]['close']
+    # Compute full-date-range regime series
+    regime_series = detect_market_regime_series(close_prices)
     # Unified portfolio backtest
     bt_result = portfolio_backtest(data_dict, initial_cash=initial_cash, position_size=position_size, strategy_params=strategy_params)
     # DEBUG: Backtest result
@@ -66,7 +73,9 @@ def run_pipeline(tickers, output_dir=None):
     # Compute real stats using actual equity curve and trade log
     stats = calculate_performance_metrics(equity_curve, trade_log)
     stats['_trades'] = trade_log
+    stats['trades'] = trade_log  # Ensure compatibility with report generator
     stats['equity_curve'] = equity_curve
+    stats['regime_series'] = regime_series
     # Compute regime summary string from trade log
     regime_stats = correlate_performance_with_regimes(trade_log)
     if regime_stats and any(regime_stats.values()):
@@ -80,6 +89,16 @@ def run_pipeline(tickers, output_dir=None):
     else:
         regime_summary = 'No trades or regimes detected.'
     stats['regime_summary'] = regime_summary
+
+    # --- UPDATE: Per-date regime summary table using regime_series ---
+    regime_lines = ["| Date | Regime |", "|------|--------|"]
+    if 'regime_series' in stats and hasattr(stats['regime_series'], 'items'):
+        for date, regime in stats['regime_series'].items():
+            regime_lines.append(f"| {date.strftime('%Y-%m-%d')} | {regime} |")
+    if len(regime_lines) > 2:
+        stats['regime_summary'] += "\n\n" + "\n".join(regime_lines)
+    # --- END UPDATE ---
+
     stats['strategy_params'] = strategy_params
     # DEBUG: Metrics/stats for report
     print("[DEBUG] Stats for report:", stats)
