@@ -22,3 +22,29 @@ def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: i
                 trades.append({'action': 'sell', 'index': idx})
                 position = None
     return trades
+
+def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float):
+    data = data.copy()
+    # Calculate RSI
+    delta = data['close'].diff()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+    avg_gain = gain.rolling(window=period, min_periods=period).mean()
+    avg_loss = loss.rolling(window=period, min_periods=period).mean()
+    rs = avg_gain / (avg_loss + 1e-10)  # avoid div by zero
+    data['rsi'] = 100 - (100 / (1 + rs))
+
+    trades = []
+    position = None
+    for idx in range(1, len(data)):
+        prev_rsi = data['rsi'].iloc[idx-1]
+        curr_rsi = data['rsi'].iloc[idx]
+        # Buy: prev RSI <= oversold, now RSI > oversold
+        if prev_rsi <= oversold and curr_rsi > oversold and position != 'long':
+            trades.append({'action': 'buy', 'index': idx})
+            position = 'long'
+        # Sell: prev RSI >= overbought, now RSI < overbought
+        elif prev_rsi >= overbought and curr_rsi < overbought and position == 'long':
+            trades.append({'action': 'sell', 'index': idx})
+            position = None
+    return trades

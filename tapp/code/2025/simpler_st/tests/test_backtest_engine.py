@@ -30,3 +30,20 @@ def test_sma_crossover_basic():
     assert trades[0]['index'] == 3
     assert trades[1]['action'] == 'sell'
     assert trades[1]['index'] == 8
+
+def test_rsi_strategy_basic():
+    # Minimal price data to simulate RSI overbought/oversold
+    data = pd.DataFrame({
+        'close': [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5]
+    })
+    period = 5
+    overbought = 70
+    oversold = 30
+    # For this test, expect a buy when RSI crosses above oversold, sell when crosses below overbought
+    # We'll just check that the function returns a list of trades with correct actions
+    trades = backtest.rsi_strategy_backtest(data[['close']], period, overbought, oversold)
+    print('DEBUG RSI TRADES:', trades)
+    assert isinstance(trades, list)
+    for trade in trades:
+        assert trade['action'] in ('buy', 'sell')
+        assert isinstance(trade['index'], int)

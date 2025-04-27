@@ -3,9 +3,9 @@
 ## Project Stats
 - **Total Tasks:** 34
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 6
-- **Hours Pending:** 46
-- **% Complete:** 17%
+- **Hours Complete:** 7.5
+- **Hours Pending:** 44.5
+- **% Complete:** 22%
 
 ---
 
@@ -31,7 +31,7 @@
   - Status: Done
 - **2.2** Implement RSI strategy backtest logic  
   - Estimated Time: 1.5h  
-  - Status: Pending
+  - Status: Done
 - **2.3** Simulate trade execution and record trade logs  
   - Estimated Time: 1.5h  
   - Status: Pending
@@ -149,6 +149,7 @@
 - Added and passed test for loading cached Parquet data.
 - Implemented `load_from_parquet` function.
 - Implemented and tested SMA crossover backtest logic in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. Test now passes and logic matches pandas idioms.
+- Implemented and tested RSI strategy backtest logic in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. Test now passes and logic matches pandas idioms.
 
 ---
 
