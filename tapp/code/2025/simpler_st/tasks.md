@@ -48,6 +48,56 @@
 - **Checkpoint:** Performance is compared to a benchmark.
 - Status: Pending
 
+### 12.1 Trade Statistics Breakdown
+- Compute and display average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging).
+- Acceptance: Each metric is shown in a summary table; regime breakdown is clearly separated.
+- Status: Pending
+
+### 12.2 Position Sizing & Risk Management Details
+- Document and display risk per trade, capital allocation logic, and position sizing method used by the strategy.
+- Acceptance: Report specifies % risked per trade, allocation rules, and max simultaneous positions.
+- Status: Pending
+
+### 12.3 Benchmark Comparison
+- Add a section comparing portfolio returns to one or more benchmarks (e.g., NIFTY, S&P 500), including outperformance/underperformance.
+- Acceptance: Table or chart shows portfolio vs. benchmark returns for the same period.
+- Status: Pending
+
+### 12.4 Slippage, Commissions, Real-World Execution
+- Incorporate transaction cost assumptions (slippage, commissions) into backtest and show net PnL after costs.
+- Acceptance: Report states cost assumptions and net results; user can change cost parameters.
+- Status: Pending
+
+### 12.5 Visuals: Trade Markups on Charts
+- Generate annotated price charts for each ticker, marking trade entries/exits, SMA crossovers, and regime overlays.
+- Acceptance: At least one sample chart per ticker with clear trade and regime annotation.
+- Status: Pending
+
+### 12.6 Volatility, Volume, and Additional Indicators
+- Display volatility (e.g., ATR), volume at trade entry, and any other indicator relevant to the strategy.
+- Acceptance: Each trade log entry includes ATR/volume at entry; summary stats are provided.
+- Status: Pending
+
+### 12.7 Drawdown Table or Timeline
+- Create a table and/or plot of all drawdown periods, showing depth and recovery time, not just max drawdown.
+- Acceptance: Drawdown table and timeline plot are present in the report.
+- Status: Pending
+
+### 12.8 Trade Distribution and Holding Periods
+- Add histograms/tables for trade holding durations and PnL distribution across all trades.
+- Acceptance: Report includes at least one histogram for duration and one for PnL distribution.
+- Status: Pending
+
+### 12.9 Regime-Specific Performance
+- Summarize PnL, win rate, and average trade outcome for each regime type (trending/ranging).
+- Acceptance: Separate regime performance tables/plots are present.
+- Status: Pending
+
+### 12.10 Edge and Robustness Commentary
+- Add narrative/analysis on statistical significance, robustness checks, and out-of-sample/walk-forward results.
+- Acceptance: Section in report discusses robustness, overfitting, and out-of-sample performance.
+- Status: Pending
+
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)

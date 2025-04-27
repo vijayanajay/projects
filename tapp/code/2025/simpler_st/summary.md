@@ -4,6 +4,7 @@
 - Trade log in portfolio_report.md now displays both ticker and rationale for every trade, robust to key casing differences ("rationale"/"Rationale").
 - Report generator updated to ensure rationale and ticker are always included for each trade log entry.
 - All relevant tests pass, confirming TDD compliance and minimal code.
+- Visualizations for Markdown documentation should follow Kalish Nadh’s philosophy: generate visualizations as static images (e.g., matplotlib, plotly, Excel), save them in the repository, and embed them in Markdown files using standard image syntax (`![alt](path/to/image.png)`). This ensures maximum compatibility and simplicity across all Markdown renderers.
 
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.

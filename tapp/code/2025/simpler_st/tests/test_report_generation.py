@@ -115,6 +115,26 @@ def test_markdown_includes_analyst_notes_placeholder(tmp_path):
         text = f.read()
     assert "Analyst Notes and Suggestions" in text, "Analyst Notes placeholder not found in Markdown report."
 
+def test_markdown_includes_analyst_notes_substantive(tmp_path):
+    stats = {
+        'Return [%]': 7.5,
+        'Sharpe Ratio': 0.7,
+        'Max. Drawdown [%]': -2.5,
+        '_trades': None,
+        'regime_summary': 'Trending: 30%, Ranging: 50%, Volatile: 20%',
+        'analyst_notes': 'The strategy underperformed due to regime filtering.'
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Analyst Notes and Suggestions" in text, "Analyst Notes section missing in Markdown report."
+    # Ensure there is a substantive note, not just a placeholder
+    assert "(Add your notes here.)" not in text, "Placeholder note found; substantive note required."
+    assert "strategy underperformed" in text or "consider parameter tuning" in text or "regime filtering" in text, "No substantive analyst note found."
+
 def test_markdown_includes_rationale_summary(tmp_path):
     import pandas as pd
     stats = {
