@@ -1,0 +1,56 @@
+# Product Requirements Document: Stock Technical Analysis Reporting System
+
+## Objective
+Develop a Python-based technical analysis system with the primary goal of generating comprehensive, actionable reports for technical analysts. The reports must enable analysts to understand, review, and improve trading strategies and system performance.
+
+## Key Requirements
+
+### 1. Report Generation (Primary Focus)
+- Generate detailed reports in both PDF and HTML formats.
+- Reports must include:
+  - Equity curve and visualizations of technical indicators (SMA, RSI, MACD, etc.)
+  - Annotated buy/sell/hold points on charts
+  - Trade-by-trade log with entry/exit prices, timestamps, and PnL
+  - Market conditions (trend, volatility, volume) at each signal/transaction
+  - Rationale and indicator values for every transaction decision
+  - Comprehensive performance metrics: returns, Sharpe ratio, max drawdown, win rate, Sortino, Calmar, profit factor, average trade duration, exposure time, risk-adjusted returns
+  - Highlight periods of underperformance and possible causes (e.g., whipsaws, low volatility, trend reversals)
+  - Section for analyst notes and explicit suggestions for improvement
+
+### 2. Market Condition Analysis
+- Characterize market regimes (trending, ranging, volatile, calm) during backtest periods.
+- Correlate strategy performance with market conditions in the report.
+
+### 3. Transaction Decision Logging
+- Log all indicator values and logic at each buy/sell/hold decision.
+- Include rationale summary for each transaction in the report.
+
+### 4. Performance Metrics Expansion
+- Implement advanced metrics: Sortino ratio, Calmar ratio, profit factor, average trade duration, exposure time, risk-adjusted returns.
+- Visualize metric distributions and outliers.
+
+### 5. Strategy Limitation
+- Limit to a core set of strategies (SMA crossover, RSI, MACD).
+- For each, detail strengths, weaknesses, and typical market suitability in the report.
+
+### 6. (Optional/Secondary) Parameter Optimization
+- If implemented, summarize optimization results and parameter sensitivities in the report.
+
+### 7. (Optional/Secondary) Sentiment Analysis & Live Trading Integration
+- If implemented, ensure their impact is clearly explained in the report.
+
+## File Structure (Suggested)
+- tech_analysis/
+  - pipeline.py
+  - backtest.py
+  - report_generator.py
+  - data/
+
+## Out of Scope
+- Real-time trading execution (unless specifically requested)
+- Large-scale strategy library (limit to core examples)
+
+## Success Criteria
+- Reports are clear, comprehensive, and actionable for technical analysts.
+- All relevant market and transaction context is included.
+- Analysts can easily identify areas for improvement.
