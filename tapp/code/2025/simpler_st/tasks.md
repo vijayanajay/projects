@@ -2,19 +2,14 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 61
-- **Hours Complete:** 52.5
-- **Hours Pending:** 8.5
-- **% Complete (Time):** 86.07%
+- **Hours Complete:** 54
+- **Hours Pending:** 7
+- **% Complete (Time):** 88.52%
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
-
-### 8. Performance Metrics Visualization (PDF)
-- **8.1** Visualize metric distributions and highlight outliers in PDF  
-  Estimated Time: 1.5h  
-  Status: Pending
 
 ### 9. Analyst Notes & Improvement Suggestions Section (PDF)
 - **9.1** Design notes section in PDF report template  
@@ -80,6 +75,7 @@
   - Formatted trade log for PDF inclusion.
 - Log indicator values at decision points for PDF (trade log now includes SMA values at entry/exit for each transaction; TDD, minimal code, 2025-04-27)
 - Log algorithmic rationale at each transaction for PDF (trade log now includes a human-readable rationale string for each trade; TDD, minimal code, 2025-04-27)
+- Visualize metric distributions and highlight outliers in PDF (Added chart to PDF report visualizing performance metric distributions (e.g., returns) and highlighting outliers in red, with annotation and legend. Implemented using TDD and minimal code in report_generator.py and tests/test_report_generation.py. All tests pass and feature is robust to headless environments, 2025-04-27)
 
 ---
 

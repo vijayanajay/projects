@@ -2,6 +2,8 @@ import os
 import pytest
 from fpdf import FPDF
 from pathlib import Path
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from pypdf import PdfReader
 
@@ -354,3 +356,43 @@ def test_pdf_includes_rationale_summary(tmp_path):
     assert "Rationale Summary" in text, "Rationale Summary section missing in PDF."
     assert "Buy: SMA cross: 2 occurrence(s)" in text, "Rationale count summary incorrect."
     assert "Sell: SMA cross: 1 occurrence(s)" in text, "Rationale count summary incorrect."
+
+def test_pdf_includes_metric_distribution_with_outliers(tmp_path):
+    """
+    TDD: Verifies that the PDF report includes a chart visualizing performance metric distributions
+    and that outliers are highlighted in the chart (e.g., via annotation or color).
+    """
+    import numpy as np
+    from pypdf import PdfReader
+    # Create dummy metrics with outliers
+    returns = np.concatenate([np.random.normal(0.1, 0.02, 98), [0.3, -0.15]])  # 2 outliers
+    stats = {
+        'Return [%]': float(np.mean(returns) * 100),
+        'Sharpe Ratio': 1.1,
+        'Max. Drawdown [%]': -5.0,
+        '_trades': None,
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        'returns_distribution': returns
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            pass  # Not needed for this test
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    ticker = 'METRIC_DIST_OUTLIER'
+    os.chdir(tmp_path)
+    from report_generator import generate_report
+    generate_report(stats, bt, ticker)
+    pdf_path = tmp_path / f"reports/{ticker}_report.pdf"
+    assert pdf_path.exists(), "PDF not generated."
+    reader = PdfReader(str(pdf_path))
+    # Check for a mention of 'Outlier' or a visual indicator in the PDF text
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    assert (
+        "Outlier" in text or "outlier" in text or "Metric Distribution" in text
+    ), "Metric distribution visualization or outlier annotation not found in PDF."

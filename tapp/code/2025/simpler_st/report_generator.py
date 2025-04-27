@@ -1,6 +1,9 @@
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import os
+import numpy as np
 
 def reusable_chart_component(pdf, image_path, x=10, y=None, w=190):
     """
@@ -99,6 +102,38 @@ def generate_report(stats, bt, ticker: str):
     # Embed equity curve chart as reusable component
     if os.path.exists(chart_path):
         reusable_chart_component(pdf, chart_path)
+    # Minimal implementation for metric distribution visualization with outlier highlighting
+    returns_dist = stats.get('returns_distribution')
+    if returns_dist is not None:
+        metric_chart_path = f"plots/{ticker}_metric_dist.png"
+        plt.figure(facecolor='white')
+        # Identify outliers (e.g., >2 std from mean)
+        mean = np.mean(returns_dist)
+        std = np.std(returns_dist)
+        outliers = (np.abs(returns_dist - mean) > 2 * std)
+        # Plot histogram
+        plt.hist(returns_dist[~outliers], bins=20, color='#1f77b4', alpha=0.7, label='Normal')
+        if np.any(outliers):
+            plt.hist(returns_dist[outliers], bins=5, color='red', alpha=0.8, label='Outlier')
+        plt.title('Metric Distribution (Returns)')
+        plt.xlabel('Return')
+        plt.ylabel('Frequency')
+        plt.legend()
+        # Annotate if outliers present
+        if np.any(outliers):
+            plt.annotate('Outlier', xy=(returns_dist[outliers][0], 1), xytext=(returns_dist[outliers][0], 2),
+                arrowprops=dict(arrowstyle='->', color='red'))
+        plt.tight_layout()
+        plt.savefig(metric_chart_path)
+        plt.close()
+        # Embed in PDF
+        pdf.ln(5)
+        pdf.set_font("Arial", style="B", size=12)
+        pdf.cell(0, 10, txt="Metric Distribution (Returns)", ln=1)
+        reusable_chart_component(pdf, metric_chart_path)
+        pdf.set_font("Arial", size=12)
+        if np.any(outliers):
+            pdf.cell(0, 10, txt="Note: Outlier(s) highlighted in red.", ln=1)
     # Section: Regime Summary
     pdf.ln(5)
     pdf.set_font("Arial", style="B", size=14)
