@@ -1,51 +1,40 @@
 # Project Task Breakdown: Technical Analysis PDF Reporting System
 
 ## Project Stats
-- **Total Tasks:** 34
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 11.5
-- **Hours Pending:** 40.5
-- **% Complete:** 32%
+- **Hours Complete:** 12.5
+- **Hours Pending:** 39.5
+- **% Complete (Time):** 24%
 
 ---
 
-## Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
+## Completed Tasks Summary
 
-### 1. Data Pipeline
-- **1.1** Implement data fetcher for stock price data (e.g., yfinance)  
-  - Estimated Time: 1h  
-  - Status: Done
-- **1.2** Clean and validate raw data (handle missing/outlier values)  
-  - Estimated Time: 1.5h  
-  - Status: Done
-- **1.3** Cache processed data in Parquet files  
-  - Estimated Time: 1h  
-  - Status: Done
-- **1.4** Load cached data for analysis  
-  - Estimated Time: 1h  
-  - Status: Done
+**Data Pipeline:**
+- Implemented data fetcher for stock price data (e.g., yfinance)
+- Cleaned and validated raw data (handled missing/outlier values)
+- Cached processed data in Parquet files
+- Loaded cached data for analysis
 
-### 2. Backtesting Engine
-- **2.1** Implement SMA crossover backtest logic  
-  - Estimated Time: 1.5h  
-  - Status: Done
-- **2.2** Implement RSI strategy backtest logic  
-  - Estimated Time: 1.5h  
-  - Status: Done
-- **2.3** Simulate trade execution and record trade logs  
-  - Estimated Time: 1.5h  
-  - Status: Done
-- **2.4** Calculate core performance metrics (returns, Sharpe, drawdown, win rate)  
-  - Estimated Time: 1.5h  
-  - Status: Done
-- **2.5** Export backtest results for report generation  
-  - Estimated Time: 1h  
-  - Status: Done
+**Backtesting Engine:**
+- Implemented SMA crossover backtest logic
+- Implemented RSI strategy backtest logic
+- Simulated trade execution and recorded trade logs
+- Calculated core performance metrics (returns, Sharpe, drawdown, win rate)
+- Exported backtest results for report generation (export_backtest_results to JSON)
+
+**Market Condition Analysis:**
+- Defined criteria for market regimes (trending, ranging, volatile, calm)
+
+---
+
+## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
 ### 3. Market Condition Analysis
 - **3.1** Define criteria for market regimes (trending, ranging, volatile, calm)  
   - Estimated Time: 1h  
-  - Status: Pending
+  - Status: Complete (2025-04-27)
+  - Added TDD-driven logic and tests for regime classification in `market_regimes.py`.
 - **3.2** Implement market regime detection logic  
   - Estimated Time: 1.5h  
   - Status: Pending
@@ -152,6 +141,7 @@
 - Implemented and tested RSI strategy backtest logic in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. Test now passes and logic matches pandas idioms.
 - Implemented and tested performance metrics calculation (returns, Sharpe, drawdown, win rate) in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. All metrics verified by test.
 - Implemented export_backtest_results in `tech_analysis/backtest.py` to export trade logs and metrics to JSON for PDF report generation (TDD, minimal code).
+- Defined criteria for market regimes (trending, ranging, volatile, calm) and added TDD-driven logic and tests for regime classification in `market_regimes.py`.
 
 ---
 
