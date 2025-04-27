@@ -11,15 +11,60 @@
 ## Project Stats (as of 2025-04-27)
 - **Portfolio-Level Backtest & Unified Report Refactor Epic:**
     - Total Estimated Hours: 13h
-    - Tasks Completed: 1/15
-    - Tasks Remaining: 14
-    - % Complete: 7%
-- **Last Updated:** 2025-04-27 20:23
+    - Tasks Completed: 2/15
+    - Tasks Remaining: 13
+    - % Complete: 13%
+- **Last Updated:** 2025-04-27 20:32
+
+
+---
+
+## Epic: Migrate from per-ticker to unified portfolio simulation and reporting
+
+### 1. PRD & Documentation
+- [ ] Update summary.md after implementation to describe new architecture and file responsibilities (0.5h)
+
+### 2. Backtest Logic Refactor
+- [ ] Implement portfolio-level backtest function in tech_analysis/backtest.py: (3h)
+    - Accepts all stock data
+    - Iterates over time, not per ticker
+    - Evaluates buy/hold/sell for all stocks at each step
+    - Prefers buy if signal and cash available
+    - Allocates position size (configurable)
+    - No short selling logic
+    - Updates holdings, cash, and logs each trade with rationale
+- [ ] Ensure rationale is human-readable and records why a stock was chosen (0.5h)
+- [ ] Remove or refactor any per-ticker backtest/report logic (0.5h)
+
+### 3. Report Generation Refactor
+- [ ] Update report_generator.py to accept unified trade log and portfolio stats (1h)
+- [ ] Generate a single PDF report per run (not per ticker) (1h)
+- [ ] Ensure all current report sections (metrics, regime summaries, trade log, rationale, analyst notes) are included and unified (1h)
+- [ ] Summarize per-stock contributions in the report (0.5h)
+
+### 4. Pipeline Orchestration
+- [ ] Update pipeline.py (or main orchestrator) to: (1h)
+    - Call unified backtest
+    - Pass results to updated report generator
+    - Ensure only one report is produced
+
+### 5. Testing
+- [ ] Add/modify tests in tests/test_backtest_engine.py and tests/test_report_generation.py: (2h)
+    - Validate only one report is generated
+    - Trade log includes trades from multiple tickers
+    - Rationale is present and clear for every trade
+    - No short selling occurs
+    - Buy preference and position sizing logic are enforced
+
+### 6. Validation & Review
+- [ ] Manual run to verify one report, correct trade log, and rationale (0.5h)
+- [ ] Peer/code review for logic and report completeness (0.5h)
 
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
 - [x] Update prd.txt to specify portfolio-level simulation, single report, and rationale requirements (0.5h)
+- [x] Design portfolio state structure (cash, holdings, transaction log, rationale log) (1h)
 - [x] Summarize rationale for PDF report section (trade rationale aggregation and summary now included in PDF, TDD, minimal code, 2025-04-27)
 - [x] Standardized PDF visual style and legends (all charts now use a consistent color palette, section headers use bold Arial font, and legends are always present in both charts and PDF captions. This ensures visual consistency and clarity throughout the report. Completed using TDD and minimal code, 2025-04-30)
 - [x] Overlay SMA indicator with annotations for PDF (TDD, minimal code, 2025-04-29)
@@ -71,49 +116,6 @@
 - [x] TDD and minimal code principles followed throughout.
 - [x] See summary.md for codebase structure and navigation.
 
----
-
-## Epic: Migrate from per-ticker to unified portfolio simulation and reporting
-
-### 1. PRD & Documentation
-- [ ] Update summary.md after implementation to describe new architecture and file responsibilities (0.5h)
-
-### 2. Backtest Logic Refactor
-- [ ] Design portfolio state structure (cash, holdings, transaction log, rationale log) (1h)
-- [ ] Implement portfolio-level backtest function in tech_analysis/backtest.py: (3h)
-    - Accepts all stock data
-    - Iterates over time, not per ticker
-    - Evaluates buy/hold/sell for all stocks at each step
-    - Prefers buy if signal and cash available
-    - Allocates position size (configurable)
-    - No short selling logic
-    - Updates holdings, cash, and logs each trade with rationale
-- [ ] Ensure rationale is human-readable and records why a stock was chosen (0.5h)
-- [ ] Remove or refactor any per-ticker backtest/report logic (0.5h)
-
-### 3. Report Generation Refactor
-- [ ] Update report_generator.py to accept unified trade log and portfolio stats (1h)
-- [ ] Generate a single PDF report per run (not per ticker) (1h)
-- [ ] Ensure all current report sections (metrics, regime summaries, trade log, rationale, analyst notes) are included and unified (1h)
-- [ ] Summarize per-stock contributions in the report (0.5h)
-
-### 4. Pipeline Orchestration
-- [ ] Update pipeline.py (or main orchestrator) to: (1h)
-    - Call unified backtest
-    - Pass results to updated report generator
-    - Ensure only one report is produced
-
-### 5. Testing
-- [ ] Add/modify tests in tests/test_backtest_engine.py and tests/test_report_generation.py: (2h)
-    - Validate only one report is generated
-    - Trade log includes trades from multiple tickers
-    - Rationale is present and clear for every trade
-    - No short selling occurs
-    - Buy preference and position sizing logic are enforced
-
-### 6. Validation & Review
-- [ ] Manual run to verify one report, correct trade log, and rationale (0.5h)
-- [ ] Peer/code review for logic and report completeness (0.5h)
 
 ---
 

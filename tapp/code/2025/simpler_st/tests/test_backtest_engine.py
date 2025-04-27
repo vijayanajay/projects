@@ -185,3 +185,35 @@ def test_trade_log_includes_rationale():
             assert 'Buy' in log['rationale'] or 'buy' in log['rationale']
         elif log['entry_price'] > log['exit_price']:
             assert 'Sell' in log['rationale'] or 'sell' in log['rationale']
+
+def test_portfolio_state_basic():
+    from tech_analysis.portfolio import PortfolioState
+    # Start with 10,000 cash
+    pf = PortfolioState(10000)
+    # Buy 10 shares of ABC at 100
+    pf.buy('ABC', 10, 100, 'Signal: SMA cross')
+    assert pf.cash == 9000
+    assert pf.holdings['ABC'] == 10
+    assert pf.transaction_log[-1]['action'] == 'buy'
+    assert pf.transaction_log[-1]['ticker'] == 'ABC'
+    assert pf.transaction_log[-1]['qty'] == 10
+    assert pf.transaction_log[-1]['price'] == 100
+    assert pf.transaction_log[-1]['rationale'] == 'Signal: SMA cross'
+    # Sell 5 shares at 110
+    pf.sell('ABC', 5, 110, 'Profit target')
+    assert pf.cash == 9000 + 5 * 110
+    assert pf.holdings['ABC'] == 5
+    assert pf.transaction_log[-1]['action'] == 'sell'
+    assert pf.transaction_log[-1]['qty'] == 5
+    # Try to sell more than held (should raise)
+    try:
+        pf.sell('ABC', 10, 120, 'Mistake')
+        assert False, 'Should not allow short selling'
+    except ValueError:
+        pass
+    # Buy with insufficient cash (should raise)
+    try:
+        pf.buy('XYZ', 1000, 1000, 'Too expensive')
+        assert False, 'Should not allow buy with insufficient cash'
+    except ValueError:
+        pass

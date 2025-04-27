@@ -8,6 +8,10 @@ All core modules and features for the technical analysis PDF reporting system ar
 - PRD updated to require a single portfolio-level backtest and unified PDF report (not per-ticker)
 - See tasks.md for granular breakdown of pending and completed work
 
+**PortfolioState class added (2025-04-27):**
+- New `PortfolioState` class in `tech_analysis/portfolio.py` manages cash, holdings, and transaction log for unified portfolio-level backtest.
+- See tasks.md for TDD and implementation details.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
