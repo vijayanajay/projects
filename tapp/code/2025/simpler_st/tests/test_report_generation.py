@@ -221,6 +221,49 @@ def test_pdf_includes_rsi_overlay_with_annotation(tmp_path):
             break
     assert images_found, "No chart image with RSI overlay found in PDF."
 
+def test_pdf_includes_trade_entry_exit_log(tmp_path):
+    """
+    TDD: Verifies that the PDF report includes trade entry and exit data in the Trade Log section.
+    """
+    import pandas as pd
+    stats = {
+        'Return [%]': 12.0,
+        'Sharpe Ratio': 1.3,
+        'Max. Drawdown [%]': -4.0,
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        '_trades': pd.DataFrame([
+            {'EntryTime': '2025-04-01', 'EntryPrice': 100, 'ExitTime': '2025-04-10', 'ExitPrice': 110, 'PnL': 10.0},
+            {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0}
+        ])
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    ticker = 'TRADELOG'
+    os.chdir(tmp_path)
+    from report_generator import generate_report
+    generate_report(stats, bt, ticker)
+    pdf_path = tmp_path / f"reports/{ticker}_report.pdf"
+    assert pdf_path.exists(), "PDF not generated."
+    from pypdf import PdfReader
+    reader = PdfReader(str(pdf_path))
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    # Check for entry/exit data in the PDF
+    assert "Entry: 2025-04-01 @ 100" in text, "Trade entry data missing in PDF."
+    assert "Exit: 2025-04-10 @ 110" in text, "Trade exit data missing in PDF."
+    assert "PnL: 10.00" in text, "Trade PnL missing in PDF."
+
 def test_pdf_standardized_visual_style_and_legends(tmp_path):
     """
     TDD: Verifies that all charts in the PDF report have a legend and that the PDF uses a consistent visual style (fonts, section headers).

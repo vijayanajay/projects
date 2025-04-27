@@ -120,8 +120,10 @@ def generate_report(stats, bt, ticker: str):
     pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Trade Log", ln=1)
     pdf.set_font("Arial", size=12)
-    trades = stats.get('_trades') or stats.get('trades')
-    if trades is not None and hasattr(trades, 'iterrows'):
+    trades = stats.get('_trades')
+    if trades is None or not hasattr(trades, 'iterrows'):
+        trades = stats.get('trades')
+    if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
         for idx, trade in trades.iterrows():
             summary = f"Entry: {trade['EntryTime']} @ {trade['EntryPrice']} | Exit: {trade['ExitTime']} @ {trade['ExitPrice']} | PnL: {trade['PnL']:.2f}"
             pdf.cell(200, 10, txt=summary, ln=1)
