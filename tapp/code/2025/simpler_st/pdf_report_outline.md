@@ -1,12 +1,12 @@
-# PDF Report Template Outline
+# Markdown Report Template Outline
 
-This document defines the intended structure and layout for the technical analysis PDF report. It serves as the source of truth for report generation and as a reference for implementation and testing.
+This document defines the intended structure and layout for the technical analysis Markdown report. It serves as the source of truth for report generation and as a reference for implementation and testing.
 
 ---
 
 ## Cover Page
 - Project title
-- Ticker symbol
+- Ticker symbol or Portfolio
 - Date range
 - Analyst name (optional)
 
@@ -30,9 +30,9 @@ This document defines the intended structure and layout for the technical analys
 - Commission/fees
 
 ## Visualizations
-- Equity curve plot
-- SMA/RSI overlays (if applicable)
-- Other relevant charts
+- Equity curve plot (as image)
+- SMA/RSI overlays (if applicable, as image)
+- Other relevant charts (as images)
 
 ## Trade Log
 - Table: Entry/exit times, prices, PnL
@@ -50,4 +50,4 @@ This document defines the intended structure and layout for the technical analys
 
 ---
 
-This outline will guide the implementation of the PDF report template and related tests.
+This outline will guide the implementation of the Markdown report template and related tests.

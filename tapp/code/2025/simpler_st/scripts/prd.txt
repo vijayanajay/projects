@@ -1,7 +1,7 @@
 # Portfolio-Level Technical Analysis Backtest & Reporting PRD (2025-04-27)
 
 ## Objective
-Implement a backtest system that simulates a single portfolio manager choosing which stock(s) to buy, hold, or sell among all stocks in STOCKS_LIST at each time step. Only long (buy) positions are allowed. No short selling. Always prefer buying when a valid signal is present and cash is available. The system must decide the position size for each buy (full or partial allocation, configurable). At each time step, evaluate all stocks and select the best opportunities based on strategy signals (e.g., SMA, RSI). Maintain a portfolio state: cash, holdings, transaction log, and rationale for each trade. After the simulation, generate a single consolidated PDF report listing all trades (across all stocks), rationale, and portfolio-level performance metrics. Preserve all current report sections (metrics, regime summaries, trade log, rationale summary, etc.) but unify them in one report. No per-ticker reports.
+Implement a backtest system that simulates a single portfolio manager choosing which stock(s) to buy, hold, or sell among all stocks in STOCKS_LIST at each time step. Only long (buy) positions are allowed. No short selling. Always prefer buying when a valid signal is present and cash is available. The system must decide the position size for each buy (full or partial allocation, configurable). At each time step, evaluate all stocks and select the best opportunities based on strategy signals (e.g., SMA, RSI). Maintain a portfolio state: cash, holdings, transaction log, and rationale for each trade. After the simulation, generate a single consolidated Markdown report listing all trades (across all stocks), rationale, and portfolio-level performance metrics. Preserve all current report sections (metrics, regime summaries, trade log, rationale summary, etc.) but unify them in one report. No per-ticker reports.
 
 ## Key Requirements
 
@@ -20,10 +20,9 @@ Implement a backtest system that simulates a single portfolio manager choosing w
 - Maintain a single transaction log for all trades across all stocks.
 
 ### 4. Report Generation
-- Generate two reports after the simulation:
-  - PDF report: reports/portfolio_report.pdf
+- Generate a report after the simulation:
   - Markdown report: reports/portfolio_report.md
-  Both reports include:
+  The report includes:
   - All trades (with rationale, ticker, time, action, size, price)
   - Portfolio-level metrics (total return, drawdown, Sharpe, etc.)
   - Per-stock contribution summary
@@ -32,7 +31,7 @@ Implement a backtest system that simulates a single portfolio manager choosing w
 
 ### 5. Testing
 - Add/modify tests to ensure:
-  - Both PDF and Markdown reports are produced
+  - Markdown report is produced
   - Trade log contains trades for multiple tickers
   - Rationale is present and clear for every trade
   - No short selling occurs

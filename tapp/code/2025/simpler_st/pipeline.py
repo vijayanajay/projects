@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 from tech_analysis.data.fetcher import fetch_stock_data, clean_and_validate_data
-from tech_analysis.backtest import portfolio_backtest, calculate_performance_metrics
-from report_generator import generate_report, generate_markdown_report
+from tech_analysis.backtest import portfolio_backtest, calculate_performance_metrics, correlate_performance_with_regimes
+from report_generator import generate_markdown_report
 import json
 
 def run_pipeline(tickers, output_dir=None):
@@ -67,17 +67,27 @@ def run_pipeline(tickers, output_dir=None):
     stats = calculate_performance_metrics(equity_curve, trade_log)
     stats['_trades'] = trade_log
     stats['equity_curve'] = equity_curve
-    stats['regime_summary'] = 'N/A'  # Optionally, call correlate_performance_with_regimes if needed
+    # Compute regime summary string from trade log
+    regime_stats = correlate_performance_with_regimes(trade_log)
+    if regime_stats and any(regime_stats.values()):
+        total = sum(v['count'] for v in regime_stats.values())
+        summary_parts = []
+        for regime, v in regime_stats.items():
+            percent = 100 * v['count'] / total if total else 0
+            summary_parts.append(f"{regime.capitalize()}: {percent:.0f}%")
+        regime_summary = ', '.join(summary_parts)
+    else:
+        regime_summary = 'No trades or regimes detected.'
+    stats['regime_summary'] = regime_summary
     stats['strategy_params'] = strategy_params
     # DEBUG: Metrics/stats for report
     print("[DEBUG] Stats for report:", stats)
     # Pass real stats to report generator
     try:
-        generate_report(stats, pf)  # Pass pf as bt object if needed for plotting
         generate_markdown_report(stats, pf)
     except Exception as e:
         import traceback
-        print(f"[DEBUG] Exception in generate_report: {e}")
+        print(f"[DEBUG] Exception in generate_markdown_report: {e}")
         traceback.print_exc()
         raise
 

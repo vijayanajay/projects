@@ -2,10 +2,10 @@
 
 ## Project Completion
 
-All core modules and features for the technical analysis PDF reporting system are complete as of 2025-04-27. The pipeline is now fully automated and batch-enabled: it fetches, cleans, backtests, and generates PDF reports for every stock in STOCKS_LIST with no user input required. All code follows TDD and minimal code principles. See tasks.md for a detailed completed tasks summary.
+All core modules and features for the technical analysis reporting system are complete as of 2025-04-27. The pipeline is now fully automated and batch-enabled: it fetches, cleans, backtests, and generates Markdown reports for every stock in STOCKS_LIST with no user input required. All code follows TDD and minimal code principles. See tasks.md for a detailed completed tasks summary.
 
 **Portfolio-Level Refactor in Progress (2025-04-27):**
-- PRD updated to require a single portfolio-level backtest and unified PDF report (not per-ticker)
+- PRD updated to require a single portfolio-level backtest and unified Markdown report (not per-ticker)
 - See tasks.md for granular breakdown of pending and completed work
 
 **PortfolioState class added (2025-04-27):**
@@ -13,15 +13,15 @@ All core modules and features for the technical analysis PDF reporting system ar
 - See tasks.md for TDD and implementation details.
 
 **Portfolio-Level Refactor (2025-04-27)**
-- The codebase now performs unified portfolio-level backtesting and generates a single PDF report (portfolio_report.pdf) for all tickers in STOCKS_LIST.
+- The codebase now performs unified portfolio-level backtesting and generates a single Markdown report (`portfolio_report.md`) for all tickers in STOCKS_LIST.
 - All per-ticker report generation logic has been removed or refactored.
-- The pipeline fetches and cleans data for all tickers, runs portfolio_backtest, and passes results to generate_report.
-- generate_report now takes aggregated stats and outputs a unified report; no ticker argument is required.
+- The pipeline fetches and cleans data for all tickers, runs portfolio_backtest, and passes results to generate_markdown_report.
+- generate_markdown_report now takes aggregated stats and outputs a unified report; no ticker argument is required.
 - Defensive filtering in the pipeline skips invalid tickers (e.g., '', '.', None).
 - All related tests have been updated and pass, confirming TDD compliance.
 
 **Bugfix (2025-04-27):**
-- Fixed root cause of empty/zero reports: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_report, ensuring the PDF report reflects actual backtest results and trades.
+- Fixed root cause of empty/zero reports: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_markdown_report, ensuring the Markdown report reflects actual backtest results and trades.
 
 **Config-Driven Pipeline (2025-04-27):**
 - Added config.json to centralize all key parameters (data period, strategy, cash, position size, etc.).
@@ -31,11 +31,16 @@ All core modules and features for the technical analysis PDF reporting system ar
 - All features and tests remain TDD-compliant and minimal code.
 
 **Recent Changes (2025-04-27)**
-- Added `generate_markdown_report(stats, bt)` in `report_generator.py` to produce a Markdown report (`reports/portfolio_report.md`) with the same content and structure as the PDF report.
-- Updated the pipeline to call both `generate_report` (PDF) and `generate_markdown_report` (Markdown) automatically after each run.
+- Added `generate_markdown_report(stats, bt)` in `report_generator.py` to produce a Markdown report (`reports/portfolio_report.md`) with all content and structure previously in the PDF report.
+- Updated the pipeline to call only `generate_markdown_report` (Markdown) automatically after each run.
 - Added a test in `tests/test_report_generation.py` to verify Markdown report generation and content (cover, table of contents, metrics, trade log, rationale, etc.).
-- Updated `scripts/prd.txt` to reflect dual report output.
-- All documentation and workflow now reflect the dual-report system for technical analysis reporting.
+- Updated `scripts/prd.txt` to reflect Markdown-only report output.
+- All documentation and workflow now reflect the Markdown-only system for technical analysis reporting.
+
+**Regime Summary Reporting (2025-04-27):**
+- The reporting system now computes and includes a human-readable regime summary (e.g., "Trending: 60%, Ranging: 30%, Volatile: 10%") in the Markdown report.
+- The regime summary is derived from trade log statistics using correlate_performance_with_regimes in pipeline.py.
+- Tests ensure the regime summary appears in the Markdown report, confirming TDD compliance.
 
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
@@ -45,7 +50,6 @@ This file provides a clear, single-point reference to understand the structure a
 ## Markdown Files in This Project
 
 - `README-task-master.md`: Documentation for Task Master integration or usage.
-- `pdf_report_outline.md`: The outline and structure for the PDF report template (design document).
 - `readme.md`: Main project overview, setup, and usage instructions.
 - `summary.md`: This codebase summary and navigation guide.
 - `tasks.md`: Project task breakdown, progress tracking, and changelog.
@@ -53,20 +57,17 @@ This file provides a clear, single-point reference to understand the structure a
 ---
 
 ## File: report_generator.py
-**Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. Creates a structured PDF template with a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold Arial font for visual standardization (since 2025-04-30). The trade log section robustly displays trade entry/exit data and PnL for each trade (since 2025-04-27).
+**Purpose:** Generates the technical analysis Markdown report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. The Markdown report includes a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold for visual standardization. The trade log section robustly displays trade entry/exit data and PnL for each trade.
 
 ### Report Generation
-- `generate_report(stats, bt)`: Generates a detailed technical analysis report as a PDF at `reports/portfolio_report.pdf`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts.
-- `generate_markdown_report(stats, bt)`: Generates the same report in Markdown format at `reports/portfolio_report.md`. All sections and charts are included as Markdown, with image links for charts. Called automatically in the pipeline after PDF generation.
+- `generate_markdown_report(stats, bt)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images.
 
 ### Workflow
-- After running the pipeline, both PDF and Markdown reports are produced in the `reports/` directory.
-- Charts are saved in `plots/` and referenced in both reports.
+- After running the pipeline, the Markdown report is produced in the `reports/` directory.
+- Charts are saved in `plots/` and referenced in the Markdown report.
 
 ### Test Coverage
-- Tests ensure that both PDF and Markdown reports are generated and contain all key sections (cover, table of contents, metrics, trade log, rationale, etc.).
-
-- `reusable_chart_component(pdf, image_path, x=10, y=None, w=190)`: Embeds a reusable chart image (such as an equity curve) into the PDF at the specified position and width. This function abstracts chart/image embedding for reuse across report sections, supporting the creation of modular PDF components. Always adds a legend caption below the chart for clarity.
+- Tests ensure that the Markdown report is generated and contains all key sections (cover, table of contents, metrics, trade log, rationale, etc.).
 
 ---
 
@@ -74,7 +75,7 @@ This file provides a clear, single-point reference to understand the structure a
 **Purpose:** Contains all backtesting logic for trading strategies and performance analysis.
 
 - `sma_crossover_backtest(data, short_window, long_window)`: Simulates a simple moving average crossover strategy, returning a list of buy/sell trades. Core for strategy evaluation.
-- `sma_crossover_backtest_with_log(data, short_window, long_window)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). **As of 2025-04-27, each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points.** Used for deeper analysis and reporting.
+- `sma_crossover_backtest_with_log(data, short_window, long_window)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). Each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points. Used for deeper analysis and reporting.
 - `rsi_strategy_backtest(data, period, overbought, oversold)`: Simulates an RSI-based trading strategy, returning trade signals. Enables testing alternative strategies.
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.
@@ -138,10 +139,10 @@ This file provides a clear, single-point reference to understand the structure a
 ---
 
 ## File: tests/test_report_generation.py
-**Purpose:** Tests that PDF report generation includes all required data and formatting.
+**Purpose:** Tests that Markdown report generation includes all required data and formatting.
 
 - `dummy_bt()`: Provides a mock backtesting object for report tests.
-- `test_pdf_contains_regime_summary()`: Checks that the generated PDF report includes the regime summary, validating the integration of regime analysis into reporting.
+- `test_markdown_contains_regime_summary()`: Checks that the generated Markdown report includes the regime summary, validating the integration of regime analysis into reporting.
 
 ---
 

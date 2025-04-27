@@ -7,7 +7,7 @@ A minimal Python-based technical analysis pipeline with:
 - Data fetching (yfinance)
 - Technical indicators (SMA crossover baseline)
 - Backtesting (using `backtesting.py` library)
-- Report generation (PDF/HTML)
+- Report generation (Markdown)
 ### 2. Core Components
 #### 2.1 Data Layer
 - **Fetcher**: `yfinance` for OHLCV data (NSE symbols via `.NS` suffix)
@@ -20,7 +20,7 @@ A minimal Python-based technical analysis pipeline with:
 - **Engine**: `backtesting.py` (lightweight library)
 - **Metrics**: Sharpe ratio, max drawdown, win rate
 #### 2.4 Reporting
-- **Format**: HTML/PDF with:
+- **Format**: Markdown with:
 - Equity curve
 - Trade statistics
 - Indicator visualization
@@ -34,7 +34,7 @@ tech_analysis/
 └── data/ # Parquet cache
 ```
 ### 4. Implementation Steps
-#### Step 1: Data Fetcher (pipeline.py) ✅ Completed
+#### Step 1: Data Fetcher (pipeline.py) 
 ```python
 import yfinance as yf
 import pandas as pd
@@ -53,7 +53,7 @@ def cache_data(data: pd.DataFrame, ticker: str) -> str:
     data.to_parquet(path)
     return path
 ```
-#### Step 2: Data Validation (pipeline.py) ✅ Completed
+#### Step 2: Data Validation (pipeline.py) 
 ```python
 def validate_data(data: pd.DataFrame) -> pd.DataFrame:
     # Drop rows with any NaNs and print summary
@@ -65,7 +65,7 @@ def validate_data(data: pd.DataFrame) -> pd.DataFrame:
     # Optionally, add simple outlier removal here if needed
     return data_clean
 ```
-#### Step 3: Backtesting (backtest.py) ✅ Completed
+#### Step 3: Backtesting (backtest.py) 
 ```python
 from backtesting import Backtest, Strategy
 from backtesting.lib import crossover
@@ -93,13 +93,12 @@ def run_backtest(data: pd.DataFrame):
     stats = bt.run()
     return stats, bt
 ```
-#### Step 4: Report Generation (report_generator.py) ✅ Completed
-- Now includes: equity curve, metrics, strategy parameters, commission, and trade log in PDF.
-- Minimal error handling for PDF generation.
+#### Step 4: Report Generation (report_generator.py) 
+- Now includes: equity curve, metrics, strategy parameters, commission, and trade log in Markdown.
+- Minimal error handling for report generation.
 
 ```python
 import matplotlib.pyplot as plt
-from fpdf import FPDF
 import os
 
 def generate_report(stats, bt, ticker: str):
@@ -108,42 +107,37 @@ def generate_report(stats, bt, ticker: str):
     os.makedirs("reports", exist_ok=True)
     # Create plots
     bt.plot(filename=f"plots/{ticker}_equity.png")
-    # PDF Report
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Technical Analysis Report: {ticker}", ln=1)
-    pdf.image(f"plots/{ticker}_equity.png", w=180)
-    # Add metrics
-    metrics = [
-        f"Return: {stats['Return [%]']:.2f}%",
-        f"Sharpe Ratio: {stats['Sharpe Ratio']:.2f}",
-        f"Max Drawdown: {stats['Max. Drawdown [%]']:.2f}%",
-        f"Commission: {bt._commission}"
-    ]
-    for metric in metrics:
-        pdf.cell(200, 10, txt=metric, ln=1)
-    # Add strategy parameters
-    pdf.cell(200, 10, txt="Strategy Parameters:", ln=1)
-    params = getattr(bt.strategy, 'parameters', None)
-    if params:
-        for k, v in params.items():
-            pdf.cell(200, 10, txt=f"{k}: {v}", ln=1)
-    # Add trade log
-    pdf.cell(200, 10, txt="\nTrade Log:", ln=1)
-    trades = stats.get('_trades') or stats.get('trades')
-    if trades is not None and hasattr(trades, 'iterrows'):
-        for idx, trade in trades.iterrows():
-            summary = f"Entry: {trade['EntryTime']} @ {trade['EntryPrice']} | Exit: {trade['ExitTime']} @ {trade['ExitPrice']} | PnL: {trade['PnL']:.2f}"
-            pdf.cell(200, 10, txt=summary, ln=1)
-    else:
-        pdf.cell(200, 10, txt="No trades.", ln=1)
-    try:
-        pdf.output(f"reports/{ticker}_report.pdf")
-    except Exception as e:
-        print(f"PDF generation failed: {e}")
+    # Markdown Report
+    with open(f"reports/{ticker}_report.md", "w") as f:
+        f.write(f"# Technical Analysis Report: {ticker}\n")
+        f.write("## Equity Curve\n")
+        f.write(f"![Equity Curve]({ticker}_equity.png)\n")
+        # Add metrics
+        metrics = [
+            f"Return: {stats['Return [%]']:.2f}%",
+            f"Sharpe Ratio: {stats['Sharpe Ratio']:.2f}",
+            f"Max Drawdown: {stats['Max. Drawdown [%]']:.2f}%",
+            f"Commission: {bt._commission}"
+        ]
+        for metric in metrics:
+            f.write(f"* {metric}\n")
+        # Add strategy parameters
+        f.write("\n## Strategy Parameters\n")
+        params = getattr(bt.strategy, 'parameters', None)
+        if params:
+            for k, v in params.items():
+                f.write(f"* {k}: {v}\n")
+        # Add trade log
+        f.write("\n## Trade Log\n")
+        trades = stats.get('_trades') or stats.get('trades')
+        if trades is not None and hasattr(trades, 'iterrows'):
+            for idx, trade in trades.iterrows():
+                summary = f"Entry: {trade['EntryTime']} @ {trade['EntryPrice']} | Exit: {trade['ExitTime']} @ {trade['ExitPrice']} | PnL: {trade['PnL']:.2f}"
+                f.write(f"* {summary}\n")
+        else:
+            f.write("* No trades.\n")
 ```
-#### Step 5: RSI Indicator & Strategy Extension (backtest.py) ✅ Completed
+#### Step 5: RSI Indicator & Strategy Extension (backtest.py) 
 ```python
 def RSI(series, period=14):
     delta = series.diff()
@@ -170,7 +164,7 @@ class SMARSICrossover(Strategy):
         elif crossover(self.sma2, self.sma1) and self.rsi[-1] > self.rsi_overbought:
             self.sell()
 ```
-#### Step 6: MACD Indicator & Strategy Extension (backtest.py) ✅ Completed
+#### Step 6: MACD Indicator & Strategy Extension (backtest.py) 
 ```python
 def MACD(series, fast=12, slow=26, signal=9):
     fast_ema = series.ewm(span=fast, adjust=False).mean()
@@ -197,9 +191,9 @@ class MACDCrossover(Strategy):
 ### 5. Execution Flow
 1. Fetch data → cache as Parquet
 2. Load cached data → run backtest
-3. Generate report with visualizations
+3. Generate report with visualizations (Markdown)
 ### 6. Suggested Extensions
-- Add more indicators (RSI, MACD) ✅ RSI & MACD Completed
+- Add more indicators (RSI, MACD) 
 - Parameter optimization
 - Live trading integration
 - Sentiment analysis inputs
@@ -210,5 +204,4 @@ yfinance==0.2.31
 pandas==2.0.3
 pyarrow==14.0.1
 backtesting==0.3.3
-fpdf2==2.7.7
 matplotlib==3.7.2
