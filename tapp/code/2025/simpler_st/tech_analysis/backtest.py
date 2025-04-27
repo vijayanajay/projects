@@ -179,6 +179,7 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
     trade_log = []
     max_len = max(len(df) for df in data_dict.values())
     tickers = list(data_dict.keys())
+    open_positions = {ticker: None for ticker in tickers}  # Track open positions per ticker
     for i in range(1, max_len):
         price_dict = {ticker: data_dict[ticker]['close'].iloc[i] if i < len(data_dict[ticker]) else data_dict[ticker]['close'].iloc[-1] for ticker in tickers}
         for ticker in tickers:
@@ -187,31 +188,78 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                 continue
             prev_close = df['close'].iloc[i-1]
             curr_close = df['close'].iloc[i]
+            # Entry condition: price increases
             if curr_close > prev_close:
                 price = curr_close
                 qty = int(position_size // price)
-                if qty > 0 and pf.cash >= qty * price:
+                if qty > 0 and pf.cash >= qty * price and open_positions[ticker] is None:
                     pf.buy(
                         ticker,
                         qty,
                         price,
                         rationale=f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
                     )
-                    # Calculate regime for this trade
                     price_window = df['close'].iloc[max(0, i-10):i+1]
                     regime = classify_market_regime(price_window)
-                    trade_log.append({
-                        'action': 'buy',
-                        'ticker': ticker,
-                        'qty': qty,
+                    open_positions[ticker] = {
                         'EntryTime': str(df.index[i]),
                         'EntryPrice': price,
-                        'ExitTime': None,
-                        'ExitPrice': None,
-                        'PnL': 0.0,
-                        'price': price,
-                        'rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}",
+                        'PositionSize': qty,
+                        'Rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}",
                         'regime': regime
-                    })
+                    }
+            # Exit condition: price decreases and position is open
+            elif curr_close < prev_close and open_positions[ticker] is not None:
+                price = curr_close
+                qty = open_positions[ticker]['PositionSize']
+                pf.sell(
+                    ticker,
+                    qty,
+                    price,
+                    rationale=f"Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}"
+                )
+                entry = open_positions[ticker]
+                pnl = (price - entry['EntryPrice']) * qty
+                trade_log.append({
+                    'action': 'buy',
+                    'qty': qty,
+                    'EntryTime': entry['EntryTime'],
+                    'EntryPrice': entry['EntryPrice'],
+                    'ExitTime': str(df.index[i]),
+                    'ExitPrice': price,
+                    'PositionSize': qty,
+                    'PnL': pnl,
+                    'Rationale': f"{entry['Rationale']} | Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}",
+                    'regime': entry['regime']
+                })
+                open_positions[ticker] = None
         pf.update_equity(price_dict)
+    # At the end, close any open positions at last price
+    for ticker in tickers:
+        if open_positions[ticker] is not None:
+            df = data_dict[ticker]
+            last_idx = len(df) - 1
+            price = df['close'].iloc[last_idx]
+            entry = open_positions[ticker]
+            qty = entry['PositionSize']
+            pf.sell(
+                ticker,
+                qty,
+                price,
+                rationale=f"Sell (forced exit at end): {ticker} close {price} at idx {last_idx}"
+            )
+            pnl = (price - entry['EntryPrice']) * qty
+            trade_log.append({
+                'action': 'buy',
+                'qty': qty,
+                'EntryTime': entry['EntryTime'],
+                'EntryPrice': entry['EntryPrice'],
+                'ExitTime': str(df.index[last_idx]),
+                'ExitPrice': price,
+                'PositionSize': qty,
+                'PnL': pnl,
+                'Rationale': f"{entry['Rationale']} | Sell (forced exit at end): {ticker} close {price} at idx {last_idx}",
+                'regime': entry['regime']
+            })
+            open_positions[ticker] = None
     return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params}

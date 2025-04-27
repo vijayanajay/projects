@@ -1,64 +1,5 @@
 # Codebase Summary & Navigation Guide
 
-## Project Completion
-
-All core modules and features for the technical analysis reporting system are complete as of 2025-04-27. The pipeline is now fully automated and batch-enabled: it fetches, cleans, backtests, and generates Markdown reports for every stock in STOCKS_LIST with no user input required. All code follows TDD and minimal code principles. See tasks.md for a detailed completed tasks summary.
-
-**Portfolio-Level Refactor in Progress (2025-04-27):**
-- PRD updated to require a single portfolio-level backtest and unified Markdown report (not per-ticker)
-- See tasks.md for granular breakdown of pending and completed work
-
-**PortfolioState class added (2025-04-27):**
-- New `PortfolioState` class in `tech_analysis/portfolio.py` manages cash, holdings, and transaction log for unified portfolio-level backtest.
-- See tasks.md for TDD and implementation details.
-
-**Portfolio-Level Refactor (2025-04-27)**
-- The codebase now performs unified portfolio-level backtesting and generates a single Markdown report (`portfolio_report.md`) for all tickers in STOCKS_LIST.
-- All per-ticker report generation logic has been removed or refactored.
-- The pipeline fetches and cleans data for all tickers, runs portfolio_backtest, and passes results to generate_markdown_report.
-- generate_markdown_report now takes aggregated stats and outputs a unified report; no ticker argument is required.
-- Defensive filtering in the pipeline skips invalid tickers (e.g., '', '.', None).
-- All related tests have been updated and pass, confirming TDD compliance.
-
-**Bugfix (2025-04-27):**
-- Fixed root cause of empty/zero reports: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_markdown_report, ensuring the Markdown report reflects actual backtest results and trades.
-
-**Config-Driven Pipeline (2025-04-27):**
-- Added config.json to centralize all key parameters (data period, strategy, cash, position size, etc.).
-- pipeline.py now loads config.json and uses its values for all runs.
-- Data fetch period defaults to 10 years for robust backtesting (was previously 1 year, which caused empty/flat results).
-- Debug logging for data quality and parameter visibility added to pipeline.py.
-- All features and tests remain TDD-compliant and minimal code.
-
-**Recent Changes (2025-04-27)**
-- Added `generate_markdown_report(stats, bt)` in `report_generator.py` to produce a Markdown report (`reports/portfolio_report.md`) with all content and structure previously in the PDF report.
-- Updated the pipeline to call only `generate_markdown_report` (Markdown) automatically after each run.
-- Added a test in `tests/test_report_generation.py` to verify Markdown report generation and content (cover, table of contents, metrics, trade log, rationale, etc.).
-- Updated `scripts/prd.txt` to reflect Markdown-only report output.
-- All documentation and workflow now reflect the Markdown-only system for technical analysis reporting.
-
-**Regime Summary Reporting (2025-04-27):**
-- The reporting system now computes and includes a human-readable regime summary (e.g., "Trending: 60%, Ranging: 30%, Volatile: 10%") in the Markdown report.
-- The regime summary is derived from trade log statistics using correlate_performance_with_regimes in pipeline.py.
-- Tests ensure the regime summary appears in the Markdown report, confirming TDD compliance.
-
-**Trade Log Regime Logging Update (2025-04-28):**
-- Each trade log entry in the portfolio backtest (tech_analysis/backtest.py) now always includes a regime string, computed using classify_market_regime. This ensures regime summary reporting is robust and no regime is ever None or Unknown.
-
-**Regime Series Table Reporting (2025-04-28):**
-- Added detect_market_regime_series in tech_analysis/market_regimes.py to compute a regime label for every date using a rolling window.
-- pipeline.py now calls detect_market_regime_series after data fetch/clean and stores the result in stats['regime_series'].
-- The regime summary section in the Markdown report now includes a table of regime labels for every date, not just trade dates, ensuring full timeline visibility.
-- This enables the report to show market regime context even for periods with no trades, increasing analytical coverage.
-
-**Regime Table Filtering Update (2025-04-28):**
-- The regime table in the Markdown report now only includes regime changes that persist for more than 3 days in a row.
-- Short regime runs (≤3 days) are omitted from the table entirely.
-- This is implemented via a filtering helper in `report_generator.py`.
-- The previous logic in `pipeline.py` that output a regime entry for every date has been removed (commented out) to avoid duplication and ensure correct reporting.
-- A new test, `test_regime_table_filters_short_runs`, was added to `tests/test_report_generation.py` to confirm this logic. The test constructs a regime series with various run lengths and asserts that only long runs are included in the output.
-- All other regime summary and trade log reporting remains unchanged and TDD-compliant.
-
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
@@ -97,7 +38,7 @@ This file provides a clear, single-point reference to understand the structure a
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.
 - `correlate_performance_with_regimes(trade_log)`: Groups trade results by detected market regime, summarizing mean PnL and trade count per regime. Supports regime-aware performance analysis.
-- `portfolio_backtest(data_dict, initial_cash=10000, position_size=100)`: Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging. Accepts a dict of ticker->DataFrame, uses PortfolioState for cash/holdings, logs each trade with rationale, and returns the final state and trade log. (Added 2025-04-27)
+- `portfolio_backtest(data_dict, initial_cash=10000, position_size=100)`: Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging. Accepts a dict of ticker->DataFrame, uses PortfolioState for cash/holdings, and logs each completed trade (with action, qty, entry/exit, PnL, rationale, regime) for robust reporting and test compatibility. Returns the final state and trade log. (Updated 2025-04-28)
 
 ---
 
