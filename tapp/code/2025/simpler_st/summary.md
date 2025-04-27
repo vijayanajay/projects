@@ -44,6 +44,7 @@ This file provides a clear, single-point reference to understand the structure a
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.
 - `correlate_performance_with_regimes(trade_log)`: Groups trade results by detected market regime, summarizing mean PnL and trade count per regime. Supports regime-aware performance analysis.
+- `portfolio_backtest(data_dict, initial_cash=10000, position_size=100)`: Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging. Accepts a dict of ticker->DataFrame, uses PortfolioState for cash/holdings, logs each trade with rationale, and returns the final state and trade log. (Added 2025-04-27)
 
 ---
 

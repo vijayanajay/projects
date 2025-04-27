@@ -160,3 +160,43 @@ def correlate_performance_with_regimes(trade_log):
     for regime, pnls in regime_pnls.items():
         result[regime] = {'mean_pnl': sum(pnls)/len(pnls) if pnls else 0, 'count': len(pnls)}
     return result
+
+def portfolio_backtest(data_dict, initial_cash=10000, position_size=100):
+    """
+    Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging.
+    data_dict: dict of ticker -> pd.DataFrame with 'close' column
+    Returns: {'portfolio_state': PortfolioState, 'trade_log': list}
+    """
+    from tech_analysis.portfolio import PortfolioState
+    pf = PortfolioState(initial_cash)
+    trade_log = []
+    # Find the maximal length among all tickers
+    max_len = max(len(df) for df in data_dict.values())
+    tickers = list(data_dict.keys())
+    # Iterate over time
+    for i in range(1, max_len):  # start at 1 to allow prev close
+        for ticker in tickers:
+            df = data_dict[ticker]
+            if i >= len(df):
+                continue  # skip if this ticker has less data
+            prev_close = df['close'].iloc[i-1]
+            curr_close = df['close'].iloc[i]
+            # Naive signal: buy if price increases
+            if curr_close > prev_close:
+                price = curr_close
+                qty = int(position_size // price)
+                if qty > 0 and pf.cash >= qty * price:
+                    pf.buy(
+                        ticker,
+                        qty,
+                        price,
+                        rationale=f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
+                    )
+                    trade_log.append({
+                        'action': 'buy',
+                        'ticker': ticker,
+                        'qty': qty,
+                        'price': price,
+                        'rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
+                    })
+    return {'portfolio_state': pf, 'trade_log': trade_log}

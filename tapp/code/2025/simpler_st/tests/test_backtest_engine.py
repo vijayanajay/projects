@@ -217,3 +217,47 @@ def test_portfolio_state_basic():
         assert False, 'Should not allow buy with insufficient cash'
     except ValueError:
         pass
+
+def test_portfolio_backtest_multi_ticker():
+    """
+    Test unified portfolio-level backtest across multiple tickers, time-based iteration, no short selling, buy preference, position sizing, and rationale logging.
+    """
+    import pandas as pd
+    from tech_analysis.portfolio import PortfolioState
+    # Simulate two tickers with simple price data
+    data = {
+        'AAA': pd.DataFrame({'close': [10, 12, 14, 16, 18, 20]}),
+        'BBB': pd.DataFrame({'close': [20, 18, 16, 14, 12, 10]})
+    }
+    initial_cash = 1000
+    position_size = 100  # Max cash per buy
+    # Minimalistic signals: Buy AAA if price increases, BBB if price decreases
+    # We'll assume the function uses a naive crossover: buy if last close > prev close
+    pf = PortfolioState(initial_cash)
+    # This should raise if portfolio_backtest is not implemented
+    from tech_analysis import backtest
+    results = backtest.portfolio_backtest(
+        data,
+        initial_cash=initial_cash,
+        position_size=position_size
+    )
+    # results should include 'portfolio_state' and 'trade_log'
+    assert 'portfolio_state' in results
+    assert 'trade_log' in results
+    pf_result = results['portfolio_state']
+    trade_log = results['trade_log']
+    # PortfolioState should reflect buys only, never short sells
+    for trade in trade_log:
+        assert trade['action'] == 'buy', 'Only buy actions allowed (no short selling)'
+        assert trade['qty'] > 0
+        assert trade['ticker'] in data
+        assert 'rationale' in trade and trade['rationale'].strip() != ''
+    # Cash should decrease with each buy, never negative
+    assert pf_result.cash >= 0
+    # Holdings should be non-negative
+    for qty in pf_result.holdings.values():
+        assert qty >= 0
+    # There should be at least one trade for AAA (uptrend)
+    assert any(trade['ticker'] == 'AAA' for trade in trade_log)
+    # There should be no short sells for BBB (downtrend)
+    assert all(trade['action'] == 'buy' for trade in trade_log)

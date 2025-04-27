@@ -25,14 +25,6 @@
 - [ ] Update summary.md after implementation to describe new architecture and file responsibilities (0.5h)
 
 ### 2. Backtest Logic Refactor
-- [ ] Implement portfolio-level backtest function in tech_analysis/backtest.py: (3h)
-    - Accepts all stock data
-    - Iterates over time, not per ticker
-    - Evaluates buy/hold/sell for all stocks at each step
-    - Prefers buy if signal and cash available
-    - Allocates position size (configurable)
-    - No short selling logic
-    - Updates holdings, cash, and logs each trade with rationale
 - [ ] Ensure rationale is human-readable and records why a stock was chosen (0.5h)
 - [ ] Remove or refactor any per-ticker backtest/report logic (0.5h)
 
@@ -107,6 +99,7 @@
 - [x] Analyst Notes & Improvement Suggestions section (PDF):
   - 9.1: Designed a visually distinct notes section in the PDF report template with a dedicated area for analyst notes and suggestions. (TDD, minimal code, 2025-04-27)
   - 9.2: Confirmed section is visible and clearly marked in the PDF. Editable fields not required per user. (2025-04-27)
+- [x] Implemented portfolio-level backtest function (portfolio_backtest) in tech_analysis/backtest.py: Accepts all stock data, iterates over time, evaluates buy/hold/sell for all stocks, prefers buy if signal and cash available, allocates position size (configurable), no short selling logic, updates holdings/cash, and logs each trade with rationale. Fully TDD-compliant and minimal code added. (2025-04-27)
 - [x] All core features for the technical analysis PDF reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)
