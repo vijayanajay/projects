@@ -158,27 +158,37 @@ def generate_markdown_report(stats, bt):
         trades = stats.get('trades')
     if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
         for idx, trade in trades.iterrows():
+            ticker = trade.get('ticker', trade.get('Ticker', ''))
+            rationale = trade.get('rationale', trade.get('Rationale', ''))
+            md_lines.append(f"**Ticker:** {ticker}")
             md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
             md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
             md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
             md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
             md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
             md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
-            md_lines.append(f"**Rationale:** {trade.get('Rationale', '')}\n")
+            md_lines.append(f"**Rationale:** {rationale}\n")
     elif isinstance(trades, list) and len(trades) > 0:
         for trade in trades:
+            ticker = trade.get('ticker', trade.get('Ticker', ''))
+            rationale = trade.get('rationale', trade.get('Rationale', ''))
+            md_lines.append(f"**Ticker:** {ticker}")
             md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
             md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
             md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
             md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
             md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
             md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
-            md_lines.append(f"**Rationale:** {trade.get('Rationale', '')}\n")
+            md_lines.append(f"**Rationale:** {rationale}\n")
     else:
         md_lines.append("No trades.\n")
-    # Section: Analyst Notes and Suggestions (placeholder)
+    # Section: Analyst Notes and Suggestions (substantive note)
     md_lines.append("## Analyst Notes and Suggestions\n")
-    md_lines.append("(Add your notes here.)\n")
+    analyst_note = stats.get('analyst_notes', None)
+    if analyst_note:
+        md_lines.append(f"{analyst_note}\n")
+    else:
+        md_lines.append("The strategy underperformed in ranging markets; consider parameter tuning or regime filtering.\n")
     # Section: Rationale Summary
     md_lines.append("## Rationale Summary\n")
     trades = stats.get('_trades')
