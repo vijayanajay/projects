@@ -99,3 +99,27 @@ def test_performance_metrics_calculation():
     # Sharpe ratio and drawdown: just check they are floats (detailed checks can be added later)
     assert isinstance(metrics['sharpe_ratio'], float)
     assert isinstance(metrics['max_drawdown'], float)
+
+def test_export_backtest_results_for_report(tmp_path):
+    """
+    Test exporting backtest results (trade log and metrics) to a JSON file for report generation.
+    """
+    data = pd.DataFrame({
+        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13]
+    })
+    short_window = 2
+    long_window = 3
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close']], short_window, long_window)
+    equity_curve = [row['exit_price'] if 'exit_price' in row else 0 for row in trade_log]
+    metrics = backtest.calculate_performance_metrics(equity_curve, trade_log)
+    output_file = tmp_path / "backtest_export.json"
+    # This should raise if export_backtest_results is not implemented
+    backtest.export_backtest_results(trade_log, metrics, str(output_file))
+    # Check that file exists and has expected keys
+    import json
+    with open(output_file, 'r') as f:
+        result = json.load(f)
+    assert 'trade_log' in result
+    assert 'metrics' in result
+    assert isinstance(result['trade_log'], list)
+    assert isinstance(result['metrics'], dict)

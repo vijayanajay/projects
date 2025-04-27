@@ -110,3 +110,11 @@ def calculate_performance_metrics(equity_curve, trade_log):
         'sharpe_ratio': sharpe_ratio,
         'max_drawdown': abs(max_drawdown),
     }
+
+def export_backtest_results(trade_log, metrics, output_path):
+    """
+    Export trade log and metrics to a JSON file for report generation.
+    """
+    import json
+    with open(output_path, 'w') as f:
+        json.dump({'trade_log': trade_log, 'metrics': metrics}, f)

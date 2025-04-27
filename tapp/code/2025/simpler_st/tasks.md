@@ -3,9 +3,9 @@
 ## Project Stats
 - **Total Tasks:** 34
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 10.5
-- **Hours Pending:** 41.5
-- **% Complete:** 31%
+- **Hours Complete:** 11.5
+- **Hours Pending:** 40.5
+- **% Complete:** 32%
 
 ---
 
@@ -40,7 +40,7 @@
   - Status: Done
 - **2.5** Export backtest results for report generation  
   - Estimated Time: 1h  
-  - Status: Pending
+  - Status: Done
 
 ### 3. Market Condition Analysis
 - **3.1** Define criteria for market regimes (trending, ranging, volatile, calm)  
@@ -151,6 +151,7 @@
 - Implemented and tested SMA crossover backtest logic in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. Test now passes and logic matches pandas idioms.
 - Implemented and tested RSI strategy backtest logic in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. Test now passes and logic matches pandas idioms.
 - Implemented and tested performance metrics calculation (returns, Sharpe, drawdown, win rate) in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. All metrics verified by test.
+- Implemented export_backtest_results in `tech_analysis/backtest.py` to export trade logs and metrics to JSON for PDF report generation (TDD, minimal code).
 
 ---
 
