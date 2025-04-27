@@ -6,22 +6,22 @@ def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: i
     data['sma_short'] = data['close'].rolling(window=short_window, min_periods=1).mean()
     data['sma_long'] = data['close'].rolling(window=long_window, min_periods=1).mean()
 
-    # Buy when short SMA crosses above long SMA at the current bar
     trades = []
     position = None
+    prev_short = data['sma_short'].shift(1)
+    prev_long = data['sma_long'].shift(1)
     for idx, row in data.iterrows():
         # Only check crossover if not at the first row
-        if idx > 0:
-            prev_short = data.loc[idx-1, 'sma_short']
-            prev_long = data.loc[idx-1, 'sma_long']
-            # Buy: previous short <= long and now short > long
-            if prev_short <= prev_long and row['sma_short'] > row['sma_long'] and position != 'long':
-                trades.append({'action': 'buy', 'index': idx})
-                position = 'long'
-            # Sell: previous short >= long and now short < long
-            elif prev_short >= prev_long and row['sma_short'] < row['sma_long'] and position == 'long':
-                trades.append({'action': 'sell', 'index': idx})
-                position = None
+        if pd.isna(prev_short.loc[idx]) or pd.isna(prev_long.loc[idx]):
+            continue
+        # Buy: previous short <= long and now short > long
+        if prev_short.loc[idx] <= prev_long.loc[idx] and row['sma_short'] > row['sma_long'] and position != 'long':
+            trades.append({'action': 'buy', 'index': idx})
+            position = 'long'
+        # Sell: previous short >= long and now short < long
+        elif prev_short.loc[idx] >= prev_long.loc[idx] and row['sma_short'] < row['sma_long'] and position == 'long':
+            trades.append({'action': 'sell', 'index': idx})
+            position = None
     return trades
 
 def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_window: int):
@@ -37,53 +37,54 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
     entry_volatility = None
     entry_volume = None
     entry_regime = None
+    prev_short = data['sma_short'].shift(1)
+    prev_long = data['sma_long'].shift(1)
     for idx, row in data.iterrows():
-        if idx > 0:
-            prev_short = data.loc[idx-1, 'sma_short']
-            prev_long = data.loc[idx-1, 'sma_long']
-            # Buy
-            if prev_short <= prev_long and row['sma_short'] > row['sma_long'] and position != 'long':
-                trades.append({'action': 'buy', 'index': idx})
-                position = 'long'
-                entry_index = idx
-                entry_price = row['close']
-                # Market context at entry
-                price_window = data['close'].iloc[max(0, idx-10):idx+1]
-                entry_regime = classify_market_regime(price_window)
-                entry_volatility = price_window.std()
-                entry_volume = row['volume'] if 'volume' in data.columns else 0
-            # Sell
-            elif prev_short >= prev_long and row['sma_short'] < row['sma_long'] and position == 'long':
-                trades.append({'action': 'sell', 'index': idx})
-                exit_index = idx
-                exit_price = row['close']
-                pnl = exit_price - entry_price if entry_price is not None else 0
-                # Market context at exit
-                price_window = data['close'].iloc[max(0, idx-10):idx+1]
-                regime = classify_market_regime(price_window)
-                volatility = price_window.std()
-                volume = row['volume'] if 'volume' in data.columns else 0
-                trade_log.append({
-                    'entry_index': entry_index,
-                    'exit_index': exit_index,
-                    'entry_price': entry_price,
-                    'exit_price': exit_price,
-                    'pnl': pnl,
-                    'regime': regime,
-                    'volatility': volatility,
-                    'volume': volume,
-                    'entry_sma_short': data.loc[entry_index, 'sma_short'] if entry_index is not None else None,
-                    'entry_sma_long': data.loc[entry_index, 'sma_long'] if entry_index is not None else None,
-                    'exit_sma_short': data.loc[exit_index, 'sma_short'] if exit_index is not None else None,
-                    'exit_sma_long': data.loc[exit_index, 'sma_long'] if exit_index is not None else None,
-                    'rationale': f"{'Buy' if pnl > 0 else 'Sell'}: short SMA {'crossed above' if pnl > 0 else 'crossed below'} long SMA at index {entry_index if pnl > 0 else exit_index}"
-                })
-                position = None
-                entry_index = None
-                entry_price = None
-                entry_volatility = None
-                entry_volume = None
-                entry_regime = None
+        if pd.isna(prev_short.loc[idx]) or pd.isna(prev_long.loc[idx]):
+            continue
+        # Buy
+        if prev_short.loc[idx] <= prev_long.loc[idx] and row['sma_short'] > row['sma_long'] and position != 'long':
+            trades.append({'action': 'buy', 'index': idx})
+            position = 'long'
+            entry_index = idx
+            entry_price = row['close']
+            # Market context at entry
+            price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-10):data.index.get_loc(idx)+1]
+            entry_regime = classify_market_regime(price_window)
+            entry_volatility = price_window.std()
+            entry_volume = row['volume'] if 'volume' in data.columns else 0
+        # Sell
+        elif prev_short.loc[idx] >= prev_long.loc[idx] and row['sma_short'] < row['sma_long'] and position == 'long':
+            trades.append({'action': 'sell', 'index': idx})
+            exit_index = idx
+            exit_price = row['close']
+            pnl = exit_price - entry_price if entry_price is not None else 0
+            # Market context at exit
+            price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-10):data.index.get_loc(idx)+1]
+            regime = classify_market_regime(price_window)
+            volatility = price_window.std()
+            volume = row['volume'] if 'volume' in data.columns else 0
+            trade_log.append({
+                'entry_index': entry_index,
+                'exit_index': exit_index,
+                'entry_price': entry_price,
+                'exit_price': exit_price,
+                'pnl': pnl,
+                'regime': regime,
+                'volatility': volatility,
+                'volume': volume,
+                'entry_sma_short': data.loc[entry_index, 'sma_short'] if entry_index is not None else None,
+                'entry_sma_long': data.loc[entry_index, 'sma_long'] if entry_index is not None else None,
+                'exit_sma_short': data.loc[exit_index, 'sma_short'] if exit_index is not None else None,
+                'exit_sma_long': data.loc[exit_index, 'sma_long'] if exit_index is not None else None,
+                'rationale': f"{'Buy' if pnl > 0 else 'Sell'}: short SMA {'crossed above' if pnl > 0 else 'crossed below'} long SMA at index {entry_index if pnl > 0 else exit_index}"
+            })
+            position = None
+            entry_index = None
+            entry_price = None
+            entry_volatility = None
+            entry_volume = None
+            entry_regime = None
     return trades, trade_log
 
 def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float):

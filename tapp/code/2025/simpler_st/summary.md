@@ -1,5 +1,13 @@
 # Codebase Summary & Navigation Guide
 
+## Project Completion
+
+All core modules and features for the technical analysis PDF reporting system are complete as of 2025-04-27. The pipeline is now fully automated and batch-enabled: it fetches, cleans, backtests, and generates PDF reports for every stock in STOCKS_LIST with no user input required. All code follows TDD and minimal code principles. See tasks.md for a detailed completed tasks summary.
+
+**Portfolio-Level Refactor in Progress (2025-04-27):**
+- PRD updated to require a single portfolio-level backtest and unified PDF report (not per-ticker)
+- See tasks.md for granular breakdown of pending and completed work
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 

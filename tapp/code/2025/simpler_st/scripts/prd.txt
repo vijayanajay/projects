@@ -1,43 +1,42 @@
-# Product Requirements Document: Stock Technical Analysis Reporting System
+# Portfolio-Level Technical Analysis Backtest & Reporting PRD (2025-04-27)
 
 ## Objective
-Develop a Python-based technical analysis system with the primary goal of generating comprehensive, actionable reports for technical analysts. The reports must enable analysts to understand, review, and improve trading strategies and system performance.
+Implement a backtest system that simulates a single portfolio manager choosing which stock(s) to buy, hold, or sell among all stocks in STOCKS_LIST at each time step. Only long (buy) positions are allowed. No short selling. Always prefer buying when a valid signal is present and cash is available. The system must decide the position size for each buy (full or partial allocation, configurable). At each time step, evaluate all stocks and select the best opportunities based on strategy signals (e.g., SMA, RSI). Maintain a portfolio state: cash, holdings, transaction log, and rationale for each trade. After the simulation, generate a single consolidated PDF report listing all trades (across all stocks), rationale, and portfolio-level performance metrics. Preserve all current report sections (metrics, regime summaries, trade log, rationale summary, etc.) but unify them in one report. No per-ticker reports.
 
 ## Key Requirements
 
-### 1. Report Generation (Primary Focus)
-- Generate detailed reports in both PDF and HTML formats.
-- Reports must include:
-  - Equity curve and visualizations of technical indicators (SMA, RSI, MACD, etc.)
-  - Annotated buy/sell/hold points on charts
-  - Trade-by-trade log with entry/exit prices, timestamps, and PnL
-  - Market conditions (trend, volatility, volume) at each signal/transaction
-  - Rationale and indicator values for every transaction decision
-  - Comprehensive performance metrics: returns, Sharpe ratio, max drawdown, win rate, Sortino, Calmar, profit factor, average trade duration, exposure time, risk-adjusted returns
-  - Highlight periods of underperformance and possible causes (e.g., whipsaws, low volatility, trend reversals)
-  - Section for analyst notes and explicit suggestions for improvement
+### 1. Data Fetching
+- Use fetch_all_stocks_data(period) to get data for all stocks in STOCKS_LIST.
 
-### 2. Market Condition Analysis
-- Characterize market regimes (trending, ranging, volatile, calm) during backtest periods.
-- Correlate strategy performance with market conditions in the report.
+### 2. Portfolio Simulation
+- Implement a function that, for each time step:
+  - Evaluates all stocks for buy/hold/sell signals.
+  - Prefers buy if a valid signal and sufficient cash.
+  - Allocates position size per stock (all-in or partial).
+  - Updates holdings and cash.
+  - Records every trade with timestamp, ticker, action, size, and human-readable rationale.
 
-### 3. Transaction Decision Logging
-- Log all indicator values and logic at each buy/sell/hold decision.
-- Include rationale summary for each transaction in the report.
+### 3. Trade Log
+- Maintain a single transaction log for all trades across all stocks.
 
-### 4. Performance Metrics Expansion
-- Implement advanced metrics: Sortino ratio, Calmar ratio, profit factor, average trade duration, exposure time, risk-adjusted returns.
-- Visualize metric distributions and outliers.
+### 4. Report Generation
+- Generate one PDF report after the simulation, including:
+  - All trades (with rationale, ticker, time, action, size, price)
+  - Portfolio-level metrics (total return, drawdown, Sharpe, etc.)
+  - Per-stock contribution summary
+  - Regime summaries and rationale aggregation
+  - Analyst notes and visualizations as per current template
 
-### 5. Strategy Limitation
-- Limit to a core set of strategies (SMA crossover, RSI, MACD).
-- For each, detail strengths, weaknesses, and typical market suitability in the report.
+### 5. Testing
+- Add/modify tests to ensure:
+  - Only one report is produced
+  - Trade log contains trades for multiple tickers
+  - Rationale is present and clear for every trade
+  - No short selling occurs
+  - Buy preference and position sizing logic are enforced
 
-### 6. (Optional/Secondary) Parameter Optimization
-- If implemented, summarize optimization results and parameter sensitivities in the report.
-
-### 7. (Optional/Secondary) Sentiment Analysis & Live Trading Integration
-- If implemented, ensure their impact is clearly explained in the report.
+### 6. Documentation
+- Update summary.md and tasks.md to reflect this architecture and workflow.
 
 ## File Structure (Suggested)
 - tech_analysis/
