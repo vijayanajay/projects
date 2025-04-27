@@ -119,7 +119,7 @@ def calculate_performance_metrics(equity_curve, trade_log):
     # Total return
     total_return = (equity_curve[-1] / equity_curve[0]) - 1 if len(equity_curve) > 1 else 0.0
     # Win rate
-    wins = sum(1 for trade in trade_log if trade['pnl'] > 0)
+    wins = sum(1 for trade in trade_log if (trade.get('PnL', trade.get('pnl', 0)) > 0))
     win_rate = wins / len(trade_log) if trade_log else 0.0
     # Daily returns (assume 1 step per day for simplicity)
     returns = np.diff(equity_curve) / equity_curve[:-1]
@@ -201,6 +201,11 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                         'action': 'buy',
                         'ticker': ticker,
                         'qty': qty,
+                        'EntryTime': str(df.index[i]),
+                        'EntryPrice': price,
+                        'ExitTime': None,
+                        'ExitPrice': None,
+                        'PnL': 0.0,
                         'price': price,
                         'rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
                     })

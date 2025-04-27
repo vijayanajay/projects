@@ -26,10 +26,10 @@ def generate_report(stats, bt):
     print("[DEBUG] Entered generate_report. Stats keys:", list(stats.keys()))
     trades = stats.get('_trades')
     print("[DEBUG] Trades received in report:", trades)
-    if trades and hasattr(trades, 'iterrows'):
+    if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
         rationales = [trade.get('rationale') for _, trade in trades.iterrows() if trade.get('rationale')]
         print("[DEBUG] Rationales received in report:", rationales)
-    elif isinstance(trades, list):
+    elif isinstance(trades, list) and len(trades) > 0:
         rationales = [trade.get('rationale') for trade in trades if trade.get('rationale')]
         print("[DEBUG] Rationales received in report:", rationales)
     else:
@@ -178,6 +178,11 @@ def generate_report(stats, bt):
             ticker = trade.get('ticker', 'N/A')
             summary = f"Ticker: {ticker} | Entry: {trade.get('EntryTime', '')} @ {trade.get('EntryPrice', '')} | Exit: {trade.get('ExitTime', '')} @ {trade.get('ExitPrice', '')} | PnL: {trade.get('PnL', 0.0):.2f}"
             pdf.cell(200, 10, txt=summary, ln=1)
+    elif isinstance(trades, list) and len(trades) > 0:
+        for trade in trades:
+            ticker = trade.get('ticker', 'N/A')
+            summary = f"Ticker: {ticker} | Entry: {trade.get('EntryTime', '')} @ {trade.get('EntryPrice', '')} | Exit: {trade.get('ExitTime', '')} @ {trade.get('ExitPrice', '')} | PnL: {trade.get('PnL', 0.0):.2f}"
+            pdf.cell(200, 10, txt=summary, ln=1)
     else:
         pdf.cell(200, 10, txt="No trades.", ln=1)
     # Section: Rationale Summary
@@ -192,6 +197,11 @@ def generate_report(stats, bt):
     rationales = []
     if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
         for idx, trade in trades.iterrows():
+            rationale = trade.get('rationale')
+            if rationale:
+                rationales.append(rationale)
+    elif isinstance(trades, list) and len(trades) > 0:
+        for trade in trades:
             rationale = trade.get('rationale')
             if rationale:
                 rationales.append(rationale)
