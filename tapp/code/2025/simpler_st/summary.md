@@ -27,7 +27,7 @@ This file provides a clear, single-point reference to understand the structure a
 **Purpose:** Contains all backtesting logic for trading strategies and performance analysis.
 
 - `sma_crossover_backtest(data, short_window, long_window)`: Simulates a simple moving average crossover strategy, returning a list of buy/sell trades. Core for strategy evaluation.
-- `sma_crossover_backtest_with_log(data, short_window, long_window)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). **As of 2025-04-27, each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), and volume.** Used for deeper analysis and reporting.
+- `sma_crossover_backtest_with_log(data, short_window, long_window)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). **As of 2025-04-27, each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points.** Used for deeper analysis and reporting.
 - `rsi_strategy_backtest(data, period, overbought, oversold)`: Simulates an RSI-based trading strategy, returning trade signals. Enables testing alternative strategies.
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.

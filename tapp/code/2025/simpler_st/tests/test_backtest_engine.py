@@ -72,6 +72,10 @@ def test_trade_execution_and_log():
         assert 'regime' in log, "Trade log must include market regime context"
         assert 'volatility' in log, "Trade log must include volatility context"
         assert 'volume' in log, "Trade log must include volume context"
+        assert 'entry_sma_short' in log, "Trade log must include entry short SMA value"
+        assert 'entry_sma_long' in log, "Trade log must include entry long SMA value"
+        assert 'exit_sma_short' in log, "Trade log must include exit short SMA value"
+        assert 'exit_sma_long' in log, "Trade log must include exit long SMA value"
         assert isinstance(log['entry_index'], int)
         assert isinstance(log['exit_index'], int)
         assert isinstance(log['entry_price'], (int, float))
@@ -80,6 +84,10 @@ def test_trade_execution_and_log():
         assert isinstance(log['regime'], str)
         assert isinstance(log['volatility'], (int, float))
         assert isinstance(log['volume'], (int, float))
+        assert isinstance(log['entry_sma_short'], (int, float, np.floating, np.integer))
+        assert isinstance(log['entry_sma_long'], (int, float, np.floating, np.integer))
+        assert isinstance(log['exit_sma_short'], (int, float, np.floating, np.integer))
+        assert isinstance(log['exit_sma_long'], (int, float, np.floating, np.integer))
 
 def test_performance_metrics_calculation():
     """
