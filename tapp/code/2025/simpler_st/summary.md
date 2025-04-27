@@ -5,6 +5,16 @@ This file provides a clear, single-point reference to understand the structure a
 
 ---
 
+## Markdown Files in This Project
+
+- `README-task-master.md`: Documentation for Task Master integration or usage.
+- `pdf_report_outline.md`: The outline and structure for the PDF report template (design document).
+- `readme.md`: Main project overview, setup, and usage instructions.
+- `summary.md`: This codebase summary and navigation guide.
+- `tasks.md`: Project task breakdown, progress tracking, and changelog.
+
+---
+
 ## File: report_generator.py
 **Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, and trade logs.
 
