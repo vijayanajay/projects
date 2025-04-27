@@ -47,3 +47,29 @@ def test_rsi_strategy_basic():
     for trade in trades:
         assert trade['action'] in ('buy', 'sell')
         assert isinstance(trade['index'], int)
+
+def test_trade_execution_and_log():
+    """
+    Test that the backtest engine simulates trade execution and records a trade log with expected fields.
+    """
+    data = pd.DataFrame({
+        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13]
+    })
+    short_window = 2
+    long_window = 3
+    # This should generate at least one buy and one sell
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close']], short_window, long_window)
+    # trade_log should be a list of dicts with keys: 'entry_index', 'exit_index', 'entry_price', 'exit_price', 'pnl'
+    assert isinstance(trade_log, list)
+    assert len(trade_log) > 0
+    for log in trade_log:
+        assert 'entry_index' in log
+        assert 'exit_index' in log
+        assert 'entry_price' in log
+        assert 'exit_price' in log
+        assert 'pnl' in log
+        assert isinstance(log['entry_index'], int)
+        assert isinstance(log['exit_index'], int)
+        assert isinstance(log['entry_price'], (int, float))
+        assert isinstance(log['exit_price'], (int, float))
+        assert isinstance(log['pnl'], (int, float))

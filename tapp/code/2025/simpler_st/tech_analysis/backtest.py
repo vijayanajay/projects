@@ -23,6 +23,44 @@ def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: i
                 position = None
     return trades
 
+def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_window: int):
+    data = data.copy()
+    data['sma_short'] = data['close'].rolling(window=short_window, min_periods=1).mean()
+    data['sma_long'] = data['close'].rolling(window=long_window, min_periods=1).mean()
+
+    trades = []
+    trade_log = []
+    position = None
+    entry_index = None
+    entry_price = None
+    for idx, row in data.iterrows():
+        if idx > 0:
+            prev_short = data.loc[idx-1, 'sma_short']
+            prev_long = data.loc[idx-1, 'sma_long']
+            # Buy
+            if prev_short <= prev_long and row['sma_short'] > row['sma_long'] and position != 'long':
+                trades.append({'action': 'buy', 'index': idx})
+                position = 'long'
+                entry_index = idx
+                entry_price = row['close']
+            # Sell
+            elif prev_short >= prev_long and row['sma_short'] < row['sma_long'] and position == 'long':
+                trades.append({'action': 'sell', 'index': idx})
+                exit_index = idx
+                exit_price = row['close']
+                pnl = exit_price - entry_price if entry_price is not None else 0
+                trade_log.append({
+                    'entry_index': entry_index,
+                    'exit_index': exit_index,
+                    'entry_price': entry_price,
+                    'exit_price': exit_price,
+                    'pnl': pnl
+                })
+                position = None
+                entry_index = None
+                entry_price = None
+    return trades, trade_log
+
 def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float):
     data = data.copy()
     # Calculate RSI
