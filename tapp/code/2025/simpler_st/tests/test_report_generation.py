@@ -180,3 +180,40 @@ def test_regime_table_filters_short_runs(tmp_path):
     assert "| Start Date | End Date | Regime | Days |" in text, "Regime table header missing."
     # Check correct days count
     assert "4" in text and "5" in text, "Regime days count missing or incorrect."
+
+def test_regime_definitions_are_parameterized(tmp_path):
+    """
+    Test that regime definitions and criteria in the report are generated using actual strategy parameters, not hardcoded values.
+    """
+    stats = {
+        'regime_summary': 'Trending: 40%, Ranging: 60%',
+        'strategy_params': {
+            'short_window': 13,
+            'long_window': 55,
+            'min_regime_days': 7,
+            'rsi_period': 10,
+            'overbought': 80,
+            'oversold': 20
+        }
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    # Check that all parameter values appear in the regime summary section
+    assert "short-term SMA (window: 13)" in text, "Short SMA window not reflected in regime definition."
+    assert "long-term SMA (window: 55)" in text, "Long SMA window not reflected in regime definition."
+    assert "for more than 6 days" in text, "Min regime days not reflected in regime definition."
+    assert "**Short SMA window:** 13 days" in text, "Short SMA window not reflected in quantitative parameters."
+    assert "**Long SMA window:** 55 days" in text, "Long SMA window not reflected in quantitative parameters."
+    assert "**Minimum regime duration:** 7 days" in text, "Min regime days not reflected in quantitative parameters."
+    assert "**RSI period:** 10" in text, "RSI period not reflected in quantitative parameters."
+    assert "**RSI thresholds:** Overbought (80), Oversold (20)" in text, "RSI thresholds not reflected in quantitative parameters."
+    # Should not contain any default/hardcoded values if custom provided
+    assert "window: 20" not in text, "Hardcoded default short_window found in regime definition."
+    assert "window: 50" not in text, "Hardcoded default long_window found in regime definition."
+    assert "for more than 3 days" not in text, "Hardcoded min regime days found in regime definition."
+    assert "Overbought (70), Oversold (30)" not in text, "Hardcoded RSI thresholds found in regime definition."

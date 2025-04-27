@@ -94,6 +94,24 @@ def generate_markdown_report(stats, bt):
             md_lines.append("Note: Outlier(s) highlighted in red.\n")
     # Section: Regime Summary
     md_lines.append("## Regime Summary\n")
+    # Dynamically add regime definitions and classification criteria using actual parameters
+    params = stats.get('strategy_params', {})
+    short_sma = params.get('short_window', 20)
+    long_sma = params.get('long_window', 50)
+    min_days = params.get('min_regime_days', 4)
+    rsi_period = params.get('rsi_period', 14)
+    overbought = params.get('overbought', 70)
+    oversold = params.get('oversold', 30)
+    md_lines.append("**Regime Definitions and Classification Criteria:**\n")
+    md_lines.append(f"- **Trending:** A period where price exhibits a clear upward or downward movement, typically identified by the short-term SMA (window: {short_sma}) being consistently above (uptrend) or below (downtrend) the long-term SMA (window: {long_sma}) for more than {min_days - 1} days.\n")
+    md_lines.append(f"- **Ranging:** A period where price oscillates within a horizontal channel, identified when the short-term SMA crosses above and below the long-term SMA frequently, with no sustained trend for more than {min_days - 1} days.\n")
+    md_lines.append("- **Quantitative Parameters:**\n" +
+        f"**Short SMA window:** {short_sma} days\n" +
+        f"**Long SMA window:** {long_sma} days\n" +
+        f"**Minimum regime duration:** {min_days} days (regimes shorter than this are filtered out)\n" +
+        f"**RSI period:** {rsi_period}\n" +
+        f"**RSI thresholds:** Overbought ({overbought}), Oversold ({oversold})\n"
+    )
     regime_summary = stats.get('regime_summary')
     if regime_summary:
         md_lines.append(f"{regime_summary}\n")
