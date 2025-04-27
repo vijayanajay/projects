@@ -192,8 +192,15 @@ def generate_report(stats, bt, ticker: str):
     pdf.add_page()
     pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Analyst Notes and Suggestions", ln=1)
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, txt="[Placeholder for analyst notes, observations, and improvement suggestions.]")
+    pdf.ln(3)
+    # Draw a light gray box as a visual area for notes
+    y = pdf.get_y()
+    pdf.set_fill_color(230, 230, 230)  # Light gray
+    pdf.rect(10, y, 190, 40, style='F')
+    pdf.set_xy(12, y + 2)
+    pdf.set_font("Arial", size=12, style="I")
+    pdf.multi_cell(186, 8, txt="[Write analyst notes, observations, and improvement suggestions here. This area is reserved for analyst commentary and actionable insights.]")
+    pdf.set_xy(10, y + 42)  # Move cursor below the box for any further content
     try:
         pdf.output(f"reports/{ticker}_report.pdf")
     except Exception as e:
