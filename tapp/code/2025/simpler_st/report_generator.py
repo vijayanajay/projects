@@ -22,6 +22,18 @@ def reusable_chart_component(pdf, image_path, x=10, y=None, w=190):
 
 
 def generate_report(stats, bt):
+    # DEBUG: Entry to generate_report
+    print("[DEBUG] Entered generate_report. Stats keys:", list(stats.keys()))
+    trades = stats.get('_trades')
+    print("[DEBUG] Trades received in report:", trades)
+    if trades and hasattr(trades, 'iterrows'):
+        rationales = [trade.get('rationale') for _, trade in trades.iterrows() if trade.get('rationale')]
+        print("[DEBUG] Rationales received in report:", rationales)
+    elif isinstance(trades, list):
+        rationales = [trade.get('rationale') for trade in trades if trade.get('rationale')]
+        print("[DEBUG] Rationales received in report:", rationales)
+    else:
+        print("[DEBUG] No trades or rationales found in stats for report.")
     # Ensure plots and reports directories exist
     os.makedirs("plots", exist_ok=True)
     os.makedirs("reports", exist_ok=True)

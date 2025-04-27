@@ -3,6 +3,7 @@ from pathlib import Path
 from tech_analysis.data.fetcher import fetch_stock_data, clean_and_validate_data
 from tech_analysis.backtest import portfolio_backtest, calculate_performance_metrics
 from report_generator import generate_report
+import json
 
 def run_pipeline(tickers, output_dir=None):
     """
@@ -14,6 +15,22 @@ def run_pipeline(tickers, output_dir=None):
         reports_dir = Path(output_dir) / "reports"
         reports_dir.mkdir(parents=True, exist_ok=True)
         os.chdir(output_dir)
+    # Load config
+    config_path = Path(__file__).parent / "config.json"
+    if config_path.exists():
+        with open(config_path, "r") as f:
+            config = json.load(f)
+        period = config.get("period", "10y")
+        initial_cash = config.get("initial_cash", 10000)
+        position_size = config.get("position_size", 100)
+        strategy = config.get("strategy", "naive_momentum")
+        strategy_params = config.get("strategy_params", {})
+    else:
+        period = "10y"
+        initial_cash = 10000
+        position_size = 100
+        strategy = "naive_momentum"
+        strategy_params = {}
     # Filter out invalid tickers
     invalid_tickers = {'', '.', None}
     filtered_tickers = [t for t in tickers if t not in invalid_tickers]
@@ -22,9 +39,11 @@ def run_pipeline(tickers, output_dir=None):
     # Fetch and clean data for all filtered tickers
     data_dict = {}
     for ticker in filtered_tickers:
-        df = fetch_stock_data(ticker, period="1y")
+        df = fetch_stock_data(ticker, period=period)
         df = clean_and_validate_data(df)
         df.columns = df.columns.str.lower()
+        # DEBUG: Data quality
+        print(f"[DEBUG] {ticker} data length: {len(df)}; head: {df.head(2)}; tail: {df.tail(2)}")
         if df is not None and not df.empty and 'close' in df.columns:
             data_dict[ticker] = df
         else:
@@ -32,10 +51,14 @@ def run_pipeline(tickers, output_dir=None):
     if not data_dict:
         raise ValueError("No valid data for any ticker. Cannot generate unified report.")
     # Unified portfolio backtest
-    bt_result = portfolio_backtest(data_dict)
+    bt_result = portfolio_backtest(data_dict, initial_cash=initial_cash, position_size=position_size, strategy_params=strategy_params)
+    # DEBUG: Backtest result
+    print("[DEBUG] portfolio_backtest result:", bt_result)
     strategy_params = bt_result.get('strategy_params', {})
     pf = bt_result['portfolio_state']
     trade_log = bt_result['trade_log']
+    # DEBUG: Trade log with rationale
+    print("[DEBUG] Trade log:", trade_log)
     # Extract the real equity curve from the portfolio state
     equity_curve = pf.equity_curve if hasattr(pf, 'equity_curve') else None
     if equity_curve is None or len(equity_curve) == 0:
@@ -46,6 +69,8 @@ def run_pipeline(tickers, output_dir=None):
     stats['equity_curve'] = equity_curve
     stats['regime_summary'] = 'N/A'  # Optionally, call correlate_performance_with_regimes if needed
     stats['strategy_params'] = strategy_params
+    # DEBUG: Metrics/stats for report
+    print("[DEBUG] Stats for report:", stats)
     # Pass real stats to report generator
     try:
         generate_report(stats, pf)  # Pass pf as bt object if needed for plotting

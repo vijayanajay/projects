@@ -23,6 +23,13 @@ All core modules and features for the technical analysis PDF reporting system ar
 **Bugfix (2025-04-27):**
 - Fixed root cause of empty/zero reports: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_report, ensuring the PDF report reflects actual backtest results and trades.
 
+**Config-Driven Pipeline (2025-04-27):**
+- Added config.json to centralize all key parameters (data period, strategy, cash, position size, etc.).
+- pipeline.py now loads config.json and uses its values for all runs.
+- Data fetch period defaults to 10 years for robust backtesting (was previously 1 year, which caused empty/flat results).
+- Debug logging for data quality and parameter visibility added to pipeline.py.
+- All features and tests remain TDD-compliant and minimal code.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
