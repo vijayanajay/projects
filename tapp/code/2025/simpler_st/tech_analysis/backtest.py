@@ -222,6 +222,7 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                 pnl = (price - entry['EntryPrice']) * qty
                 trade_log.append({
                     'action': 'buy',
+                    'ticker': ticker,
                     'qty': qty,
                     'EntryTime': entry['EntryTime'],
                     'EntryPrice': entry['EntryPrice'],
@@ -229,7 +230,7 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                     'ExitPrice': price,
                     'PositionSize': qty,
                     'PnL': pnl,
-                    'Rationale': f"{entry['Rationale']} | Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}",
+                    'rationale': f"{entry['Rationale']} | Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}",
                     'regime': entry['regime']
                 })
                 open_positions[ticker] = None
@@ -251,6 +252,7 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
             pnl = (price - entry['EntryPrice']) * qty
             trade_log.append({
                 'action': 'buy',
+                'ticker': ticker,
                 'qty': qty,
                 'EntryTime': entry['EntryTime'],
                 'EntryPrice': entry['EntryPrice'],
@@ -258,7 +260,7 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                 'ExitPrice': price,
                 'PositionSize': qty,
                 'PnL': pnl,
-                'Rationale': f"{entry['Rationale']} | Sell (forced exit at end): {ticker} close {price} at idx {last_idx}",
+                'rationale': f"{entry['Rationale']} | Sell (forced exit at end): {ticker} close {price} at idx {last_idx}",
                 'regime': entry['regime']
             })
             open_positions[ticker] = None
