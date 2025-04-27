@@ -1,4 +1,5 @@
 import pandas as pd
+from tech_analysis.market_regimes import classify_market_regime
 
 def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: int):
     data = data.copy()
@@ -33,6 +34,9 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
     position = None
     entry_index = None
     entry_price = None
+    entry_volatility = None
+    entry_volume = None
+    entry_regime = None
     for idx, row in data.iterrows():
         if idx > 0:
             prev_short = data.loc[idx-1, 'sma_short']
@@ -43,22 +47,38 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
                 position = 'long'
                 entry_index = idx
                 entry_price = row['close']
+                # Market context at entry
+                price_window = data['close'].iloc[max(0, idx-10):idx+1]
+                entry_regime = classify_market_regime(price_window)
+                entry_volatility = price_window.std()
+                entry_volume = row['volume'] if 'volume' in data.columns else 0
             # Sell
             elif prev_short >= prev_long and row['sma_short'] < row['sma_long'] and position == 'long':
                 trades.append({'action': 'sell', 'index': idx})
                 exit_index = idx
                 exit_price = row['close']
                 pnl = exit_price - entry_price if entry_price is not None else 0
+                # Market context at exit
+                price_window = data['close'].iloc[max(0, idx-10):idx+1]
+                regime = classify_market_regime(price_window)
+                volatility = price_window.std()
+                volume = row['volume'] if 'volume' in data.columns else 0
                 trade_log.append({
                     'entry_index': entry_index,
                     'exit_index': exit_index,
                     'entry_price': entry_price,
                     'exit_price': exit_price,
-                    'pnl': pnl
+                    'pnl': pnl,
+                    'regime': regime,
+                    'volatility': volatility,
+                    'volume': volume
                 })
                 position = None
                 entry_index = None
                 entry_price = None
+                entry_volatility = None
+                entry_volume = None
+                entry_regime = None
     return trades, trade_log
 
 def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float):

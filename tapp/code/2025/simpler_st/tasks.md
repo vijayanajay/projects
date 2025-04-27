@@ -2,29 +2,14 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 46
-- **Hours Pending:** 6
-- **% Complete (Time):** 88.46%
+- **Hours Complete:** 50
+- **Hours Pending:** 2
+- **% Complete (Time):** 96.15%
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
-### 5. Generate and Integrate Visualizations (PDF)
-- ~~5.4 Standardize PDF visual style and legends  
-  Estimated Time: 1h  
-  Status: Pending~~
-
-### 6. Trade-by-Trade Log and Market Context (PDF)
-- **6.2** Calculate and log PnL per trade for PDF  
-  Estimated Time: 1h  
-  Status: Pending
-- **6.3** Capture market context (trend, volatility, volume) at each trade for PDF  
-  Estimated Time: 1.5h  
-  Status: Pending
-- **6.4** Format trade log for PDF inclusion  
-  Estimated Time: 1h  
-  Status: Pending
 
 ### 7. Transaction Decision Rationale Logging (PDF)
 - **7.1** Log indicator values at decision points for PDF  
@@ -99,6 +84,10 @@
 - Implemented equity curve plotting and embedding in PDF report (TDD, minimal code, 2025-04-27)
 - Overlay RSI indicator with annotations for PDF (TDD, minimal code, 2025-04-30)
 - Captured and stored trade entry/exit data for PDF report (trade log is now robustly included and displayed in the PDF Trade Log section; TDD, minimal code, 2025-04-27)
+- Implemented trade-by-trade log and market context for PDF report (TDD, minimal code, 2025-04-27)
+  - Calculated and logged PnL per trade for PDF.
+  - Captured market context (trend, volatility, volume) at each trade for PDF.
+  - Formatted trade log for PDF inclusion.
 
 ---
 

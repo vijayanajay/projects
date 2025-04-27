@@ -50,16 +50,17 @@ def test_rsi_strategy_basic():
 
 def test_trade_execution_and_log():
     """
-    Test that the backtest engine simulates trade execution and records a trade log with expected fields.
+    Test that the backtest engine simulates trade execution and records a trade log with expected fields, including market context.
     """
     data = pd.DataFrame({
-        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13]
+        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13],
+        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130]
     })
     short_window = 2
     long_window = 3
     # This should generate at least one buy and one sell
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close']], short_window, long_window)
-    # trade_log should be a list of dicts with keys: 'entry_index', 'exit_index', 'entry_price', 'exit_price', 'pnl'
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window)
+    # trade_log should be a list of dicts with keys: 'entry_index', 'exit_index', 'entry_price', 'exit_price', 'pnl', 'regime', 'volatility', 'volume'
     assert isinstance(trade_log, list)
     assert len(trade_log) > 0
     for log in trade_log:
@@ -68,11 +69,17 @@ def test_trade_execution_and_log():
         assert 'entry_price' in log
         assert 'exit_price' in log
         assert 'pnl' in log
+        assert 'regime' in log, "Trade log must include market regime context"
+        assert 'volatility' in log, "Trade log must include volatility context"
+        assert 'volume' in log, "Trade log must include volume context"
         assert isinstance(log['entry_index'], int)
         assert isinstance(log['exit_index'], int)
         assert isinstance(log['entry_price'], (int, float))
         assert isinstance(log['exit_price'], (int, float))
         assert isinstance(log['pnl'], (int, float))
+        assert isinstance(log['regime'], str)
+        assert isinstance(log['volatility'], (int, float))
+        assert isinstance(log['volume'], (int, float))
 
 def test_performance_metrics_calculation():
     """
