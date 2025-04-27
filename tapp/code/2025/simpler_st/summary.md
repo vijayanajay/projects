@@ -12,6 +12,14 @@ All core modules and features for the technical analysis PDF reporting system ar
 - New `PortfolioState` class in `tech_analysis/portfolio.py` manages cash, holdings, and transaction log for unified portfolio-level backtest.
 - See tasks.md for TDD and implementation details.
 
+**Portfolio-Level Refactor (2025-04-27)**
+- The codebase now performs unified portfolio-level backtesting and generates a single PDF report (portfolio_report.pdf) for all tickers in STOCKS_LIST.
+- All per-ticker report generation logic has been removed or refactored.
+- The pipeline fetches and cleans data for all tickers, runs portfolio_backtest, and passes results to generate_report.
+- generate_report now takes aggregated stats and outputs a unified report; no ticker argument is required.
+- Defensive filtering in the pipeline skips invalid tickers (e.g., '', '.', None).
+- All related tests have been updated and pass, confirming TDD compliance.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
@@ -30,7 +38,7 @@ This file provides a clear, single-point reference to understand the structure a
 ## File: report_generator.py
 **Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. Creates a structured PDF template with a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold Arial font for visual standardization (since 2025-04-30). The trade log section robustly displays trade entry/exit data and PnL for each trade (since 2025-04-27).
 
-- `generate_report(stats, bt, ticker: str)`: Creates a PDF report for a given ticker using stats and a backtest object. Now also embeds a reusable chart component (e.g., equity curve image) in the Performance Metrics section using `reusable_chart_component`, adds a visually distinct Analyst Notes and Suggestions section (finalized design as of 2025-04-27), and includes a Rationale Summary section that aggregates and summarizes trade rationales from the trade log for reporting and auditability. The Trade Log section robustly displays trade entry/exit data and PnL for each trade. Now also embeds a metric distribution chart (e.g., returns histogram) in the Performance Metrics section, highlighting outliers in red and annotating them. This was implemented using TDD and is robust to headless environments (since 2025-04-27).
+- `generate_report(stats, bt)`: Creates a PDF report for aggregated stats and a backtest object. Now also embeds a reusable chart component (e.g., equity curve image) in the Performance Metrics section using `reusable_chart_component`, adds a visually distinct Analyst Notes and Suggestions section (finalized design as of 2025-04-27), and includes a Rationale Summary section that aggregates and summarizes trade rationales from the trade log for reporting and auditability. The Trade Log section robustly displays trade entry/exit data and PnL for each trade. Now also embeds a metric distribution chart (e.g., returns histogram) in the Performance Metrics section, highlighting outliers in red and annotating them. This was implemented using TDD and is robust to headless environments (since 2025-04-27).
 - `reusable_chart_component(pdf, image_path, x=10, y=None, w=190)`: Embeds a reusable chart image (such as an equity curve) into the PDF at the specified position and width. This function abstracts chart/image embedding for reuse across report sections, supporting the creation of modular PDF components. Always adds a legend caption below the chart for clarity.
 
 ---

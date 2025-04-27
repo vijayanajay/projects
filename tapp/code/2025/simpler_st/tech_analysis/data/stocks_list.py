@@ -1,6 +1,9 @@
 # List of 20 Indian large-cap and mid-cap stocks (NSE symbols)
 # Source: Nifty 50 and Nifty Midcap 150 (as of 2025)
 
+# NOTE: The ticker '.' is invalid and will be filtered out by the pipeline.
+# Add any other known invalid tickers to this comment for future reference.
+
 STOCKS_LIST = [
     "RELIANCE.NS",    # Reliance Industries (Large Cap)
     "TCS.NS",         # Tata Consultancy Services (Large Cap)
