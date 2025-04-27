@@ -2,19 +2,14 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 61
-- **Hours Complete:** 51.5
-- **Hours Pending:** 9.5
-- **% Complete (Time):** 84.43%
+- **Hours Complete:** 52.5
+- **Hours Pending:** 8.5
+- **% Complete (Time):** 86.07%
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
-
-### 7. Transaction Decision Rationale Logging (PDF)
-- **7.3** Summarize rationale for PDF report section  
-  Estimated Time: 1h  
-  Status: Pending
 
 ### 8. Performance Metrics Visualization (PDF)
 - **8.1** Visualize metric distributions and highlight outliers in PDF  
@@ -47,6 +42,7 @@
 
 ## Completed Tasks Summary
 
+- Summarize rationale for PDF report section (trade rationale aggregation and summary now included in PDF, TDD, minimal code, 2025-04-27)
 - Standardized PDF visual style and legends (all charts now use a consistent color palette, section headers use bold Arial font, and legends are always present in both charts and PDF captions. This ensures visual consistency and clarity throughout the report. Completed using TDD and minimal code, 2025-04-30)
 - Overlay SMA indicator with annotations for PDF (TDD, minimal code, 2025-04-29)
 - Data Pipeline: Stock price fetcher, cleaning/validation, Parquet caching, and loading implemented with TDD.

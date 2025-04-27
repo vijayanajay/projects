@@ -310,3 +310,47 @@ def test_pdf_standardized_visual_style_and_legends(tmp_path):
     # Check for legend label in chart (since legend label is 'Equity Curve' and 'SMA')
     assert "Equity Curve" in text, "Legend for Equity Curve missing in PDF."
     assert "SMA" in text, "Legend for SMA missing in PDF."
+
+def test_pdf_includes_rationale_summary(tmp_path):
+    """
+    TDD: Verifies that the PDF report includes a rationale summary section aggregating rationale strings from the trade log.
+    """
+    import pandas as pd
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        '_trades': pd.DataFrame([
+            {'EntryTime': '2025-04-01', 'EntryPrice': 100, 'ExitTime': '2025-04-10', 'ExitPrice': 110, 'PnL': 10.0, 'rationale': 'Buy: SMA cross'},
+            {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0, 'rationale': 'Sell: SMA cross'},
+            {'EntryTime': '2025-04-25', 'EntryPrice': 108, 'ExitTime': '2025-04-30', 'ExitPrice': 112, 'PnL': 4.0, 'rationale': 'Buy: SMA cross'},
+        ]),
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%'
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    ticker = 'RATIONALE_SUMMARY'
+    import os
+    os.chdir(tmp_path)
+    from report_generator import generate_report
+    generate_report(stats, bt, ticker)
+    pdf_path = tmp_path / f"reports/{ticker}_report.pdf"
+    assert pdf_path.exists(), "PDF not generated."
+    from pypdf import PdfReader
+    reader = PdfReader(str(pdf_path))
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    assert "Rationale Summary" in text, "Rationale Summary section missing in PDF."
+    assert "Buy: SMA cross: 2 occurrence(s)" in text, "Rationale count summary incorrect."
+    assert "Sell: SMA cross: 1 occurrence(s)" in text, "Rationale count summary incorrect."

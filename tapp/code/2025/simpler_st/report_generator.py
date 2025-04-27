@@ -82,6 +82,7 @@ def generate_report(stats, bt, ticker: str):
     pdf.cell(200, 10, txt="5. Regime Summary", ln=1)
     pdf.cell(200, 10, txt="6. Strategy Parameters", ln=1)
     pdf.cell(200, 10, txt="7. Analyst Notes and Suggestions", ln=1)
+    pdf.cell(200, 10, txt="8. Rationale Summary", ln=1)
     # Section: Performance Metrics
     pdf.add_page()
     pdf.set_font("Arial", style="B", size=14)
@@ -129,6 +130,29 @@ def generate_report(stats, bt, ticker: str):
             pdf.cell(200, 10, txt=summary, ln=1)
     else:
         pdf.cell(200, 10, txt="No trades.", ln=1)
+    # Section: Rationale Summary
+    pdf.ln(5)
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.cell(200, 12, txt="Rationale Summary", ln=1)
+    pdf.set_font("Arial", size=12)
+    rationale_summary = None
+    trades = stats.get('_trades')
+    if trades is None or not hasattr(trades, 'iterrows'):
+        trades = stats.get('trades')
+    rationales = []
+    if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
+        for idx, trade in trades.iterrows():
+            rationale = trade.get('rationale')
+            if rationale:
+                rationales.append(rationale)
+    if rationales:
+        from collections import Counter
+        rationale_counts = Counter(rationales)
+        summary_lines = [f"{k}: {v} occurrence(s)" for k, v in rationale_counts.items()]
+        rationale_summary = "Rationale summary for trades:\n" + "; ".join(summary_lines)
+        pdf.multi_cell(0, 10, txt=rationale_summary)
+    else:
+        pdf.cell(200, 10, txt="No rationale data available.", ln=1)
     # Section: Analyst Notes & Suggestions
     pdf.add_page()
     pdf.set_font("Arial", style="B", size=14)
