@@ -73,3 +73,29 @@ def test_trade_execution_and_log():
         assert isinstance(log['entry_price'], (int, float))
         assert isinstance(log['exit_price'], (int, float))
         assert isinstance(log['pnl'], (int, float))
+
+def test_performance_metrics_calculation():
+    """
+    Test that the backtest engine calculates returns, Sharpe ratio, drawdown, and win rate correctly from a trade log or equity curve.
+    """
+    # Simulate a simple equity curve
+    equity_curve = [100, 110, 120, 115, 130, 120, 140]
+    # Simulate trade log: 4 trades, 3 wins, 1 loss
+    trade_log = [
+        {'entry_index': 0, 'exit_index': 1, 'entry_price': 100, 'exit_price': 110, 'pnl': 10},  # win
+        {'entry_index': 1, 'exit_index': 2, 'entry_price': 110, 'exit_price': 120, 'pnl': 10},  # win
+        {'entry_index': 2, 'exit_index': 4, 'entry_price': 120, 'exit_price': 130, 'pnl': 10},  # win
+        {'entry_index': 4, 'exit_index': 5, 'entry_price': 130, 'exit_price': 120, 'pnl': -10}, # loss
+    ]
+    metrics = backtest.calculate_performance_metrics(equity_curve, trade_log)
+    # Check all required keys exist
+    for key in ['total_return', 'sharpe_ratio', 'max_drawdown', 'win_rate']:
+        assert key in metrics
+    # Check total return (final/initial - 1)
+    expected_return = (140 / 100) - 1
+    assert abs(metrics['total_return'] - expected_return) < 1e-6
+    # Check win rate (3/4)
+    assert abs(metrics['win_rate'] - 0.75) < 1e-6
+    # Sharpe ratio and drawdown: just check they are floats (detailed checks can be added later)
+    assert isinstance(metrics['sharpe_ratio'], float)
+    assert isinstance(metrics['max_drawdown'], float)

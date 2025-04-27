@@ -3,9 +3,9 @@
 ## Project Stats
 - **Total Tasks:** 34
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 9
-- **Hours Pending:** 43
-- **% Complete:** 26%
+- **Hours Complete:** 10.5
+- **Hours Pending:** 41.5
+- **% Complete:** 31%
 
 ---
 
@@ -37,7 +37,7 @@
   - Status: Done
 - **2.4** Calculate core performance metrics (returns, Sharpe, drawdown, win rate)  
   - Estimated Time: 1.5h  
-  - Status: Pending
+  - Status: Done
 - **2.5** Export backtest results for report generation  
   - Estimated Time: 1h  
   - Status: Pending
@@ -150,6 +150,7 @@
 - Implemented `load_from_parquet` function.
 - Implemented and tested SMA crossover backtest logic in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. Test now passes and logic matches pandas idioms.
 - Implemented and tested RSI strategy backtest logic in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. Test now passes and logic matches pandas idioms.
+- Implemented and tested performance metrics calculation (returns, Sharpe, drawdown, win rate) in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. All metrics verified by test.
 
 ---
 

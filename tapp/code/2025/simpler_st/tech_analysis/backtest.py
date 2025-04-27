@@ -86,3 +86,27 @@ def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, ov
             trades.append({'action': 'sell', 'index': idx})
             position = None
     return trades
+
+def calculate_performance_metrics(equity_curve, trade_log):
+    import numpy as np
+    equity_curve = np.array(equity_curve)
+    # Total return
+    total_return = (equity_curve[-1] / equity_curve[0]) - 1 if len(equity_curve) > 1 else 0.0
+    # Win rate
+    wins = sum(1 for trade in trade_log if trade['pnl'] > 0)
+    win_rate = wins / len(trade_log) if trade_log else 0.0
+    # Daily returns (assume 1 step per day for simplicity)
+    returns = np.diff(equity_curve) / equity_curve[:-1]
+    mean_ret = returns.mean() if len(returns) > 0 else 0.0
+    std_ret = returns.std(ddof=1) if len(returns) > 1 else 1e-10
+    sharpe_ratio = (mean_ret / std_ret) * np.sqrt(252) if std_ret > 0 else 0.0
+    # Max drawdown
+    running_max = np.maximum.accumulate(equity_curve)
+    drawdowns = (equity_curve - running_max) / running_max
+    max_drawdown = drawdowns.min() if len(drawdowns) > 0 else 0.0
+    return {
+        'total_return': total_return,
+        'win_rate': win_rate,
+        'sharpe_ratio': sharpe_ratio,
+        'max_drawdown': abs(max_drawdown),
+    }
