@@ -87,6 +87,7 @@
 - [x] All tests pass for data fetching, cleaning, backtesting, metrics, regime analysis, and PDF generation.
 - [x] TDD and minimal code principles followed throughout.
 - [x] See summary.md for codebase structure and navigation.
+- [x] Fixed root cause of empty/zero report: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_report (2025-04-27)
 
 ---
 

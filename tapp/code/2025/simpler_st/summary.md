@@ -20,6 +20,9 @@ All core modules and features for the technical analysis PDF reporting system ar
 - Defensive filtering in the pipeline skips invalid tickers (e.g., '', '.', None).
 - All related tests have been updated and pass, confirming TDD compliance.
 
+**Bugfix (2025-04-27):**
+- Fixed root cause of empty/zero reports: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_report, ensuring the PDF report reflects actual backtest results and trades.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
