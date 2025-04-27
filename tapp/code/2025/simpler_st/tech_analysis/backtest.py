@@ -118,3 +118,19 @@ def export_backtest_results(trade_log, metrics, output_path):
     import json
     with open(output_path, 'w') as f:
         json.dump({'trade_log': trade_log, 'metrics': metrics}, f)
+
+def correlate_performance_with_regimes(trade_log):
+    """
+    Groups trades by regime and summarizes mean PnL and count per regime.
+    Returns dict: {regime: {'mean_pnl': float, 'count': int}}
+    """
+    from collections import defaultdict
+    regime_pnls = defaultdict(list)
+    for trade in trade_log:
+        regime = trade.get('regime')
+        pnl = trade.get('pnl', 0)
+        regime_pnls[regime].append(pnl)
+    result = {}
+    for regime, pnls in regime_pnls.items():
+        result[regime] = {'mean_pnl': sum(pnls)/len(pnls) if pnls else 0, 'count': len(pnls)}
+    return result

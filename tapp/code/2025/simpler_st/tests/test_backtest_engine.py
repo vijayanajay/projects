@@ -123,3 +123,27 @@ def test_export_backtest_results_for_report(tmp_path):
     assert 'metrics' in result
     assert isinstance(result['trade_log'], list)
     assert isinstance(result['metrics'], dict)
+
+def test_correlate_performance_with_regimes():
+    """
+    Test that strategy performance is correctly grouped and summarized by detected market regimes.
+    """
+    # Simulate trade log with regime labels
+    trade_log = [
+        {'entry_index': 0, 'exit_index': 1, 'entry_price': 100, 'exit_price': 110, 'pnl': 10, 'regime': 'trending'},
+        {'entry_index': 1, 'exit_index': 2, 'entry_price': 110, 'exit_price': 120, 'pnl': 10, 'regime': 'trending'},
+        {'entry_index': 2, 'exit_index': 3, 'entry_price': 120, 'exit_price': 119, 'pnl': -1, 'regime': 'ranging'},
+        {'entry_index': 3, 'exit_index': 4, 'entry_price': 119, 'exit_price': 121, 'pnl': 2, 'regime': 'ranging'},
+        {'entry_index': 4, 'exit_index': 5, 'entry_price': 121, 'exit_price': 118, 'pnl': -3, 'regime': 'volatile'},
+    ]
+    # This function should return e.g. {'trending': {'mean_pnl': 10, 'count': 2}, ...}
+    result = backtest.correlate_performance_with_regimes(trade_log)
+    assert 'trending' in result
+    assert 'ranging' in result
+    assert 'volatile' in result
+    assert result['trending']['mean_pnl'] == 10
+    assert result['trending']['count'] == 2
+    assert result['ranging']['mean_pnl'] == 0.5
+    assert result['ranging']['count'] == 2
+    assert result['volatile']['mean_pnl'] == -3
+    assert result['volatile']['count'] == 1

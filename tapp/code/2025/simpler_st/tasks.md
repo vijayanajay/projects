@@ -2,29 +2,18 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 12.5
-- **Hours Pending:** 39.5
-- **% Complete (Time):** 24%
+- **Hours Complete:** 16.5
+- **Hours Pending:** 35.5
+- **% Complete (Time):** 31.73%
 
 ---
 
 ## Completed Tasks Summary
 
-**Data Pipeline:**
-- Implemented data fetcher for stock price data (e.g., yfinance)
-- Cleaned and validated raw data (handled missing/outlier values)
-- Cached processed data in Parquet files
-- Loaded cached data for analysis
-
-**Backtesting Engine:**
-- Implemented SMA crossover backtest logic
-- Implemented RSI strategy backtest logic
-- Simulated trade execution and recorded trade logs
-- Calculated core performance metrics (returns, Sharpe, drawdown, win rate)
-- Exported backtest results for report generation (export_backtest_results to JSON)
-
-**Market Condition Analysis:**
-- Defined criteria for market regimes (trending, ranging, volatile, calm)
+- Data Pipeline: Stock price fetcher, cleaning/validation, Parquet caching, and loading implemented with TDD.
+- Backtesting Engine: SMA crossover and RSI strategies, trade execution/logging, and performance metrics (returns, Sharpe, drawdown, win rate) all TDD-verified.
+- Export: Backtest results exported for reporting (JSON).
+- Market Condition Analysis: Criteria defined, regime detection logic implemented, and strategy performance correlated with regimes—all with TDD and tests.
 
 ---
 
@@ -37,10 +26,10 @@
   - Added TDD-driven logic and tests for regime classification in `market_regimes.py`.
 - **3.2** Implement market regime detection logic  
   - Estimated Time: 1.5h  
-  - Status: Pending
+  - Status: Complete (2025-04-27)
 - **3.3** Correlate strategy performance with detected market regimes  
   - Estimated Time: 1.5h  
-  - Status: Pending
+  - Status: Complete (2025-04-27)
 - **3.4** Summarize regime analysis in PDF report  
   - Estimated Time: 1h  
   - Status: Pending
@@ -142,6 +131,8 @@
 - Implemented and tested performance metrics calculation (returns, Sharpe, drawdown, win rate) in `tech_analysis/backtest.py` with TDD in `tests/test_backtest_engine.py`. All metrics verified by test.
 - Implemented export_backtest_results in `tech_analysis/backtest.py` to export trade logs and metrics to JSON for PDF report generation (TDD, minimal code).
 - Defined criteria for market regimes (trending, ranging, volatile, calm) and added TDD-driven logic and tests for regime classification in `market_regimes.py`.
+- Implemented market regime detection logic and added TDD-driven logic and tests for regime detection in `market_regimes.py`.
+- Correlated strategy performance with detected market regimes and added TDD-driven logic and tests for regime correlation in `market_regimes.py`.
 
 ---
 
