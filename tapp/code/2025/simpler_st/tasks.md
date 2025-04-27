@@ -2,9 +2,9 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 39
-- **Hours Pending:** 13
-- **% Complete (Time):** 75%
+- **Hours Complete:** 40.5
+- **Hours Pending:** 11.5
+- **% Complete (Time):** 78%
 
 ---
 
@@ -36,20 +36,13 @@
 - Correlated strategy performance with detected market regimes and added TDD-driven logic and tests for regime correlation in `market_regimes.py`.
 - Created reusable PDF chart component and embedded equity curve in report (TDD, minimal code, 2025-04-27)
 - Added placeholder section for Analyst Notes and Suggestions in PDF report template (TDD, minimal code, 2025-04-27)
+- Implemented equity curve plotting and embedding in PDF report (TDD, minimal code, 2025-04-27)
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
-### 4. Design PDF Report Template
-- ~~4.3 Create reusable PDF components for charts, tables, and logs~~  
-  ~~Estimated Time: 2h~~  
-  ~~Status: Complete~~
-
 ### 5. Generate and Integrate Visualizations (PDF)
-- **5.1** Implement equity curve plotting for PDF  
-  Estimated Time: 1.5h  
-  Status: Pending
 - **5.2** Overlay SMA indicator with annotations for PDF  
   Estimated Time: 1.5h  
   Status: Pending
