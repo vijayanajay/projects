@@ -51,6 +51,14 @@ All core modules and features for the technical analysis reporting system are co
 - The regime summary section in the Markdown report now includes a table of regime labels for every date, not just trade dates, ensuring full timeline visibility.
 - This enables the report to show market regime context even for periods with no trades, increasing analytical coverage.
 
+**Regime Table Filtering Update (2025-04-28):**
+- The regime table in the Markdown report now only includes regime changes that persist for more than 3 days in a row.
+- Short regime runs (≤3 days) are omitted from the table entirely.
+- This is implemented via a filtering helper in `report_generator.py`.
+- The previous logic in `pipeline.py` that output a regime entry for every date has been removed (commented out) to avoid duplication and ensure correct reporting.
+- A new test, `test_regime_table_filters_short_runs`, was added to `tests/test_report_generation.py` to confirm this logic. The test constructs a regime series with various run lengths and asserts that only long runs are included in the output.
+- All other regime summary and trade log reporting remains unchanged and TDD-compliant.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
@@ -152,6 +160,7 @@ This file provides a clear, single-point reference to understand the structure a
 
 - `dummy_bt()`: Provides a mock backtesting object for report tests.
 - `test_markdown_contains_regime_summary()`: Checks that the generated Markdown report includes the regime summary, validating the integration of regime analysis into reporting.
+- `test_regime_table_filters_short_runs()`: Verifies that the regime table in the Markdown report only includes regime changes that persist for more than 3 days in a row.
 
 ---
 

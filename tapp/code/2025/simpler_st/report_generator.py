@@ -97,6 +97,34 @@ def generate_markdown_report(stats, bt):
     regime_summary = stats.get('regime_summary')
     if regime_summary:
         md_lines.append(f"{regime_summary}\n")
+    # Render filtered regime series table
+    regime_series = stats.get('regime_series')
+    if regime_series is not None and len(regime_series) > 0:
+        def filter_regime_series(series):
+            filtered = []
+            prev_regime = None
+            start_date = None
+            count = 0
+            for date, regime in series.items():
+                if regime != prev_regime:
+                    if prev_regime is not None and count > 3:
+                        filtered.append((start_date, date, prev_regime, count))
+                    start_date = date
+                    count = 1
+                    prev_regime = regime
+                else:
+                    count += 1
+            # Handle last segment
+            if prev_regime is not None and count > 3:
+                filtered.append((start_date, date, prev_regime, count))
+            return filtered
+        filtered_regimes = filter_regime_series(regime_series)
+        if filtered_regimes:
+            md_lines.append("\n| Start Date | End Date | Regime | Days |\n|---|---|---|---|")
+            for start, end, regime, days in filtered_regimes:
+                md_lines.append(f"| {start} | {end} | {regime} | {days} |")
+        else:
+            md_lines.append("\n_No regime persisted more than 3 days in a row._\n")
     # Section: Strategy Parameters
     md_lines.append("## Strategy Parameters\n")
     params = stats.get('strategy_params', {})

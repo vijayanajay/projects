@@ -91,12 +91,12 @@ def run_pipeline(tickers, output_dir=None):
     stats['regime_summary'] = regime_summary
 
     # --- UPDATE: Per-date regime summary table using regime_series ---
-    regime_lines = ["| Date | Regime |", "|------|--------|"]
-    if 'regime_series' in stats and hasattr(stats['regime_series'], 'items'):
-        for date, regime in stats['regime_series'].items():
-            regime_lines.append(f"| {date.strftime('%Y-%m-%d')} | {regime} |")
-    if len(regime_lines) > 2:
-        stats['regime_summary'] += "\n\n" + "\n".join(regime_lines)
+    # regime_lines = ["| Date | Regime |", "|------|--------|"]
+    # if 'regime_series' in stats and hasattr(stats['regime_series'], 'items'):
+    #     for date, regime in stats['regime_series'].items():
+    #         regime_lines.append(f"| {date.strftime('%Y-%m-%d')} | {regime} |")
+    # if len(regime_lines) > 2:
+    #     stats['regime_summary'] += "\n\n" + "\n".join(regime_lines)
     # --- END UPDATE ---
 
     stats['strategy_params'] = strategy_params

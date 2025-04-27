@@ -149,3 +149,34 @@ def test_markdown_includes_rationale_summary(tmp_path):
     assert "Rationale Summary" in text, "Rationale Summary section missing in Markdown report."
     assert "Buy: SMA cross" in text, "Rationale count summary incorrect."
     assert "Sell: SMA cross" in text, "Rationale count summary incorrect."
+
+def test_regime_table_filters_short_runs(tmp_path):
+    import pandas as pd
+    # Create a regime series: 2 days trending, 4 days ranging, 3 days volatile, 5 days calm
+    dates = pd.date_range("2025-04-01", periods=14)
+    regimes = [
+        'trending', 'trending', # 2 days (should be skipped)
+        'ranging', 'ranging', 'ranging', 'ranging', # 4 days (should be included)
+        'volatile', 'volatile', 'volatile', # 3 days (should be skipped)
+        'calm', 'calm', 'calm', 'calm', 'calm' # 5 days (should be included)
+    ]
+    regime_series = pd.Series(regimes, index=dates)
+    stats = {
+        'regime_summary': 'Trending: 15%, Ranging: 30%, Volatile: 20%, Calm: 35%',
+        'regime_series': regime_series
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    # Table should include only ranging (4 days) and calm (5 days), not trending (2) or volatile (3)
+    assert "ranging" in text and "calm" in text, "Expected regimes not found in table."
+    assert "trending" not in text, "Short trending regime should not be in table."
+    assert "volatile" not in text, "Short volatile regime should not be in table."
+    # Table format check
+    assert "| Start Date | End Date | Regime | Days |" in text, "Regime table header missing."
+    # Check correct days count
+    assert "4" in text and "5" in text, "Regime days count missing or incorrect."
