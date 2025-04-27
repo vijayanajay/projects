@@ -16,10 +16,10 @@ This file provides a clear, single-point reference to understand the structure a
 ---
 
 ## File: report_generator.py
-**Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. Creates a structured PDF template with a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes) for clarity and professional presentation.
+**Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. Creates a structured PDF template with a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold Arial font for visual standardization (since 2025-04-30).
 
 - `generate_report(stats, bt, ticker: str)`: Creates a PDF report for a given ticker using stats and a backtest object. Now also embeds a reusable chart component (e.g., equity curve image) in the Performance Metrics section using `reusable_chart_component`, and adds a placeholder section for Analyst Notes and Suggestions.
-- `reusable_chart_component(pdf, image_path, x=10, y=None, w=190)`: Embeds a reusable chart image (such as an equity curve) into the PDF at the specified position and width. This function abstracts chart/image embedding for reuse across report sections, supporting the creation of modular PDF components.
+- `reusable_chart_component(pdf, image_path, x=10, y=None, w=190)`: Embeds a reusable chart image (such as an equity curve) into the PDF at the specified position and width. This function abstracts chart/image embedding for reuse across report sections, supporting the creation of modular PDF components. Always adds a legend caption below the chart for clarity.
 
 ---
 

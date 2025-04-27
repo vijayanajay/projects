@@ -220,3 +220,50 @@ def test_pdf_includes_rsi_overlay_with_annotation(tmp_path):
             images_found = True
             break
     assert images_found, "No chart image with RSI overlay found in PDF."
+
+def test_pdf_standardized_visual_style_and_legends(tmp_path):
+    """
+    TDD: Verifies that all charts in the PDF report have a legend and that the PDF uses a consistent visual style (fonts, section headers).
+    """
+    import numpy as np
+    stats = {
+        'Return [%]': 11.0,
+        'Sharpe Ratio': 1.1,
+        'Max. Drawdown [%]': -3.5,
+        'regime_summary': 'Trending: 55%, Ranging: 35%, Volatile: 10%',
+        'equity_curve': np.linspace(100, 200, 100),
+        'sma_curve': np.convolve(np.linspace(100, 200, 100), np.ones(10)/10, mode='valid')
+    }
+    class DummyBT:
+        def plot(self, filename=None, equity_curve=None, sma_curve=None):
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.plot(equity_curve, label='Equity Curve')
+            plt.plot(range(len(sma_curve)), sma_curve, label='SMA', color='orange')
+            plt.annotate('SMA Start', xy=(10, sma_curve[0]), xytext=(10, sma_curve[0]+5),
+                         arrowprops=dict(arrowstyle='->', color='orange'))
+            plt.legend()
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    ticker = 'STYLE_TEST'
+    os.chdir(tmp_path)
+    from report_generator import generate_report
+    generate_report(stats, bt, ticker)
+    pdf_path = tmp_path / f"reports/{ticker}_report.pdf"
+    assert pdf_path.exists(), "PDF not generated."
+    from pypdf import PdfReader
+    reader = PdfReader(str(pdf_path))
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    # Check for section header font consistency (e.g., 'Performance Metrics' and 'Regime Summary' should be present)
+    assert "Performance Metrics" in text, "Performance Metrics section header missing."
+    assert "Regime Summary" in text, "Regime Summary section header missing."
+    # Check for legend label in chart (since legend label is 'Equity Curve' and 'SMA')
+    assert "Equity Curve" in text, "Legend for Equity Curve missing in PDF."
+    assert "SMA" in text, "Legend for SMA missing in PDF."

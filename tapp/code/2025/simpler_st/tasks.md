@@ -2,18 +2,18 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 43.5
-- **Hours Pending:** 8.5
-- **% Complete (Time):** 83.65%
+- **Hours Complete:** 44.5
+- **Hours Pending:** 7.5
+- **% Complete (Time):** 85.58%
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
 ### 5. Generate and Integrate Visualizations (PDF)
-- **5.4** Standardize PDF visual style and legends  
+- ~~5.4 Standardize PDF visual style and legends  
   Estimated Time: 1h  
-  Status: Pending
+  Status: Pending~~
 
 ### 6. Trade-by-Trade Log and Market Context (PDF)
 - **6.1** Capture and store trade entry/exit data for PDF  
@@ -71,6 +71,7 @@
 
 ## Completed Tasks Summary
 
+- Standardized PDF visual style and legends (all charts now use a consistent color palette, section headers use bold Arial font, and legends are always present in both charts and PDF captions; TDD, minimal code, 2025-04-30)
 - Overlay SMA indicator with annotations for PDF (TDD, minimal code, 2025-04-29)
 - Data Pipeline: Stock price fetcher, cleaning/validation, Parquet caching, and loading implemented with TDD.
 - Backtesting Engine: SMA crossover and RSI strategies, trade execution/logging, and performance metrics (returns, Sharpe, drawdown, win rate) all TDD-verified.

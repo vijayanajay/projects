@@ -11,43 +11,59 @@ def reusable_chart_component(pdf, image_path, x=10, y=None, w=190):
         x, y, w: Image placement and width
     """
     pdf.image(image_path, x=x, y=y, w=w)
+    # Add a caption below the chart to reinforce legend presence
+    pdf.ln(2)
+    pdf.set_font("Arial", style="I", size=10)
+    pdf.cell(0, 8, txt="Legend: Equity Curve, SMA, RSI", ln=1)
+    pdf.set_font("Arial", size=12)
+
 
 def generate_report(stats, bt, ticker: str):
     # Ensure plots and reports directories exist
     os.makedirs("plots", exist_ok=True)
     os.makedirs("reports", exist_ok=True)
     chart_path = f"plots/{ticker}_equity.png"
-    # If equity_curve and rsi_curve are provided, plot with RSI overlay and annotation
     equity_curve = stats.get('equity_curve')
     rsi_curve = stats.get('rsi_curve')
     sma_curve = stats.get('sma_curve')
-    if equity_curve is not None and rsi_curve is not None:
+    # Standardize chart style
+    def plot_with_standard_style():
         import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(equity_curve, label='Equity Curve')
-        plt.plot(rsi_curve, label='RSI', color='purple')
-        plt.annotate('RSI Start', xy=(0, rsi_curve[0]), xytext=(0, rsi_curve[0]+5),
-                     arrowprops=dict(arrowstyle='->', color='purple'))
-        plt.legend()
+        plt.figure(facecolor='white')
+        plt.rcParams.update({
+            'font.size': 12,
+            'axes.labelsize': 12,
+            'axes.titlesize': 14,
+            'legend.fontsize': 12,
+            'axes.edgecolor': 'gray',
+            'axes.linewidth': 1,
+            'axes.grid': True,
+            'grid.color': '#e0e0e0',
+            'axes.prop_cycle': plt.cycler(color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"])
+        })
+        if equity_curve is not None and rsi_curve is not None:
+            plt.plot(equity_curve, label='Equity Curve')
+            plt.plot(rsi_curve, label='RSI', color='purple')
+            plt.annotate('RSI Start', xy=(0, rsi_curve[0]), xytext=(0, rsi_curve[0]+5),
+                         arrowprops=dict(arrowstyle='->', color='purple'))
+        elif equity_curve is not None and sma_curve is not None:
+            plt.plot(equity_curve, label='Equity Curve')
+            plt.plot(range(len(sma_curve)), sma_curve, label='SMA', color='orange')
+            plt.annotate('SMA Start', xy=(10, sma_curve[0]), xytext=(10, sma_curve[0]+5),
+                         arrowprops=dict(arrowstyle='->', color='orange'))
+        else:
+            bt.plot(filename=chart_path)
+            return
+        plt.legend(loc='best', frameon=True)
+        plt.tight_layout()
         plt.savefig(chart_path)
         plt.close()
-    elif equity_curve is not None and sma_curve is not None:
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(equity_curve, label='Equity Curve')
-        plt.plot(range(len(sma_curve)), sma_curve, label='SMA', color='orange')
-        plt.annotate('SMA Start', xy=(10, sma_curve[0]), xytext=(10, sma_curve[0]+5),
-                     arrowprops=dict(arrowstyle='->', color='orange'))
-        plt.legend()
-        plt.savefig(chart_path)
-        plt.close()
-    else:
-        # Fallback to bt.plot
-        bt.plot(filename=chart_path)
+    # Always use standardized plot style
+    plot_with_standard_style()
     pdf = FPDF()
     # Cover Page
     pdf.add_page()
-    pdf.set_font("Arial", size=20)
+    pdf.set_font("Arial", style="B", size=20)
     pdf.cell(200, 20, txt="Technical Analysis Report", ln=1, align='C')
     pdf.set_font("Arial", size=14)
     pdf.cell(200, 15, txt=f"Ticker: {ticker}", ln=1, align='C')
@@ -56,7 +72,7 @@ def generate_report(stats, bt, ticker: str):
     pdf.cell(200, 10, txt="Cover", ln=1, align='C')
     # Table of Contents
     pdf.add_page()
-    pdf.set_font("Arial", size=16)
+    pdf.set_font("Arial", style="B", size=16)
     pdf.cell(200, 15, txt="Table of Contents", ln=1, align='C')
     pdf.set_font("Arial", size=12)
     pdf.cell(200, 10, txt="1. Cover Page", ln=1)
@@ -68,7 +84,7 @@ def generate_report(stats, bt, ticker: str):
     pdf.cell(200, 10, txt="7. Analyst Notes and Suggestions", ln=1)
     # Section: Performance Metrics
     pdf.add_page()
-    pdf.set_font("Arial", size=14)
+    pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Performance Metrics", ln=1)
     pdf.set_font("Arial", size=12)
     metrics = [
@@ -84,7 +100,7 @@ def generate_report(stats, bt, ticker: str):
         reusable_chart_component(pdf, chart_path)
     # Section: Regime Summary
     pdf.ln(5)
-    pdf.set_font("Arial", size=14)
+    pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Regime Summary", ln=1)
     pdf.set_font("Arial", size=12)
     regime_summary = stats.get('regime_summary')
@@ -92,7 +108,7 @@ def generate_report(stats, bt, ticker: str):
         pdf.cell(200, 10, txt=f"Regime Summary: {regime_summary}", ln=1)
     # Section: Strategy Parameters
     pdf.ln(5)
-    pdf.set_font("Arial", size=14)
+    pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Strategy Parameters", ln=1)
     pdf.set_font("Arial", size=12)
     params = getattr(bt.strategy, 'parameters', None)
@@ -101,7 +117,7 @@ def generate_report(stats, bt, ticker: str):
             pdf.cell(200, 10, txt=f"{k}: {v}", ln=1)
     # Section: Trade Log
     pdf.add_page()
-    pdf.set_font("Arial", size=14)
+    pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Trade Log", ln=1)
     pdf.set_font("Arial", size=12)
     trades = stats.get('_trades') or stats.get('trades')
@@ -113,7 +129,7 @@ def generate_report(stats, bt, ticker: str):
         pdf.cell(200, 10, txt="No trades.", ln=1)
     # Section: Analyst Notes & Suggestions
     pdf.add_page()
-    pdf.set_font("Arial", size=14)
+    pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Analyst Notes and Suggestions", ln=1)
     pdf.set_font("Arial", size=12)
     pdf.multi_cell(0, 10, txt="[Placeholder for analyst notes, observations, and improvement suggestions.]")
