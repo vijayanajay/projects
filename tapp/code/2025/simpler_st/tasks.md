@@ -2,9 +2,9 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 16.5
-- **Hours Pending:** 35.5
-- **% Complete (Time):** 31.73%
+- **Hours Complete:** 20
+- **Hours Pending:** 32
+- **% Complete (Time):** 38.46%
 
 ---
 
@@ -14,25 +14,11 @@
 - Backtesting Engine: SMA crossover and RSI strategies, trade execution/logging, and performance metrics (returns, Sharpe, drawdown, win rate) all TDD-verified.
 - Export: Backtest results exported for reporting (JSON).
 - Market Condition Analysis: Criteria defined, regime detection logic implemented, and strategy performance correlated with regimes—all with TDD and tests.
+- Summarize regime analysis in PDF report (TDD, minimal code, 2025-04-27)
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
-
-### 3. Market Condition Analysis
-- **3.1** Define criteria for market regimes (trending, ranging, volatile, calm)  
-  - Estimated Time: 1h  
-  - Status: Complete (2025-04-27)
-  - Added TDD-driven logic and tests for regime classification in `market_regimes.py`.
-- **3.2** Implement market regime detection logic  
-  - Estimated Time: 1.5h  
-  - Status: Complete (2025-04-27)
-- **3.3** Correlate strategy performance with detected market regimes  
-  - Estimated Time: 1.5h  
-  - Status: Complete (2025-04-27)
-- **3.4** Summarize regime analysis in PDF report  
-  - Estimated Time: 1h  
-  - Status: Pending
 
 ### 4. Design PDF Report Template
 - **4.1** Define PDF report sections and layout (outline in Markdown or diagram)  
@@ -133,6 +119,7 @@
 - Defined criteria for market regimes (trending, ranging, volatile, calm) and added TDD-driven logic and tests for regime classification in `market_regimes.py`.
 - Implemented market regime detection logic and added TDD-driven logic and tests for regime detection in `market_regimes.py`.
 - Correlated strategy performance with detected market regimes and added TDD-driven logic and tests for regime correlation in `market_regimes.py`.
+- Summarize regime analysis in PDF report (TDD, minimal code, 2025-04-27)
 
 ---
 
