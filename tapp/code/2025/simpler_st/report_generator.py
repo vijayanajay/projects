@@ -21,11 +21,11 @@ def reusable_chart_component(pdf, image_path, x=10, y=None, w=190):
     pdf.set_font("Arial", size=12)
 
 
-def generate_report(stats, bt, ticker: str):
+def generate_report(stats, bt):
     # Ensure plots and reports directories exist
     os.makedirs("plots", exist_ok=True)
     os.makedirs("reports", exist_ok=True)
-    chart_path = f"plots/{ticker}_equity.png"
+    chart_path = f"plots/portfolio_equity.png"
     equity_curve = stats.get('equity_curve')
     rsi_curve = stats.get('rsi_curve')
     sma_curve = stats.get('sma_curve')
@@ -69,7 +69,7 @@ def generate_report(stats, bt, ticker: str):
     pdf.set_font("Arial", style="B", size=20)
     pdf.cell(200, 20, txt="Technical Analysis Report", ln=1, align='C')
     pdf.set_font("Arial", size=14)
-    pdf.cell(200, 15, txt=f"Ticker: {ticker}", ln=1, align='C')
+    pdf.cell(200, 15, txt=f"Portfolio-Level Report", ln=1, align='C')
     pdf.ln(20)
     pdf.set_font("Arial", size=12)
     pdf.cell(200, 10, txt="Cover", ln=1, align='C')
@@ -105,13 +105,11 @@ def generate_report(stats, bt, ticker: str):
     # Minimal implementation for metric distribution visualization with outlier highlighting
     returns_dist = stats.get('returns_distribution')
     if returns_dist is not None:
-        metric_chart_path = f"plots/{ticker}_metric_dist.png"
+        metric_chart_path = f"plots/portfolio_metric_dist.png"
         plt.figure(facecolor='white')
-        # Identify outliers (e.g., >2 std from mean)
         mean = np.mean(returns_dist)
         std = np.std(returns_dist)
         outliers = (np.abs(returns_dist - mean) > 2 * std)
-        # Plot histogram
         plt.hist(returns_dist[~outliers], bins=20, color='#1f77b4', alpha=0.7, label='Normal')
         if np.any(outliers):
             plt.hist(returns_dist[outliers], bins=5, color='red', alpha=0.8, label='Outlier')
@@ -119,14 +117,12 @@ def generate_report(stats, bt, ticker: str):
         plt.xlabel('Return')
         plt.ylabel('Frequency')
         plt.legend()
-        # Annotate if outliers present
         if np.any(outliers):
             plt.annotate('Outlier', xy=(returns_dist[outliers][0], 1), xytext=(returns_dist[outliers][0], 2),
                 arrowprops=dict(arrowstyle='->', color='red'))
         plt.tight_layout()
         plt.savefig(metric_chart_path)
         plt.close()
-        # Embed in PDF
         pdf.ln(5)
         pdf.set_font("Arial", style="B", size=12)
         pdf.cell(0, 10, txt="Metric Distribution (Returns)", ln=1)
@@ -161,7 +157,8 @@ def generate_report(stats, bt, ticker: str):
         trades = stats.get('trades')
     if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
         for idx, trade in trades.iterrows():
-            summary = f"Entry: {trade['EntryTime']} @ {trade['EntryPrice']} | Exit: {trade['ExitTime']} @ {trade['ExitPrice']} | PnL: {trade['PnL']:.2f}"
+            ticker = trade.get('ticker', 'N/A')
+            summary = f"Ticker: {ticker} | Entry: {trade.get('EntryTime', '')} @ {trade.get('EntryPrice', '')} | Exit: {trade.get('ExitTime', '')} @ {trade.get('ExitPrice', '')} | PnL: {trade.get('PnL', 0.0):.2f}"
             pdf.cell(200, 10, txt=summary, ln=1)
     else:
         pdf.cell(200, 10, txt="No trades.", ln=1)
@@ -193,7 +190,6 @@ def generate_report(stats, bt, ticker: str):
     pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Analyst Notes and Suggestions", ln=1)
     pdf.ln(3)
-    # Draw a light gray box as a visual area for notes
     y = pdf.get_y()
     pdf.set_fill_color(230, 230, 230)  # Light gray
     pdf.rect(10, y, 190, 40, style='F')
@@ -202,6 +198,6 @@ def generate_report(stats, bt, ticker: str):
     pdf.multi_cell(186, 8, txt="[Write analyst notes, observations, and improvement suggestions here. This area is reserved for analyst commentary and actionable insights.]")
     pdf.set_xy(10, y + 42)  # Move cursor below the box for any further content
     try:
-        pdf.output(f"reports/{ticker}_report.pdf")
+        pdf.output(f"reports/portfolio_report.pdf")
     except Exception as e:
         print(f"PDF generation failed: {e}")
