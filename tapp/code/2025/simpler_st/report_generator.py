@@ -2,6 +2,16 @@ import matplotlib.pyplot as plt
 from fpdf import FPDF
 import os
 
+def reusable_chart_component(pdf, image_path, x=10, y=None, w=190):
+    """
+    Embeds a reusable chart image into the PDF.
+    Args:
+        pdf: FPDF instance
+        image_path: Path to the chart image file
+        x, y, w: Image placement and width
+    """
+    pdf.image(image_path, x=x, y=y, w=w)
+
 def generate_report(stats, bt, ticker: str):
     # Ensure plots and reports directories exist
     os.makedirs("plots", exist_ok=True)
@@ -42,6 +52,10 @@ def generate_report(stats, bt, ticker: str):
     ]
     for metric in metrics:
         pdf.cell(200, 10, txt=metric, ln=1)
+    # Embed equity curve chart as reusable component
+    chart_path = f"plots/{ticker}_equity.png"
+    if os.path.exists(chart_path):
+        reusable_chart_component(pdf, chart_path)
     # Section: Regime Summary
     pdf.ln(5)
     pdf.set_font("Arial", size=14)

@@ -2,9 +2,9 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 36
-- **Hours Pending:** 16
-- **% Complete (Time):** 69.23%
+- **Hours Complete:** 38
+- **Hours Pending:** 14
+- **% Complete (Time):** 73.08%
 
 ---
 
@@ -34,84 +34,85 @@
 - Defined criteria for market regimes (trending, ranging, volatile, calm) and added TDD-driven logic and tests for regime classification in `market_regimes.py`.
 - Implemented market regime detection logic and added TDD-driven logic and tests for regime detection in `market_regimes.py`.
 - Correlated strategy performance with detected market regimes and added TDD-driven logic and tests for regime correlation in `market_regimes.py`.
+- Created reusable PDF chart component and embedded equity curve in report (TDD, minimal code, 2025-04-27)
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
 ### 4. Design PDF Report Template
-- **4.3** Create reusable PDF components for charts, tables, and logs  
-  - Estimated Time: 2h  
-  - Status: Pending
+- ~~4.3 Create reusable PDF components for charts, tables, and logs~~  
+  ~~Estimated Time: 2h~~  
+  ~~Status: Complete~~
 - **4.4** Add placeholders for analyst notes and suggestions in PDF  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 
 ### 5. Generate and Integrate Visualizations (PDF)
 - **5.1** Implement equity curve plotting for PDF  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 - **5.2** Overlay SMA indicator with annotations for PDF  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 - **5.3** Overlay RSI indicator with annotations for PDF  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 - **5.4** Standardize PDF visual style and legends  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 
 ### 6. Trade-by-Trade Log and Market Context (PDF)
 - **6.1** Capture and store trade entry/exit data for PDF  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 - **6.2** Calculate and log PnL per trade for PDF  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 - **6.3** Capture market context (trend, volatility, volume) at each trade for PDF  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 - **6.4** Format trade log for PDF inclusion  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 
 ### 7. Transaction Decision Rationale Logging (PDF)
 - **7.1** Log indicator values at decision points for PDF  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 - **7.2** Log algorithmic rationale at each transaction for PDF  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 - **7.3** Summarize rationale for PDF report section  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 
 ### 8. Performance Metrics Visualization (PDF)
 - **8.1** Visualize metric distributions and highlight outliers in PDF  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 
 ### 9. Analyst Notes & Improvement Suggestions Section (PDF)
 - **9.1** Design notes section in PDF report template  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 - **9.2** Ensure section is visible and editable in PDF (if possible)  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 
 ### 10. Pipeline Orchestration & Integration
 - **10.1** Design and implement a main pipeline script to coordinate fetcher, backtesting, and reporting modules  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 - **10.2** Integrate command-line arguments or config file for pipeline (e.g., date range, stock symbols, strategies)  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 - **10.3** Ensure proper error handling and logging in orchestration script  
-  - Estimated Time: 1h  
-  - Status: Pending
+  Estimated Time: 1h  
+  Status: Pending
 - **10.4** Write integration tests for the full pipeline (fetch → backtest → report)  
-  - Estimated Time: 1.5h  
-  - Status: Pending
+  Estimated Time: 1.5h  
+  Status: Pending
 
 ---
 

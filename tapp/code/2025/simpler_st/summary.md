@@ -18,7 +18,8 @@ This file provides a clear, single-point reference to understand the structure a
 ## File: report_generator.py
 **Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, and trade logs. Now also creates a structured PDF template with a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log) for clarity and professional presentation.
 
-- `generate_report(stats, bt, ticker: str)`: Creates a PDF report for a given ticker using stats and a backtest object. It now generates a multi-page PDF with a cover page, table of contents, and clearly separated sections for metrics, regime summary, strategy parameters, and trade log. This centralizes reporting logic for downstream usage and ensures all report elements are included in a reproducible and well-organized way.
+- `generate_report(stats, bt, ticker: str)`: Creates a PDF report for a given ticker using stats and a backtest object. Now also embeds a reusable chart component (e.g., equity curve image) in the Performance Metrics section using `reusable_chart_component`.
+- `reusable_chart_component(pdf, image_path, x=10, y=None, w=190)`: Embeds a reusable chart image (such as an equity curve) into the PDF at the specified position and width. This function abstracts chart/image embedding for reuse across report sections, supporting the creation of modular PDF components.
 
 ---
 
