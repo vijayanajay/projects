@@ -3,8 +3,8 @@
 ## Project Stats
 - **Total Estimated Hours:** 61
 - **Hours Complete:** 61
-- **Hours Pending:** 0.5
-- **% Complete (Time):** 99.18%
+- **Hours Pending:** 0
+- **% Complete (Time):** 100%
 
 ## Tasks and Progress
 
@@ -22,7 +22,7 @@
 ## Epic: Migrate from per-ticker to unified portfolio simulation and reporting
 
 ### 1. PRD & Documentation
-- [ ] Update summary.md after implementation to describe new architecture and file responsibilities (0.5h)
+- [x] Update summary.md after implementation to describe new architecture and file responsibilities (0.5h) (Completed 2025-04-27; summary.md fully up to date)
 
 ---
 
