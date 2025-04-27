@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from tech_analysis.data.fetcher import fetch_stock_data, clean_and_validate_data
 from tech_analysis.backtest import portfolio_backtest, calculate_performance_metrics
-from report_generator import generate_report
+from report_generator import generate_report, generate_markdown_report
 import json
 
 def run_pipeline(tickers, output_dir=None):
@@ -74,6 +74,7 @@ def run_pipeline(tickers, output_dir=None):
     # Pass real stats to report generator
     try:
         generate_report(stats, pf)  # Pass pf as bt object if needed for plotting
+        generate_markdown_report(stats, pf)
     except Exception as e:
         import traceback
         print(f"[DEBUG] Exception in generate_report: {e}")

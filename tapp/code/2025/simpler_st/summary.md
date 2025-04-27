@@ -30,6 +30,13 @@ All core modules and features for the technical analysis PDF reporting system ar
 - Debug logging for data quality and parameter visibility added to pipeline.py.
 - All features and tests remain TDD-compliant and minimal code.
 
+**Recent Changes (2025-04-27)**
+- Added `generate_markdown_report(stats, bt)` in `report_generator.py` to produce a Markdown report (`reports/portfolio_report.md`) with the same content and structure as the PDF report.
+- Updated the pipeline to call both `generate_report` (PDF) and `generate_markdown_report` (Markdown) automatically after each run.
+- Added a test in `tests/test_report_generation.py` to verify Markdown report generation and content (cover, table of contents, metrics, trade log, rationale, etc.).
+- Updated `scripts/prd.txt` to reflect dual report output.
+- All documentation and workflow now reflect the dual-report system for technical analysis reporting.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
@@ -48,7 +55,17 @@ This file provides a clear, single-point reference to understand the structure a
 ## File: report_generator.py
 **Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. Creates a structured PDF template with a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold Arial font for visual standardization (since 2025-04-30). The trade log section robustly displays trade entry/exit data and PnL for each trade (since 2025-04-27).
 
-- `generate_report(stats, bt)`: Creates a PDF report for aggregated stats and a backtest object. Now also embeds a reusable chart component (e.g., equity curve image) in the Performance Metrics section using `reusable_chart_component`, adds a visually distinct Analyst Notes and Suggestions section (finalized design as of 2025-04-27), and includes a Rationale Summary section that aggregates and summarizes trade rationales from the trade log for reporting and auditability. The Trade Log section robustly displays trade entry/exit data and PnL for each trade. Now also embeds a metric distribution chart (e.g., returns histogram) in the Performance Metrics section, highlighting outliers in red and annotating them. This was implemented using TDD and is robust to headless environments (since 2025-04-27).
+### Report Generation
+- `generate_report(stats, bt)`: Generates a detailed technical analysis report as a PDF at `reports/portfolio_report.pdf`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts.
+- `generate_markdown_report(stats, bt)`: Generates the same report in Markdown format at `reports/portfolio_report.md`. All sections and charts are included as Markdown, with image links for charts. Called automatically in the pipeline after PDF generation.
+
+### Workflow
+- After running the pipeline, both PDF and Markdown reports are produced in the `reports/` directory.
+- Charts are saved in `plots/` and referenced in both reports.
+
+### Test Coverage
+- Tests ensure that both PDF and Markdown reports are generated and contain all key sections (cover, table of contents, metrics, trade log, rationale, etc.).
+
 - `reusable_chart_component(pdf, image_path, x=10, y=None, w=190)`: Embeds a reusable chart image (such as an equity curve) into the PDF at the specified position and width. This function abstracts chart/image embedding for reuse across report sections, supporting the creation of modular PDF components. Always adds a legend caption below the chart for clarity.
 
 ---

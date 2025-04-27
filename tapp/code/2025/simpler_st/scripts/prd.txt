@@ -20,7 +20,10 @@ Implement a backtest system that simulates a single portfolio manager choosing w
 - Maintain a single transaction log for all trades across all stocks.
 
 ### 4. Report Generation
-- Generate one PDF report after the simulation, including:
+- Generate two reports after the simulation:
+  - PDF report: reports/portfolio_report.pdf
+  - Markdown report: reports/portfolio_report.md
+  Both reports include:
   - All trades (with rationale, ticker, time, action, size, price)
   - Portfolio-level metrics (total return, drawdown, Sharpe, etc.)
   - Per-stock contribution summary
@@ -29,7 +32,7 @@ Implement a backtest system that simulates a single portfolio manager choosing w
 
 ### 5. Testing
 - Add/modify tests to ensure:
-  - Only one report is produced
+  - Both PDF and Markdown reports are produced
   - Trade log contains trades for multiple tickers
   - Rationale is present and clear for every trade
   - No short selling occurs
