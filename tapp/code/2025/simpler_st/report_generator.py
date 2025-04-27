@@ -16,8 +16,23 @@ def generate_report(stats, bt, ticker: str):
     # Ensure plots and reports directories exist
     os.makedirs("plots", exist_ok=True)
     os.makedirs("reports", exist_ok=True)
-    # Create plots
-    bt.plot(filename=f"plots/{ticker}_equity.png")
+    chart_path = f"plots/{ticker}_equity.png"
+    # If equity_curve and sma_curve are provided, plot with SMA overlay and annotation
+    equity_curve = stats.get('equity_curve')
+    sma_curve = stats.get('sma_curve')
+    if equity_curve is not None and sma_curve is not None:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.plot(equity_curve, label='Equity Curve')
+        plt.plot(range(len(sma_curve)), sma_curve, label='SMA', color='orange')
+        plt.annotate('SMA Start', xy=(10, sma_curve[0]), xytext=(10, sma_curve[0]+5),
+                     arrowprops=dict(arrowstyle='->', color='orange'))
+        plt.legend()
+        plt.savefig(chart_path)
+        plt.close()
+    else:
+        # Fallback to bt.plot
+        bt.plot(filename=chart_path)
     pdf = FPDF()
     # Cover Page
     pdf.add_page()
@@ -54,7 +69,6 @@ def generate_report(stats, bt, ticker: str):
     for metric in metrics:
         pdf.cell(200, 10, txt=metric, ln=1)
     # Embed equity curve chart as reusable component
-    chart_path = f"plots/{ticker}_equity.png"
     if os.path.exists(chart_path):
         reusable_chart_component(pdf, chart_path)
     # Section: Regime Summary
