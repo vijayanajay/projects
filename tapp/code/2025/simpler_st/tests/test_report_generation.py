@@ -91,3 +91,24 @@ def test_pdf_includes_chart_component(tmp_path):
             images_found = True
             break
     assert images_found, "No chart image found in PDF."
+
+def test_pdf_includes_analyst_notes_placeholder(tmp_path):
+    """
+    TDD: Verifies that the PDF report includes a placeholder section for Analyst Notes and Suggestions.
+    """
+    stats = {
+        'Return [%]': 7.5,
+        'Sharpe Ratio': 0.7,
+        'Max. Drawdown [%]': -2.5,
+        '_trades': None,
+        'regime_summary': 'Trending: 30%, Ranging: 50%, Volatile: 20%'
+    }
+    bt = dummy_bt()
+    ticker = 'NOTES'
+    os.chdir(tmp_path)
+    generate_report(stats, bt, ticker)
+    pdf_path = tmp_path / f"reports/{ticker}_report.pdf"
+    assert pdf_path.exists(), "PDF not generated."
+    reader = PdfReader(str(pdf_path))
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    assert "Analyst Notes and Suggestions" in text, "Analyst Notes placeholder not found in PDF."

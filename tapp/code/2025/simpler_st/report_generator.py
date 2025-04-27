@@ -39,6 +39,7 @@ def generate_report(stats, bt, ticker: str):
     pdf.cell(200, 10, txt="4. Trade Log", ln=1)
     pdf.cell(200, 10, txt="5. Regime Summary", ln=1)
     pdf.cell(200, 10, txt="6. Strategy Parameters", ln=1)
+    pdf.cell(200, 10, txt="7. Analyst Notes and Suggestions", ln=1)
     # Section: Performance Metrics
     pdf.add_page()
     pdf.set_font("Arial", size=14)
@@ -85,6 +86,12 @@ def generate_report(stats, bt, ticker: str):
             pdf.cell(200, 10, txt=summary, ln=1)
     else:
         pdf.cell(200, 10, txt="No trades.", ln=1)
+    # Section: Analyst Notes & Suggestions
+    pdf.add_page()
+    pdf.set_font("Arial", size=14)
+    pdf.cell(200, 12, txt="Analyst Notes and Suggestions", ln=1)
+    pdf.set_font("Arial", size=12)
+    pdf.multi_cell(0, 10, txt="[Placeholder for analyst notes, observations, and improvement suggestions.]")
     try:
         pdf.output(f"reports/{ticker}_report.pdf")
     except Exception as e:

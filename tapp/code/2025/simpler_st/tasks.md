@@ -2,9 +2,9 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 38
-- **Hours Pending:** 14
-- **% Complete (Time):** 73.08%
+- **Hours Complete:** 39
+- **Hours Pending:** 13
+- **% Complete (Time):** 75%
 
 ---
 
@@ -35,6 +35,7 @@
 - Implemented market regime detection logic and added TDD-driven logic and tests for regime detection in `market_regimes.py`.
 - Correlated strategy performance with detected market regimes and added TDD-driven logic and tests for regime correlation in `market_regimes.py`.
 - Created reusable PDF chart component and embedded equity curve in report (TDD, minimal code, 2025-04-27)
+- Added placeholder section for Analyst Notes and Suggestions in PDF report template (TDD, minimal code, 2025-04-27)
 
 ---
 
@@ -44,9 +45,6 @@
 - ~~4.3 Create reusable PDF components for charts, tables, and logs~~  
   ~~Estimated Time: 2h~~  
   ~~Status: Complete~~
-- **4.4** Add placeholders for analyst notes and suggestions in PDF  
-  Estimated Time: 1h  
-  Status: Pending
 
 ### 5. Generate and Integrate Visualizations (PDF)
 - **5.1** Implement equity curve plotting for PDF  
