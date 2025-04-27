@@ -68,7 +68,7 @@
 
 ## Completed Tasks Summary
 
-- Standardized PDF visual style and legends (all charts now use a consistent color palette, section headers use bold Arial font, and legends are always present in both charts and PDF captions; TDD, minimal code, 2025-04-30)
+- Standardized PDF visual style and legends (all charts now use a consistent color palette, section headers use bold Arial font, and legends are always present in both charts and PDF captions. This ensures visual consistency and clarity throughout the report. Completed using TDD and minimal code, 2025-04-30)
 - Overlay SMA indicator with annotations for PDF (TDD, minimal code, 2025-04-29)
 - Data Pipeline: Stock price fetcher, cleaning/validation, Parquet caching, and loading implemented with TDD.
 - Backtesting Engine: SMA crossover and RSI strategies, trade execution/logging, and performance metrics (returns, Sharpe, drawdown, win rate) all TDD-verified.
