@@ -112,14 +112,22 @@ def generate_markdown_report(stats, bt):
         trades = stats.get('trades')
     if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
         for idx, trade in trades.iterrows():
-            ticker = trade.get('ticker', 'N/A')
-            summary = f"- **Ticker:** {ticker} | **Entry:** {trade.get('EntryTime', '')} @ {trade.get('EntryPrice', '')} | **Exit:** {trade.get('ExitTime', '')} @ {trade.get('ExitPrice', '')} | **PnL:** {trade.get('PnL', 0.0):.2f}"
-            md_lines.append(summary)
+            md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
+            md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
+            md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
+            md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
+            md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
+            md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
+            md_lines.append(f"**Rationale:** {trade.get('Rationale', '')}\n")
     elif isinstance(trades, list) and len(trades) > 0:
         for trade in trades:
-            ticker = trade.get('ticker', 'N/A')
-            summary = f"- **Ticker:** {ticker} | **Entry:** {trade.get('EntryTime', '')} @ {trade.get('EntryPrice', '')} | **Exit:** {trade.get('ExitTime', '')} @ {trade.get('ExitPrice', '')} | **PnL:** {trade.get('PnL', 0.0):.2f}"
-            md_lines.append(summary)
+            md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
+            md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
+            md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
+            md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
+            md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
+            md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
+            md_lines.append(f"**Rationale:** {trade.get('Rationale', '')}\n")
     else:
         md_lines.append("No trades.\n")
     # Section: Analyst Notes and Suggestions (placeholder)

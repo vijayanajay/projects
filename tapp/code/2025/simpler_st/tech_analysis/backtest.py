@@ -197,6 +197,9 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                         price,
                         rationale=f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
                     )
+                    # Calculate regime for this trade
+                    price_window = df['close'].iloc[max(0, i-10):i+1]
+                    regime = classify_market_regime(price_window)
                     trade_log.append({
                         'action': 'buy',
                         'ticker': ticker,
@@ -207,7 +210,8 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                         'ExitPrice': None,
                         'PnL': 0.0,
                         'price': price,
-                        'rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
+                        'rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}",
+                        'regime': regime
                     })
         pf.update_equity(price_dict)
     return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params}

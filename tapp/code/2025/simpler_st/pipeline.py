@@ -43,7 +43,7 @@ def run_pipeline(tickers, output_dir=None):
         df = clean_and_validate_data(df)
         df.columns = df.columns.str.lower()
         # DEBUG: Data quality
-        print(f"[DEBUG] {ticker} data length: {len(df)}; head: {df.head(2)}; tail: {df.tail(2)}")
+        # print(f"[DEBUG] {ticker} data length: {len(df)}; head: {df.head(2)}; tail: {df.tail(2)}")
         if df is not None and not df.empty and 'close' in df.columns:
             data_dict[ticker] = df
         else:
@@ -73,8 +73,9 @@ def run_pipeline(tickers, output_dir=None):
         total = sum(v['count'] for v in regime_stats.values())
         summary_parts = []
         for regime, v in regime_stats.items():
+            regime_str = regime.capitalize() if isinstance(regime, str) and regime else "Unknown"
             percent = 100 * v['count'] / total if total else 0
-            summary_parts.append(f"{regime.capitalize()}: {percent:.0f}%")
+            summary_parts.append(f"{regime_str}: {percent:.0f}%")
         regime_summary = ', '.join(summary_parts)
     else:
         regime_summary = 'No trades or regimes detected.'
@@ -92,12 +93,16 @@ def run_pipeline(tickers, output_dir=None):
         raise
 
 if __name__ == "__main__":
+    import traceback
     from tech_analysis.data.stocks_list import STOCKS_LIST
     output_dir = "."
     print(f"[INFO] Running unified pipeline for all tickers in STOCKS_LIST...")
     try:
+        print("[DEBUG] About to call run_pipeline")
         run_pipeline(STOCKS_LIST, output_dir)
         print(f"[INFO] Unified portfolio report generated.")
     except Exception as e:
-        print(f"[ERROR] Unified pipeline failed: {e}")
+        print(f"[ERROR] Exception in main pipeline: {e}")
+        traceback.print_exc()
+    print("[DEBUG] End of main block")
     print(f"[INFO] Pipeline completed. Unified PDF report should be generated in {output_dir}.")

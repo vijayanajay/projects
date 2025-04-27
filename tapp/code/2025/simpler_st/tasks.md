@@ -11,50 +11,62 @@
 ### 1. Add Detailed Trade Log
 - Implement trade log with entries, exits, prices, dates, position size, rationale.
 - **Checkpoint:** Trade log section shows at least one complete trade with all required fields.
+- Status: Pending
 
 ### 2. Add Human-Readable Rationale for Each Trade
 - Ensure each trade in the log includes a rationale string explaining the decision.
 - **Checkpoint:** Each trade in the log includes a rationale string.
+- Status: Pending
 
 ### 3. Add Regime Summary
 - Summarize market regimes (bullish, bearish, sideways) relevant to backtest.
 - **Checkpoint:** Regime summary is non-empty and reflects market conditions.
+- Status: Pending
 
 ### 4. Fill Analyst Notes and Suggestions
 - Add substantive analyst notes for context and improvement suggestions.
 - **Checkpoint:** Analyst notes section contains at least one substantive note.
+- Status: Pending
 
 ### 5. Add Trade-Level Visualizations
 - Include charts with entry/exit points and indicator overlays (e.g., moving averages, RSI).
 - **Checkpoint:** At least one chart with trade markers and indicators is present.
+- Status: Pending
 
 ### 6. Add Drawdown, Return Distribution, and Heatmap Visualizations
 - Present drawdown curve, return distribution, and heatmap of trade outcomes.
 - **Checkpoint:** Each visualization is present in the report.
+- Status: Pending
 
 ### 7. Document Risk/Position Sizing Logic
 - Describe how capital is allocated and risk is managed per trade.
 - **Checkpoint:** Section describing risk and position sizing is present.
+- Status: Pending
 
 ### 8. List Universe/Assets Traded
 - Explicitly list all assets or symbols included in the backtest.
 - **Checkpoint:** Assets or symbols are explicitly listed.
+- Status: Pending
 
 ### 9. Specify Backtest Timeframe and Frequency
 - State the start/end dates and frequency (daily, hourly, etc.).
-- **Checkpoint:** Timeframe and frequency are stated.
+- **Checkpoint:** Timeframe and frequency are stated. 
+- Status: Pending
 
 ### 10. State Slippage and Commission Assumptions
 - Document slippage and commission rates used in the simulation.
 - **Checkpoint:** Assumptions are documented in the report.
+- Status: Pending
 
 ### 11. Add Parameter Sensitivity/Robustness Analysis
 - Show how results change with different parameter values.
 - **Checkpoint:** Results for at least one parameter variation are shown.
+- Status: Pending
 
 ### 12. Add Benchmark Comparison
 - Compare performance to a relevant benchmark (e.g., S&P 500, buy-and-hold).
 - **Checkpoint:** Performance is compared to a benchmark.
+- Status: Pending
 
 ---
 

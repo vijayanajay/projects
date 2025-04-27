@@ -1,4 +1,6 @@
+import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import pytest
 from pathlib import Path
 import matplotlib
@@ -67,8 +69,8 @@ def test_markdown_includes_trade_log(tmp_path):
         'Max. Drawdown [%]': -4.0,
         'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
         '_trades': pd.DataFrame([
-            {'EntryTime': '2025-04-01', 'EntryPrice': 100, 'ExitTime': '2025-04-10', 'ExitPrice': 110, 'PnL': 10.0},
-            {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0}
+            {'EntryTime': '2025-04-01', 'EntryPrice': 100, 'ExitTime': '2025-04-10', 'ExitPrice': 110, 'PnL': 10.0, 'PositionSize': 50, 'Rationale': 'Buy: SMA cross'},
+            {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0, 'PositionSize': 40, 'Rationale': 'Sell: target hit'}
         ])
     }
     class DummyBT:
@@ -90,8 +92,12 @@ def test_markdown_includes_trade_log(tmp_path):
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
     assert "**Entry:** 2025-04-01" in text, "Trade entry data missing in Markdown report."
+    assert "**Entry Price:** 100" in text, "Trade entry price missing in Markdown report."
     assert "**Exit:** 2025-04-10" in text, "Trade exit data missing in Markdown report."
+    assert "**Exit Price:** 110" in text, "Trade exit price missing in Markdown report."
+    assert "**Position Size:** 50" in text, "Trade position size missing in Markdown report."
     assert "**PnL:** 10.00" in text, "Trade PnL missing in Markdown report."
+    assert "**Rationale:** Buy: SMA cross" in text, "Trade rationale missing in Markdown report."
 
 def test_markdown_includes_analyst_notes_placeholder(tmp_path):
     stats = {

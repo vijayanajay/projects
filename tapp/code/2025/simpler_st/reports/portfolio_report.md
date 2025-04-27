@@ -26,7 +26,7 @@
 
 ## Regime Summary
 
-N/A
+Trending: 21%, Ranging: 79%
 
 ## Strategy Parameters
 

@@ -42,6 +42,9 @@ All core modules and features for the technical analysis reporting system are co
 - The regime summary is derived from trade log statistics using correlate_performance_with_regimes in pipeline.py.
 - Tests ensure the regime summary appears in the Markdown report, confirming TDD compliance.
 
+**Trade Log Regime Logging Update (2025-04-28):**
+- Each trade log entry in the portfolio backtest (tech_analysis/backtest.py) now always includes a regime string, computed using classify_market_regime. This ensures regime summary reporting is robust and no regime is ever None or Unknown.
+
 **Purpose:**
 This file provides a clear, single-point reference to understand the structure and intent of the codebase. It lists all important files, their key methods/functions, and a concise explanation of what each does and why it exists. This helps any developer, reviewer, or maintainer to quickly locate logic, understand responsibilities, and onboard or debug efficiently. Use this as the first place to look when searching for where a feature or logic is implemented.
 
