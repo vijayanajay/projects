@@ -2,9 +2,9 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 34
-- **Hours Pending:** 18
-- **% Complete (Time):** 65.38%
+- **Hours Complete:** 36
+- **Hours Pending:** 16
+- **% Complete (Time):** 69.23%
 
 ---
 
@@ -16,6 +16,7 @@
 - Market Condition Analysis: Criteria defined, regime detection logic implemented, and strategy performance correlated with regimes—all with TDD and tests.
 - Summarize regime analysis in PDF report (TDD, minimal code, 2025-04-27)
 - Defined PDF report sections and layout in Markdown outline (2025-04-27)
+- Designed PDF template structure (cover, TOC, sections) in code (TDD, minimal code, 2025-04-28)
 - Updated test in `tests/test_data_fetcher.py`:
   - Now fetches data for `HCLTECH.NS` instead of `RELIANCE.NS`.
   - Uses a 20-year period for robust data fetching.
@@ -39,9 +40,6 @@
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
 ### 4. Design PDF Report Template
-- **4.2** Design PDF template structure (cover, TOC, sections)  
-  - Estimated Time: 2h  
-  - Status: Pending
 - **4.3** Create reusable PDF components for charts, tables, and logs  
   - Estimated Time: 2h  
   - Status: Pending

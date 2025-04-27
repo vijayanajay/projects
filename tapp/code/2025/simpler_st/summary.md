@@ -16,9 +16,9 @@ This file provides a clear, single-point reference to understand the structure a
 ---
 
 ## File: report_generator.py
-**Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, and trade logs.
+**Purpose:** Generates the technical analysis PDF report, including plots, metrics, regime summaries, and trade logs. Now also creates a structured PDF template with a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log) for clarity and professional presentation.
 
-- `generate_report(stats, bt, ticker: str)`: Creates a PDF report for a given ticker using stats and a backtest object. It generates and saves plots, writes key metrics, includes a regime summary if available, lists strategy parameters, and appends a trade log. This centralizes reporting logic for downstream usage and ensures all report elements are included in a reproducible way.
+- `generate_report(stats, bt, ticker: str)`: Creates a PDF report for a given ticker using stats and a backtest object. It now generates a multi-page PDF with a cover page, table of contents, and clearly separated sections for metrics, regime summary, strategy parameters, and trade log. This centralizes reporting logic for downstream usage and ensures all report elements are included in a reproducible and well-organized way.
 
 ---
 
