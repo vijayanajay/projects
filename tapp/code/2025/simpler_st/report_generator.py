@@ -44,23 +44,26 @@ def generate_report(stats, bt):
             'grid.color': '#e0e0e0',
             'axes.prop_cycle': plt.cycler(color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"])
         })
-        if equity_curve is not None and rsi_curve is not None:
-            plt.plot(equity_curve, label='Equity Curve')
+        # Always plot the equity curve if available
+        if equity_curve is not None:
+            plt.plot(equity_curve, label='Equity Curve', color='#1f77b4')
+        if rsi_curve is not None:
             plt.plot(rsi_curve, label='RSI', color='purple')
             plt.annotate('RSI Start', xy=(0, rsi_curve[0]), xytext=(0, rsi_curve[0]+5),
                          arrowprops=dict(arrowstyle='->', color='purple'))
-        elif equity_curve is not None and sma_curve is not None:
-            plt.plot(equity_curve, label='Equity Curve')
+        if sma_curve is not None:
             plt.plot(range(len(sma_curve)), sma_curve, label='SMA', color='orange')
             plt.annotate('SMA Start', xy=(10, sma_curve[0]), xytext=(10, sma_curve[0]+5),
                          arrowprops=dict(arrowstyle='->', color='orange'))
+        if equity_curve is not None:
+            plt.legend(loc='best', frameon=True)
+            plt.tight_layout()
+            plt.savefig(chart_path)
+            plt.close()
         else:
-            bt.plot(filename=chart_path)
+            # No data to plot
+            plt.close()
             return
-        plt.legend(loc='best', frameon=True)
-        plt.tight_layout()
-        plt.savefig(chart_path)
-        plt.close()
     # Always use standardized plot style
     plot_with_standard_style()
     pdf = FPDF()
@@ -91,11 +94,12 @@ def generate_report(stats, bt):
     pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Performance Metrics", ln=1)
     pdf.set_font("Arial", size=12)
+    # Map stats keys to display names and handle missing fields robustly
     metrics = [
-        f"Return: {stats['Return [%]']:.2f}%",
-        f"Sharpe Ratio: {stats['Sharpe Ratio']:.2f}",
-        f"Max Drawdown: {stats['Max. Drawdown [%]']:.2f}%",
-        f"Commission: {bt._commission}"
+        f"Return: {100 * stats.get('total_return', 0.0):.2f}%",
+        f"Sharpe Ratio: {stats.get('sharpe_ratio', 0.0):.2f}",
+        f"Max Drawdown: {100 * stats.get('max_drawdown', 0.0):.2f}%",
+        f"Win Rate: {100 * stats.get('win_rate', 0.0):.2f}%"
     ]
     for metric in metrics:
         pdf.cell(200, 10, txt=metric, ln=1)
@@ -143,10 +147,12 @@ def generate_report(stats, bt):
     pdf.set_font("Arial", style="B", size=14)
     pdf.cell(200, 12, txt="Strategy Parameters", ln=1)
     pdf.set_font("Arial", size=12)
-    params = getattr(bt.strategy, 'parameters', None)
+    params = stats.get('strategy_params', {})
     if params:
         for k, v in params.items():
             pdf.cell(200, 10, txt=f"{k}: {v}", ln=1)
+    else:
+        pdf.cell(200, 10, txt="No strategy parameters available.", ln=1)
     # Section: Trade Log
     pdf.add_page()
     pdf.set_font("Arial", style="B", size=14)

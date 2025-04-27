@@ -71,11 +71,13 @@ def test_pdf_includes_chart_component(tmp_path):
     The test generates a report and asserts that at least one image (chart) is embedded in the PDF.
     """
     stats = {
-        'Return [%]': 8.0,
-        'Sharpe Ratio': 0.8,
-        'Max. Drawdown [%]': -3.0,
+        'total_return': 0.08,
+        'sharpe_ratio': 0.8,
+        'max_drawdown': 0.03,
+        'win_rate': 0.7,
         '_trades': None,
-        'regime_summary': 'Trending: 40%, Ranging: 40%, Volatile: 20%'
+        'regime_summary': 'Trending: 40%, Ranging: 40%, Volatile: 20%',
+        'equity_curve': [10000, 10100, 10200, 10300, 10400]  # Minimal valid curve
     }
     bt = dummy_bt()
     os.chdir(tmp_path)

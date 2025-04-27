@@ -161,27 +161,32 @@ def correlate_performance_with_regimes(trade_log):
         result[regime] = {'mean_pnl': sum(pnls)/len(pnls) if pnls else 0, 'count': len(pnls)}
     return result
 
-def portfolio_backtest(data_dict, initial_cash=10000, position_size=100):
+def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strategy_params=None):
     """
     Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging.
     data_dict: dict of ticker -> pd.DataFrame with 'close' column
-    Returns: {'portfolio_state': PortfolioState, 'trade_log': list}
+    Returns: {'portfolio_state': PortfolioState, 'trade_log': list, 'strategy_params': dict}
     """
+    if strategy_params is None:
+        strategy_params = {
+            'strategy': 'naive_momentum',
+            'rule': 'buy if price increases',
+            'position_size': position_size,
+            'initial_cash': initial_cash,
+        }
     from tech_analysis.portfolio import PortfolioState
-    pf = PortfolioState(initial_cash)
+    pf = PortfolioState(initial_cash, strategy_params=strategy_params)
     trade_log = []
-    # Find the maximal length among all tickers
     max_len = max(len(df) for df in data_dict.values())
     tickers = list(data_dict.keys())
-    # Iterate over time
-    for i in range(1, max_len):  # start at 1 to allow prev close
+    for i in range(1, max_len):
+        price_dict = {ticker: data_dict[ticker]['close'].iloc[i] if i < len(data_dict[ticker]) else data_dict[ticker]['close'].iloc[-1] for ticker in tickers}
         for ticker in tickers:
             df = data_dict[ticker]
             if i >= len(df):
-                continue  # skip if this ticker has less data
+                continue
             prev_close = df['close'].iloc[i-1]
             curr_close = df['close'].iloc[i]
-            # Naive signal: buy if price increases
             if curr_close > prev_close:
                 price = curr_close
                 qty = int(position_size // price)
@@ -199,4 +204,5 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100):
                         'price': price,
                         'rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
                     })
-    return {'portfolio_state': pf, 'trade_log': trade_log}
+        pf.update_equity(price_dict)
+    return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params}

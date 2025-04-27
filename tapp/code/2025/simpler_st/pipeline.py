@@ -33,6 +33,7 @@ def run_pipeline(tickers, output_dir=None):
         raise ValueError("No valid data for any ticker. Cannot generate unified report.")
     # Unified portfolio backtest
     bt_result = portfolio_backtest(data_dict)
+    strategy_params = bt_result.get('strategy_params', {})
     pf = bt_result['portfolio_state']
     trade_log = bt_result['trade_log']
     # Extract the real equity curve from the portfolio state
@@ -44,6 +45,7 @@ def run_pipeline(tickers, output_dir=None):
     stats['_trades'] = trade_log
     stats['equity_curve'] = equity_curve
     stats['regime_summary'] = 'N/A'  # Optionally, call correlate_performance_with_regimes if needed
+    stats['strategy_params'] = strategy_params
     # Pass real stats to report generator
     try:
         generate_report(stats, pf)  # Pass pf as bt object if needed for plotting
