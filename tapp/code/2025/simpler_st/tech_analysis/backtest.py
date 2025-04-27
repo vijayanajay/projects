@@ -75,7 +75,8 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
                     'entry_sma_short': data.loc[entry_index, 'sma_short'] if entry_index is not None else None,
                     'entry_sma_long': data.loc[entry_index, 'sma_long'] if entry_index is not None else None,
                     'exit_sma_short': data.loc[exit_index, 'sma_short'] if exit_index is not None else None,
-                    'exit_sma_long': data.loc[exit_index, 'sma_long'] if exit_index is not None else None
+                    'exit_sma_long': data.loc[exit_index, 'sma_long'] if exit_index is not None else None,
+                    'rationale': f"{'Buy' if pnl > 0 else 'Sell'}: short SMA {'crossed above' if pnl > 0 else 'crossed below'} long SMA at index {entry_index if pnl > 0 else exit_index}"
                 })
                 position = None
                 entry_index = None

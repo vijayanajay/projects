@@ -2,9 +2,9 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 61
-- **Hours Complete:** 50.5
-- **Hours Pending:** 10.5
-- **% Complete (Time):** 82.79%
+- **Hours Complete:** 51.5
+- **Hours Pending:** 9.5
+- **% Complete (Time):** 84.43%
 
 ---
 
@@ -12,9 +12,6 @@
 
 
 ### 7. Transaction Decision Rationale Logging (PDF)
-- **7.2** Log algorithmic rationale at each transaction for PDF  
-  Estimated Time: 1h  
-  Status: Pending
 - **7.3** Summarize rationale for PDF report section  
   Estimated Time: 1h  
   Status: Pending
@@ -86,6 +83,7 @@
   - Captured market context (trend, volatility, volume) at each trade for PDF.
   - Formatted trade log for PDF inclusion.
 - Log indicator values at decision points for PDF (trade log now includes SMA values at entry/exit for each transaction; TDD, minimal code, 2025-04-27)
+- Log algorithmic rationale at each transaction for PDF (trade log now includes a human-readable rationale string for each trade; TDD, minimal code, 2025-04-27)
 
 ---
 

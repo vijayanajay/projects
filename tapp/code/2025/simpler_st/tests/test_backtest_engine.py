@@ -162,3 +162,26 @@ def test_correlate_performance_with_regimes():
     assert result['ranging']['count'] == 2
     assert result['volatile']['mean_pnl'] == -3
     assert result['volatile']['count'] == 1
+
+def test_trade_log_includes_rationale():
+    """
+    Test that each trade log entry includes a human-readable rationale string for PDF reporting.
+    """
+    data = pd.DataFrame({
+        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13],
+        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130]
+    })
+    short_window = 2
+    long_window = 3
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window)
+    assert isinstance(trade_log, list)
+    assert len(trade_log) > 0
+    for log in trade_log:
+        assert 'rationale' in log, "Trade log must include rationale field for PDF"
+        assert isinstance(log['rationale'], str), "Rationale must be a string"
+        assert log['rationale'].strip() != '', "Rationale string must not be empty"
+        # Optionally, check rationale content matches action
+        if log['entry_price'] < log['exit_price']:
+            assert 'Buy' in log['rationale'] or 'buy' in log['rationale']
+        elif log['entry_price'] > log['exit_price']:
+            assert 'Sell' in log['rationale'] or 'sell' in log['rationale']
