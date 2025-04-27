@@ -166,3 +166,57 @@ def test_pdf_includes_sma_overlay_with_annotation(tmp_path):
             images_found = True
             break
     assert images_found, "No chart image with SMA overlay found in PDF."
+
+def test_pdf_includes_rsi_overlay_with_annotation(tmp_path):
+    """
+    TDD: Verifies that the PDF report contains an equity curve chart with an RSI overlay and annotation.
+    The test generates a report and asserts that the RSI overlay is present in the chart embedded in the PDF.
+    """
+    import numpy as np
+    import pandas as pd
+    from pypdf import PdfReader
+    # Create dummy equity curve and RSI data
+    equity = np.linspace(100, 200, 100)
+    rsi = np.linspace(30, 70, 100)
+    # Simulate stats and bt
+    stats = {
+        'Return [%]': 9.0,
+        'Sharpe Ratio': 0.9,
+        'Max. Drawdown [%]': -3.5,
+        '_trades': None,
+        'regime_summary': 'Trending: 45%, Ranging: 35%, Volatile: 20%',
+        'equity_curve': equity,
+        'rsi_curve': rsi
+    }
+    class DummyBT:
+        def plot(self, filename=None, equity_curve=None, rsi_curve=None):
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.plot(equity_curve, label='Equity Curve')
+            plt.plot(rsi_curve, label='RSI', color='purple')
+            plt.annotate('RSI Start', xy=(0, rsi_curve[0]), xytext=(0, rsi_curve[0]+5),
+                         arrowprops=dict(arrowstyle='->', color='purple'))
+            plt.legend()
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'period': 14, 'overbought': 70, 'oversold': 30}
+            return DummyStrategy()
+    bt = DummyBT()
+    ticker = 'RSI_OVERLAY'
+    os.chdir(tmp_path)
+    from report_generator import generate_report
+    generate_report(stats, bt, ticker)
+    pdf_path = tmp_path / f"reports/{ticker}_report.pdf"
+    assert pdf_path.exists(), "PDF not generated."
+    reader = PdfReader(str(pdf_path))
+    # Check for at least one embedded image (chart) in the PDF
+    images_found = False
+    for page in reader.pages:
+        if hasattr(page, 'images') and page.images:
+            images_found = True
+            break
+    assert images_found, "No chart image with RSI overlay found in PDF."

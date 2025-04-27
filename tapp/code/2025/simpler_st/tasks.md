@@ -2,18 +2,15 @@
 
 ## Project Stats
 - **Total Estimated Hours:** 52
-- **Hours Complete:** 42
-- **Hours Pending:** 10
-- **% Complete (Time):** 81%
+- **Hours Complete:** 43.5
+- **Hours Pending:** 8.5
+- **% Complete (Time):** 83.65%
 
 ---
 
 ## Pending Task List (PDF Reports, Backtest, and Pipeline, Atomic ≤2h Each)
 
 ### 5. Generate and Integrate Visualizations (PDF)
-- **5.3** Overlay RSI indicator with annotations for PDF  
-  Estimated Time: 1.5h  
-  Status: Pending
 - **5.4** Standardize PDF visual style and legends  
   Estimated Time: 1h  
   Status: Pending
@@ -102,6 +99,7 @@
 - Created reusable PDF chart component and embedded equity curve in report (TDD, minimal code, 2025-04-27)
 - Added placeholder section for Analyst Notes and Suggestions in PDF report template (TDD, minimal code, 2025-04-27)
 - Implemented equity curve plotting and embedding in PDF report (TDD, minimal code, 2025-04-27)
+- Overlay RSI indicator with annotations for PDF (TDD, minimal code, 2025-04-30)
 
 ---
 

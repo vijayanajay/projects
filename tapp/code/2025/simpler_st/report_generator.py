@@ -17,10 +17,21 @@ def generate_report(stats, bt, ticker: str):
     os.makedirs("plots", exist_ok=True)
     os.makedirs("reports", exist_ok=True)
     chart_path = f"plots/{ticker}_equity.png"
-    # If equity_curve and sma_curve are provided, plot with SMA overlay and annotation
+    # If equity_curve and rsi_curve are provided, plot with RSI overlay and annotation
     equity_curve = stats.get('equity_curve')
+    rsi_curve = stats.get('rsi_curve')
     sma_curve = stats.get('sma_curve')
-    if equity_curve is not None and sma_curve is not None:
+    if equity_curve is not None and rsi_curve is not None:
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.plot(equity_curve, label='Equity Curve')
+        plt.plot(rsi_curve, label='RSI', color='purple')
+        plt.annotate('RSI Start', xy=(0, rsi_curve[0]), xytext=(0, rsi_curve[0]+5),
+                     arrowprops=dict(arrowstyle='->', color='purple'))
+        plt.legend()
+        plt.savefig(chart_path)
+        plt.close()
+    elif equity_curve is not None and sma_curve is not None:
         import matplotlib.pyplot as plt
         plt.figure()
         plt.plot(equity_curve, label='Equity Curve')
