@@ -569,7 +569,7 @@ def generate_markdown_report(stats, bt):
                 # Barplot: Mean PnL per regime
                 barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
                 plt.figure(figsize=(5,3), facecolor='white')
-                sns.barplot(data=trades_df, x='regime', y='PnL', estimator='mean', ci=None, palette='Set2')
+                sns.barplot(data=trades_df, x='regime', y='PnL', estimator='mean', errorbar=None, hue='regime', palette='Set2', legend=False)
                 plt.title('Mean PnL by Regime')
                 plt.xlabel('Regime')
                 plt.ylabel('Mean PnL')
@@ -580,7 +580,7 @@ def generate_markdown_report(stats, bt):
                 # Boxplot: PnL distribution per regime
                 boxplot_path = os.path.join(plots_dir, 'regime_boxplot.png')
                 plt.figure(figsize=(5,3), facecolor='white')
-                sns.boxplot(data=trades_df, x='regime', y='PnL', palette='Set2')
+                sns.boxplot(data=trades_df, x='regime', y='PnL', hue='regime', palette='Set2', legend=False)
                 plt.title('PnL Distribution by Regime')
                 plt.xlabel('Regime')
                 plt.ylabel('PnL')
