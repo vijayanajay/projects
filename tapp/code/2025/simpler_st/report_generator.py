@@ -19,6 +19,44 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     abs_drawdown_chart_path = None
     abs_return_dist_chart_path = None
     md_lines = []
+    # Cover Page
+    md_lines.append("# Technical Analysis Report\n")
+    md_lines.append("## Portfolio-Level Report\n")
+    md_lines.append("---\n")
+    # Table of Contents
+    md_lines.append("## Table of Contents\n")
+    md_lines.append("1. [Cover Page](#technical-analysis-report)")
+    md_lines.append("2. [Table of Contents](#table-of-contents)")
+    md_lines.append("3. [Assumptions: Slippage and Commission](#assumptions-slippage-and-commission)")
+    md_lines.append("4. [Performance Metrics](#performance-metrics)")
+    md_lines.append("5. [Benchmark Comparison](#benchmark-comparison)")
+    md_lines.append("6. [Trade Log](#trade-log)")
+    md_lines.append("7. [Regime Summary](#regime-summary)")
+    md_lines.append("8. [Strategy Parameters](#strategy-parameters)")
+    md_lines.append("9. [Risk and Position Sizing Logic](#risk-and-position-sizing-logic)")
+    md_lines.append("10. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
+    md_lines.append("11. [Rationale Summary](#rationale-summary)")
+    md_lines.append("12. [Trade Statistics Breakdown](#trade-statistics-breakdown)")
+    md_lines.append("13. [Regime Breakdown](#regime-breakdown)\n")
+    # --- Out-of-Sample/Walk-Forward Validation Section ---
+    out_of_sample = stats.get('out_of_sample')
+    if out_of_sample:
+        md_lines.append("## Out-of-Sample Walk-Forward Results\n")
+        period = out_of_sample.get('period', '')
+        ret = out_of_sample.get('return', None)
+        sharpe = out_of_sample.get('sharpe', None)
+        max_dd = out_of_sample.get('max_drawdown', None)
+        note = out_of_sample.get('note', '')
+        line = f"> The strategy was tested on {period} data not used in optimization. "
+        if ret is not None:
+            line += f"Out-of-sample return: {ret:.1f}%, "
+        if sharpe is not None:
+            line += f"Sharpe: {sharpe:.2f}, "
+        if max_dd is not None:
+            line += f"Max Drawdown: {max_dd:.1f}%. "
+        if note:
+            line += note
+        md_lines.append(line + "\n")
     # --- Equity Curve Chart (legacy, always present) ---
     legacy_equity_chart_path = f"plots/portfolio_equity.png"
     equity_curve = stats.get('equity_curve')
@@ -192,55 +230,6 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         plt.close()
 
     # --- Markdown Content ---
-    md_lines = []
-    # Cover Page
-    md_lines.append("# Technical Analysis Report\n")
-    md_lines.append("## Portfolio-Level Report\n")
-    md_lines.append("---\n")
-    # Table of Contents
-    md_lines.append("## Table of Contents\n")
-    md_lines.append("1. [Cover Page](#technical-analysis-report)")
-    md_lines.append("2. [Table of Contents](#table-of-contents)")
-    md_lines.append("3. [Assumptions: Slippage and Commission](#assumptions-slippage-and-commission)")
-    md_lines.append("4. [Performance Metrics](#performance-metrics)")
-    md_lines.append("5. [Benchmark Comparison](#benchmark-comparison)")
-    md_lines.append("6. [Trade Log](#trade-log)")
-    md_lines.append("7. [Regime Summary](#regime-summary)")
-    md_lines.append("8. [Strategy Parameters](#strategy-parameters)")
-    md_lines.append("9. [Risk and Position Sizing Logic](#risk-and-position-sizing-logic)")
-    md_lines.append("10. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
-    md_lines.append("11. [Rationale Summary](#rationale-summary)")
-    md_lines.append("12. [Trade Statistics Breakdown](#trade-statistics-breakdown)")
-    md_lines.append("13. [Regime Breakdown](#regime-breakdown)\n")
-    # Drawdown Table Section (must appear early in report)
-    equity_curve = stats.get('equity_curve')
-    # Defensive: handle dict (multi-ticker) vs. list/array (single-ticker)
-    equity_curve_for_drawdown = equity_curve
-    if isinstance(equity_curve, dict):
-        first_ticker = next(iter(equity_curve)) if equity_curve else None
-        equity_curve_for_drawdown = equity_curve.get(first_ticker) if first_ticker else None
-    if equity_curve_for_drawdown is not None:
-        from tech_analysis.backtest import extract_drawdown_periods
-        periods = extract_drawdown_periods(equity_curve_for_drawdown)
-        if periods:
-            df = pd.DataFrame(periods)
-            df2 = df.copy()
-            df2['depth'] = (df2['depth'] * 100).round(2)
-            df2 = df2.rename(columns={'start': 'Start', 'trough': 'Trough', 'end': 'End', 'depth': 'Depth (%)', 'recovery': 'Recovery (bars)'})
-            plots_dir = os.path.join(os.getcwd(), 'plots')
-            os.makedirs(plots_dir, exist_ok=True)
-            table_path = os.path.join(plots_dir, 'drawdown_table.png')
-            fig, ax = plt.subplots(figsize=(min(10, 2+len(df2)*0.5), 1+0.5*len(df2)))
-            ax.axis('off')
-            tbl = ax.table(cellText=df2.values, colLabels=df2.columns, loc='center', cellLoc='center')
-            tbl.auto_set_font_size(False)
-            tbl.set_fontsize(10)
-            tbl.scale(1, 1.5)
-            plt.tight_layout()
-            plt.savefig(table_path, bbox_inches='tight', dpi=150)
-            plt.close(fig)
-            md_lines.append('## Drawdown Table\n')
-            md_lines.append('![](plots/drawdown_table.png)\n')
     # Section: Assumptions
     md_lines.append("## Assumptions: Slippage and Commission\n")
     commission = getattr(bt, '_commission', stats.get('strategy_params', {}).get('commission', 0.002))

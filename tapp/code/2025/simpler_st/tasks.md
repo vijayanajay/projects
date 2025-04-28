@@ -8,12 +8,6 @@
 
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-- [ ] **Task 13.2: Out-of-Sample/Walk-Forward Validation**
-  - Add a section summarizing results on out-of-sample data or with walk-forward validation. Clearly state the period and performance metrics.
-  - **Sample Text:**
-    > ### Out-of-Sample Walk-Forward Results
-    > The strategy was tested on 2022-2023 data not used in optimization. Out-of-sample return: 2.7%, Sharpe: 0.18, Max Drawdown: 1.1%. Performance is consistent with in-sample results, suggesting robustness.
-
 - [ ] **Task 13.3: Explicit Strategy Rule Summary**
   - Add a section listing every rule and exception in plain English, including entry/exit, filters, and any special cases.
   - **Sample Text:**
@@ -49,6 +43,8 @@
   - Updated data fetching and backtest logic to use these fields for all analyses.
 - [x] Task 13.1: Parameter Sensitivity/Robustness Analysis (2025-04-29)
   - The report now includes a "Parameter Sensitivity Analysis" section with a Markdown table and static image summarizing Sharpe, Return, Drawdown, etc. for different parameter sets. Implementation follows Kalish Nadh's Markdown visualization philosophy and is fully TDD-compliant. Minimal code added to report_generator.py.
+- [x] Task 13.2: Out-of-Sample/Walk-Forward Validation (2025-04-29)
+  - The report now includes an "Out-of-Sample Walk-Forward Results" section summarizing results on out-of-sample data or with walk-forward validation, clearly stating the period and performance metrics. Implementation follows Kalish Nadh's Markdown visualization philosophy and is fully TDD-compliant. Minimal code added to report_generator.py and test added to tests/test_report_generation.py.
 - [x] Refactored pipeline.py to run a unified portfolio backtest across all tickers and generate a single report. Removed per-ticker loop and generate_report calls. (2025-04-27)
 - [x] Refactored generate_report in report_generator.py to remove the ticker parameter and generate a single portfolio-level report (portfolio_report.md). All per-ticker references replaced with portfolio-level naming. (2025-04-27)
 - [x] Updated tests in tests/test_report_generation.py and tests/test_pipeline.py to call generate_report and run_pipeline with unified inputs, checking for portfolio_report.md and portfolio_equity.png. (2025-04-27)

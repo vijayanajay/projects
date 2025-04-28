@@ -772,3 +772,31 @@ def test_markdown_includes_regime_plots(tmp_path):
     boxplot_path = tmp_path / "plots/regime_boxplot.png"
     assert barplot_path.exists(), "Regime barplot image not generated."
     assert boxplot_path.exists(), "Regime boxplot image not generated."
+
+def test_markdown_includes_out_of_sample_section(tmp_path):
+    """
+    Test that the Markdown report includes an Out-of-Sample/Walk-Forward Validation section with metrics if provided.
+    """
+    stats = {
+        'out_of_sample': {
+            'period': '2022-2023',
+            'return': 2.7,
+            'sharpe': 0.18,
+            'max_drawdown': 1.1,
+            'note': 'Performance is consistent with in-sample results, suggesting robustness.'
+        },
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Out-of-Sample Walk-Forward Results" in text, "Out-of-sample section missing in report."
+    assert "2022-2023" in text, "Out-of-sample period missing in report."
+    assert "2.7%" in text, "Out-of-sample return missing in report."
+    assert "Sharpe: 0.18" in text, "Out-of-sample Sharpe missing in report."
+    assert "Max Drawdown: 1.1%" in text, "Out-of-sample drawdown missing in report."
+    assert "robustness" in text, "Out-of-sample note missing in report."
