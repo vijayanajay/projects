@@ -13,12 +13,10 @@ def generate_markdown_report(stats, bt):
     """
     os.makedirs("plots", exist_ok=True)
     os.makedirs("reports", exist_ok=True)
-    chart_path = f"plots/portfolio_equity.png"
+    # --- Equity Curve Chart (legacy, always present) ---
+    legacy_equity_chart_path = f"plots/portfolio_equity.png"
     equity_curve = stats.get('equity_curve')
-    rsi_curve = stats.get('rsi_curve')
-    sma_curve = stats.get('sma_curve')
-    # Generate chart as in PDF (reuse plotting logic)
-    def plot_with_standard_style():
+    if equity_curve is not None:
         plt.figure(facecolor='white')
         plt.rcParams.update({
             'font.size': 12,
@@ -29,81 +27,38 @@ def generate_markdown_report(stats, bt):
             'axes.linewidth': 1,
             'axes.grid': True,
             'grid.color': '#e0e0e0',
-            'axes.prop_cycle': plt.cycler(color=["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"])
+            'axes.prop_cycle': plt.cycler(color=["#1f77b4"])
         })
-        if equity_curve is not None:
-            plt.plot(equity_curve, label='Equity Curve', color='#1f77b4')
-        if rsi_curve is not None:
-            plt.plot(rsi_curve, label='RSI', color='purple')
-        if sma_curve is not None:
-            plt.plot(range(len(sma_curve)), sma_curve, label='SMA', color='orange')
-        if equity_curve is not None:
-            plt.legend(loc='best', frameon=True)
-            plt.tight_layout()
-            plt.savefig(chart_path)
-            plt.close()
-        else:
-            plt.close()
-            return
-    plot_with_standard_style()
-    md_lines = []
-    # Cover Page
-    md_lines.append("# Technical Analysis Report\n")
-    md_lines.append("## Portfolio-Level Report\n")
-    md_lines.append("---\n")
-    # Table of Contents
-    md_lines.append("## Table of Contents\n")
-    md_lines.append("1. [Cover Page](#technical-analysis-report)")
-    md_lines.append("2. [Table of Contents](#table-of-contents)")
-    md_lines.append("3. [Assumptions: Slippage and Commission](#assumptions-slippage-and-commission)")
-    md_lines.append("4. [Performance Metrics](#performance-metrics)")
-    md_lines.append("5. [Trade Log](#trade-log)")
-    md_lines.append("6. [Regime Summary](#regime-summary)")
-    md_lines.append("7. [Strategy Parameters](#strategy-parameters)")
-    md_lines.append("8. [Risk and Position Sizing Logic](#risk-and-position-sizing-logic)")
-    md_lines.append("9. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
-    md_lines.append("10. [Rationale Summary](#rationale-summary)\n")
-    # Section: Assumptions
-    md_lines.append("## Assumptions: Slippage and Commission\n")
-    # Commission from backtest object if possible
-    commission = getattr(bt, '_commission', 0.002)
-    md_lines.append(f"- **Slippage:** No explicit slippage is modeled in the current simulation. All trades are assumed to execute at the close price of the signal bar.")
-    md_lines.append(f"- **Commission:** A fixed commission rate of {commission * 100:.2f}% per trade is applied, as set in the backtesting engine (`commission={commission}`).")
-    md_lines.append("\nThese assumptions may affect real-world applicability and should be reviewed for live trading scenarios.\n")
-    # Section: Performance Metrics
-    md_lines.append("## Performance Metrics\n")
-    metrics = [
-        f"- **Return:** {100 * stats.get('total_return', 0.0):.2f}%",
-        f"- **Sharpe Ratio:** {stats.get('sharpe_ratio', 0.0):.2f}",
-        f"- **Max Drawdown:** {100 * stats.get('max_drawdown', 0.0):.2f}%",
-        f"- **Win Rate:** {100 * stats.get('win_rate', 0.0):.2f}%"
-    ]
-    md_lines.extend(metrics)
-    # Embed equity curve chart
-    if os.path.exists(chart_path):
-        md_lines.append(f"\n![Equity Curve]({chart_path})\n")
-    # Metric Distribution
-    returns_dist = stats.get('returns_distribution')
-    if returns_dist is not None:
-        metric_chart_path = f"plots/portfolio_metric_dist.png"
-        plt.figure(facecolor='white')
-        mean = np.mean(returns_dist)
-        std = np.std(returns_dist)
-        outliers = (np.abs(returns_dist - mean) > 2 * std)
-        plt.hist(returns_dist[~outliers], bins=20, color='#1f77b4', alpha=0.7, label='Normal')
-        if np.any(outliers):
-            plt.hist(returns_dist[outliers], bins=5, color='red', alpha=0.8, label='Outlier')
-        plt.title('Metric Distribution (Returns)')
-        plt.xlabel('Return')
-        plt.ylabel('Frequency')
-        plt.legend()
+        plt.plot(equity_curve, label='Equity Curve', color='#1f77b4')
+        plt.legend(loc='best', frameon=True)
         plt.tight_layout()
-        plt.savefig(metric_chart_path)
+        plt.savefig(legacy_equity_chart_path)
         plt.close()
-        md_lines.append(f"\n![Metric Distribution (Returns)]({metric_chart_path})\n")
-        if np.any(outliers):
-            md_lines.append("Note: Outlier(s) highlighted in red.\n")
-    # Drawdown Curve Visualization
+
+    # --- Benchmark Comparison Plot (new, if both present) ---
+    chart_path = f"plots/strategy_vs_benchmark.png"
+    benchmark_curve = stats.get('benchmark_equity_curve')
+    if equity_curve is not None and benchmark_curve is not None:
+        plt.figure(facecolor='white')
+        plt.rcParams.update({
+            'font.size': 12,
+            'axes.labelsize': 12,
+            'axes.titlesize': 14,
+            'legend.fontsize': 12,
+            'axes.edgecolor': 'gray',
+            'axes.linewidth': 1,
+            'axes.grid': True,
+            'grid.color': '#e0e0e0',
+            'axes.prop_cycle': plt.cycler(color=["#1f77b4", "#ff7f0e"])
+        })
+        plt.plot(equity_curve, label='Strategy', color='#1f77b4')
+        plt.plot(benchmark_curve, label='Benchmark', color='#ff7f0e', linestyle='--')
+        plt.legend(loc='best', frameon=True)
+        plt.tight_layout()
+        plt.savefig(chart_path)
+        plt.close()
+
+    # --- Drawdown Curve Visualization ---
     drawdown_curve = stats.get('drawdown_curve')
     drawdown_chart_path = f"plots/drawdown_curve.png"
     if drawdown_curve is not None:
@@ -116,10 +71,8 @@ def generate_markdown_report(stats, bt):
         plt.tight_layout()
         plt.savefig(drawdown_chart_path)
         plt.close()
-        md_lines.append(f"\n## Drawdown Curve\n")
-        md_lines.append(f"![Drawdown Curve]({drawdown_chart_path})\n")
 
-    # Return Distribution Visualization (dedicated section)
+    # --- Return Distribution Visualization ---
     returns_dist = stats.get('returns_distribution')
     return_dist_chart_path = f"plots/return_distribution.png"
     if returns_dist is not None:
@@ -137,14 +90,115 @@ def generate_markdown_report(stats, bt):
         plt.tight_layout()
         plt.savefig(return_dist_chart_path)
         plt.close()
+
+    # --- Markdown Content ---
+    md_lines = []
+    # Cover Page
+    md_lines.append("# Technical Analysis Report\n")
+    md_lines.append("## Portfolio-Level Report\n")
+    md_lines.append("---\n")
+    # Table of Contents
+    md_lines.append("## Table of Contents\n")
+    md_lines.append("1. [Cover Page](#technical-analysis-report)")
+    md_lines.append("2. [Table of Contents](#table-of-contents)")
+    md_lines.append("3. [Assumptions: Slippage and Commission](#assumptions-slippage-and-commission)")
+    md_lines.append("4. [Performance Metrics](#performance-metrics)")
+    md_lines.append("5. [Benchmark Comparison](#benchmark-comparison)")
+    md_lines.append("6. [Trade Log](#trade-log)")
+    md_lines.append("7. [Regime Summary](#regime-summary)")
+    md_lines.append("8. [Strategy Parameters](#strategy-parameters)")
+    md_lines.append("9. [Risk and Position Sizing Logic](#risk-and-position-sizing-logic)")
+    md_lines.append("10. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
+    md_lines.append("11. [Rationale Summary](#rationale-summary)")
+    md_lines.append("12. [Trade Statistics Breakdown](#trade-statistics-breakdown)")
+    md_lines.append("13. [Regime Breakdown](#regime-breakdown)\n")
+    # Section: Assumptions
+    md_lines.append("## Assumptions: Slippage and Commission\n")
+    commission = getattr(bt, '_commission', 0.002)
+    md_lines.append(f"- **Slippage:** No explicit slippage is modeled in the current simulation. All trades are assumed to execute at the close price of the signal bar.")
+    md_lines.append(f"- **Commission:** A fixed commission rate of {commission * 100:.2f}% per trade is applied, as set in the backtesting engine (`commission={commission}`).")
+    md_lines.append("\nThese assumptions may affect real-world applicability and should be reviewed for live trading scenarios.\n")
+    # Section: Performance Metrics
+    md_lines.append("## Performance Metrics\n")
+    strat_metrics = stats.get('strategy', {})
+    bench_metrics = stats.get('benchmark', {})
+    metrics = [
+        f"- **Strategy Return:** {100 * strat_metrics.get('total_return', 0.0):.2f}%",
+        f"- **Strategy Sharpe Ratio:** {strat_metrics.get('sharpe_ratio', 0.0):.2f}",
+        f"- **Strategy Max Drawdown:** {100 * strat_metrics.get('max_drawdown', 0.0):.2f}%",
+        f"- **Strategy Win Rate:** {100 * strat_metrics.get('win_rate', 0.0):.2f}%"
+    ]
+    if bench_metrics:
+        metrics.extend([
+            f"- **Benchmark Return:** {100 * bench_metrics.get('total_return', 0.0):.2f}%",
+            f"- **Benchmark Sharpe Ratio:** {bench_metrics.get('sharpe_ratio', 0.0):.2f}",
+            f"- **Benchmark Max Drawdown:** {100 * bench_metrics.get('max_drawdown', 0.0):.2f}%",
+            f"- **Benchmark Win Rate:** {100 * bench_metrics.get('win_rate', 0.0):.2f}%"
+        ])
+    md_lines.extend(metrics)
+    # Embed equity curve chart (legacy)
+    if os.path.exists(legacy_equity_chart_path):
+        md_lines.append(f"\n![Equity Curve]({legacy_equity_chart_path})\n")
+    # Benchmark Comparison Section (new)
+    if os.path.exists(chart_path):
+        md_lines.append(f"\n## Benchmark Comparison\n")
+        md_lines.append(f"![Strategy vs Benchmark]({chart_path})\n")
+    # Drawdown Curve Section
+    if os.path.exists(drawdown_chart_path):
+        md_lines.append(f"\n## Drawdown Curve\n")
+        md_lines.append(f"![Drawdown Curve]({drawdown_chart_path})\n")
+    # Return Distribution Section
+    if os.path.exists(return_dist_chart_path):
         md_lines.append(f"\n## Return Distribution\n")
         md_lines.append(f"![Return Distribution]({return_dist_chart_path})\n")
-        if np.any(outliers):
-            md_lines.append("Note: Outlier(s) highlighted in red.\n")
-
+        if returns_dist is not None:
+            mean = np.mean(returns_dist)
+            std = np.std(returns_dist)
+            outliers = (np.abs(returns_dist - mean) > 2 * std)
+            if np.any(outliers):
+                md_lines.append("Note: Outlier(s) highlighted in red.\n")
+    # Section: Trade Log
+    md_lines.append("## Trade Log\n")
+    trade_log = stats.get('trades') or stats.get('_trades')
+    if isinstance(trade_log, pd.DataFrame):
+        has_trades = not trade_log.empty
+    else:
+        has_trades = bool(trade_log)
+    if has_trades:
+        if isinstance(trade_log, pd.DataFrame):
+            for idx, trade in trade_log.iterrows():
+                if hasattr(trade, 'get'):
+                    ticker = trade.get('ticker', trade.get('Ticker', ''))
+                    rationale = trade.get('rationale', trade.get('Rationale', ''))
+                    md_lines.append(f"**Ticker:** {ticker}")
+                    md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
+                    md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
+                    md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
+                    md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
+                    md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
+                    md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
+                    md_lines.append(f"**Rationale:** {rationale}\n")
+                else:
+                    md_lines.append(f"**Trade:** {str(trade)}\n")
+        elif isinstance(trade_log, list):
+            for trade in trade_log:
+                if hasattr(trade, 'get'):
+                    ticker = trade.get('ticker', trade.get('Ticker', ''))
+                    rationale = trade.get('rationale', trade.get('Rationale', ''))
+                    md_lines.append(f"**Ticker:** {ticker}")
+                    md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
+                    md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
+                    md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
+                    md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
+                    md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
+                    md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
+                    md_lines.append(f"**Rationale:** {rationale}\n")
+                else:
+                    md_lines.append(f"**Trade:** {str(trade)}\n")
+    else:
+        md_lines.append("No trades.\n")
     # Section: Regime Summary
     md_lines.append("## Regime Summary\n")
-    # Dynamically add regime definitions and classification criteria using actual parameters
     params = stats.get('strategy_params', {})
     short_sma = params.get('short_window', 20)
     long_sma = params.get('long_window', 50)
@@ -275,37 +329,6 @@ def generate_markdown_report(stats, bt):
     md_lines.append(f"Each trade allocates capital using a fixed position size (set to: {position_size} currency units per trade, initial cash: {initial_cash}). The number of shares bought is calculated as:\n")
     md_lines.append("\n    qty = int(position_size // price)\n")
     md_lines.append("\nThis ensures that:\n- No trade exceeds the specified position size or available cash.\n- No leverage or short selling is used.\n- Trades are only executed if sufficient cash is available.\n\nThis simple approach provides basic risk control by capping exposure per trade and preventing over-allocation. More advanced risk management (e.g., stop-loss, volatility targeting) is not implemented in this version.\n")
-    # Section: Trade Log
-    md_lines.append("## Trade Log\n")
-    trades = stats.get('_trades')
-    if trades is None or not hasattr(trades, 'iterrows'):
-        trades = stats.get('trades')
-    if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
-        for idx, trade in trades.iterrows():
-            ticker = trade.get('ticker', trade.get('Ticker', ''))
-            rationale = trade.get('rationale', trade.get('Rationale', ''))
-            md_lines.append(f"**Ticker:** {ticker}")
-            md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
-            md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
-            md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
-            md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
-            md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
-            md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
-            md_lines.append(f"**Rationale:** {rationale}\n")
-    elif isinstance(trades, list) and len(trades) > 0:
-        for trade in trades:
-            ticker = trade.get('ticker', trade.get('Ticker', ''))
-            rationale = trade.get('rationale', trade.get('Rationale', ''))
-            md_lines.append(f"**Ticker:** {ticker}")
-            md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
-            md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
-            md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
-            md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
-            md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
-            md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
-            md_lines.append(f"**Rationale:** {rationale}\n")
-    else:
-        md_lines.append("No trades.\n")
     # Section: Analyst Notes and Suggestions (substantive note)
     md_lines.append("## Analyst Notes and Suggestions\n")
     analyst_note = stats.get('analyst_notes', None)
@@ -315,26 +338,104 @@ def generate_markdown_report(stats, bt):
         md_lines.append("The strategy underperformed in ranging markets; consider parameter tuning or regime filtering.\n")
     # Section: Rationale Summary
     md_lines.append("## Rationale Summary\n")
-    trades = stats.get('_trades')
-    if trades is None or not hasattr(trades, 'iterrows'):
-        trades = stats.get('trades')
+    trades = trade_log
+    if isinstance(trades, pd.DataFrame):
+        has_trades = not trades.empty
+    else:
+        has_trades = bool(trades)
     rationales = []
-    if trades is not None and hasattr(trades, 'iterrows') and hasattr(trades, 'empty') and not trades.empty:
-        for idx, trade in trades.iterrows():
-            rationale = trade.get('rationale')
-            if rationale:
-                rationales.append(rationale)
-    elif isinstance(trades, list) and len(trades) > 0:
-        for trade in trades:
-            rationale = trade.get('rationale')
-            if rationale:
-                rationales.append(rationale)
+    if has_trades:
+        if isinstance(trades, pd.DataFrame):
+            for idx, trade in trades.iterrows():
+                if hasattr(trade, 'get'):
+                    rationale = trade.get('rationale')
+                    if rationale:
+                        rationales.append(rationale)
+                elif isinstance(trade, str):
+                    rationales.append(trade)
+        elif isinstance(trades, list):
+            for trade in trades:
+                if hasattr(trade, 'get'):
+                    rationale = trade.get('rationale')
+                    if rationale:
+                        rationales.append(rationale)
+                elif isinstance(trade, str):
+                    rationales.append(trade)
     if rationales:
         md_lines.append("\n".join([f"- {r}" for r in rationales]))
     else:
         md_lines.append("No rationale provided.\n")
+    # Parameter Sensitivity Analysis
+    param_sens_path = "plots/parameter_sensitivity.png"
+    if os.path.exists(param_sens_path):
+        md_lines.append("\n## Parameter Sensitivity Analysis\n")
+        md_lines.append("The plot below compares equity curves for different SMA short_window values, illustrating the impact of parameter changes on strategy performance.\n")
+        md_lines.append(f"![Parameter Sensitivity]({param_sens_path})\n")
+    # Trade Statistics Breakdown
+    md_lines.append("## Trade Statistics Breakdown\n")
+    metrics = stats.get('strategy', {})
+    if isinstance(trade_log, pd.DataFrame):
+        has_trades = not trade_log.empty
+    else:
+        has_trades = bool(trade_log)
+    if has_trades and metrics:
+        md_lines.append("| Metric | Value |")
+        md_lines.append("|---|---|")
+        md_lines.append(f"| Average Win | {metrics.get('average_win', 0.0):.2f} |")
+        md_lines.append(f"| Average Loss | {metrics.get('average_loss', 0.0):.2f} |")
+        md_lines.append(f"| Largest Win | {metrics.get('largest_win', 0.0):.2f} |")
+        md_lines.append(f"| Largest Loss | {metrics.get('largest_loss', 0.0):.2f} |")
+        md_lines.append(f"| Profit Factor | {metrics.get('profit_factor', 0.0):.2f} |")
+        md_lines.append(f"| Expectancy | {metrics.get('expectancy', 0.0):.2f} |")
+    else:
+        md_lines.append("No trade statistics available.\n")
+    # Regime Breakdown
+    md_lines.append("\n### Regime Breakdown\n")
+    from tech_analysis.backtest import correlate_performance_with_regimes
+    if isinstance(trade_log, pd.DataFrame):
+        has_trades = not trade_log.empty
+    else:
+        has_trades = bool(trade_log)
+    if has_trades:
+        # Ensure trade_log is a list of dicts, not a DataFrame, before passing to correlate_performance_with_regimes
+        if hasattr(trade_log, 'to_dict'):
+            trade_log_records = trade_log.to_dict('records')
+        else:
+            trade_log_records = trade_log
+        regime_stats = correlate_performance_with_regimes(trade_log_records)
+        if regime_stats:
+            md_lines.append("| Regime | Trades | Win Rate | Avg Win | Avg Loss | Largest Win | Largest Loss | Profit Factor | Expectancy | Mean PnL |")
+            md_lines.append("|---|---|---|---|---|---|---|---|---|---|")
+            for regime, stats in regime_stats.items():
+                md_lines.append(
+                    f"| {regime} | {stats['count']} | {stats['win_rate']:.2f} | {stats['average_win']:.2f} | {stats['average_loss']:.2f} | {stats['largest_win']:.2f} | {stats['largest_loss']:.2f} | {stats['profit_factor']:.2f} | {stats['expectancy']:.2f} | {stats['mean_pnl']:.2f} |"
+                )
+        else:
+            md_lines.append("No regime breakdown available.\n")
+    else:
+        md_lines.append("No trades for regime breakdown.\n")
     # Write to Markdown file
     md_path = "reports/portfolio_report.md"
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("\n".join(md_lines))
     print(f"[INFO] Markdown report generated at {md_path}")
+
+def plot_parameter_sensitivity(eq1, eq2, label1, label2, save_path="plots/parameter_sensitivity.png"):
+    """
+    Plots two equity curves for parameter sensitivity analysis and saves as a static image.
+    """
+    import matplotlib.pyplot as plt
+    import os
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.figure(facecolor='white')
+    if eq1 is not None:
+        plt.plot(eq1, label=label1, color='#1f77b4')
+    if eq2 is not None:
+        plt.plot(eq2, label=label2, color='#ff7f0e')
+    plt.title('Parameter Sensitivity: Equity Curve Comparison')
+    plt.xlabel('Time')
+    plt.ylabel('Equity')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()

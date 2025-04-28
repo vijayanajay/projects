@@ -8,21 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 10. Add Parameter Sensitivity/Robustness Analysis
-- Show how results change with different parameter values.
-- **Checkpoint:** Results for at least one parameter variation are shown.
-- Status: Pending
-
-### 11. Add Benchmark Comparison
-- Compare performance to a relevant benchmark (e.g., S&P 500, buy-and-hold).
-- **Checkpoint:** Performance is compared to a benchmark.
-- Status: Pending
-
-### 12.1 Trade Statistics Breakdown
-- Compute and display average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging).
-- Acceptance: Each metric is shown in a summary table; regime breakdown is clearly separated.
-- Status: Pending
-
 ### 12.2 Position Sizing & Risk Management Details
 - Document and display risk per trade, capital allocation logic, and position sizing method used by the strategy.
 - Acceptance: Report specifies % risked per trade, allocation rules, and max simultaneous positions.
@@ -71,6 +56,8 @@
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
+- [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
+  - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 8: Specify Backtest Timeframe and Frequency (2025-04-28)
   - Added start_date, end_date, and frequency fields to config.json.
   - Updated data fetching and backtest logic to use these fields.
@@ -128,6 +115,10 @@
   - 9.1: Designed a visually distinct notes section in the report template with a dedicated area for analyst notes and suggestions. (TDD, minimal code, 2025-04-27)
   - 9.2: Confirmed section is visible and clearly marked in the report. Editable fields not required per user. (2025-04-27)
 - [x] Implemented portfolio-level backtest function (portfolio_backtest) in tech_analysis/backtest.py: Accepts all stock data, iterates over time, evaluates buy/hold/sell for all stocks, prefers buy if signal and cash available, allocates position size (configurable), no short selling logic, updates holdings/cash, and logs each trade with rationale. Fully TDD-compliant and minimal code added. (2025-04-27)
+- [x] Task 11: Add Benchmark Comparison (2025-04-28)
+  - Added benchmark equity curve and metrics to performance calculation and report.
+  - Updated Markdown report to include equity curve, drawdown, return distribution, and strategy-vs-benchmark charts.
+  - All related tests pass (TDD, minimal code, 2025-04-28)
 - [x] All core features for the technical analysis reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)
@@ -142,3 +133,9 @@
   - The report generation logic now programmatically inserts a dedicated section for slippage (none modeled, all trades at close price) and commission (dynamic, from backtest engine) assumptions.
   - TDD test added to verify this section in the report.
   - No manual edits required; assumptions are always up-to-date.
+- [x] Task 10: Add Parameter Sensitivity/Robustness Analysis (2025-04-28)
+  - Added run_parameter_sensitivity_analysis to pipeline.py to run backtests with different SMA short_window values and plot comparative equity curves.
+  - Added plot_parameter_sensitivity to report_generator.py to generate and embed a static plot in the Markdown report.
+  - Updated report_generator.py to include a Parameter Sensitivity Analysis section in the report, following Kalish Nadh's visualization philosophy.
+  - Added TDD test in tests/test_report_generation.py to verify the presence of the sensitivity plot and section in the report. All tests pass.
+  - Minimal code added, no change to method responsibilities. summary.md updated only for new/changed file roles if needed.

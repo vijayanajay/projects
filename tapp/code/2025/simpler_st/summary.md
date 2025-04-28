@@ -25,10 +25,11 @@ This file provides a clear, single-point reference to understand the structure a
 ---
 
 ## File: report_generator.py
-**Purpose:** Generates the technical analysis Markdown report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. The Markdown report includes a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold for visual standardization. The trade log section robustly displays trade entry/exit data and PnL for each trade.
+**Purpose:** Generates the technical analysis Markdown report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. The Markdown report includes a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes, Parameter Sensitivity Analysis) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold for visual standardization. The trade log section robustly displays trade entry/exit data and PnL for each trade.
 
 ### Report Generation
 - `generate_markdown_report(stats, bt)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images.
+- `plot_parameter_sensitivity(equity_curve_a, equity_curve_b, label_a, label_b)`: Plots and saves a static image comparing equity curves for two different parameter sets, used for sensitivity/robustness analysis. (Added 2025-04-28)
 
 ### Workflow
 - After running the pipeline, the Markdown report is produced in the `reports/` directory.
@@ -36,6 +37,7 @@ This file provides a clear, single-point reference to understand the structure a
 
 ### Test Coverage
 - Tests ensure that the Markdown report is generated and contains all key sections (cover, table of contents, metrics, trade log, rationale, etc.).
+- Test added to verify that the report includes a 'Parameter Sensitivity Analysis' section and the correct plot if generated. (2025-04-28)
 
 ### Update (2025-04-28): Slippage & Commission Assumptions
 - The report_generator.py now programmatically adds an "Assumptions: Slippage and Commission" section to the Markdown report, using the commission value from the backtest engine and stating that no slippage is modeled. This ensures all reports are consistent and up-to-date with respect to transaction cost assumptions. TDD test verifies the section is present in the output.
@@ -51,6 +53,7 @@ This file provides a clear, single-point reference to understand the structure a
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.
 - `correlate_performance_with_regimes(trade_log)`: Groups trade results by detected market regime, summarizing mean PnL and trade count per regime. Supports regime-aware performance analysis.
+  - Updated (2025-04-28): Now expects trade_log as a list of dicts, not a DataFrame. All callers must convert DataFrames using .to_dict('records') before passing. This ensures robust handling and avoids iteration errors. TDD test coverage in tests/test_report_generation.py.
 - `portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strategy_params=None)`: Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging. Accepts a dict of ticker->DataFrame, uses PortfolioState for cash/holdings, and logs each completed trade (with action, qty, entry/exit, PnL, rationale, regime) for robust reporting and test compatibility. Initial cash and position size are now always sourced from the config file, and risk/position sizing logic is documented in the report. Returns the final state, trade log, and an explicit list of all assets traded (as `assets`). (Updated 2025-04-28)
 
 ---
@@ -116,5 +119,10 @@ This file provides a clear, single-point reference to understand the structure a
 - `test_markdown_contains_regime_summary()`: Checks that the generated Markdown report includes the regime summary, validating the integration of regime analysis into reporting.
 - `test_regime_table_filters_short_runs()`: Verifies that the regime table in the Markdown report only includes regime changes that persist for more than 3 days in a row.
 
+---
+
+## Changelog
+
+- [x] 2025-04-28: Task 11 (Benchmark Comparison) complete. `tech_analysis/backtest.py` and `report_generator.py` updated to support benchmark equity curve, metrics, and strategy-vs-benchmark chart in Markdown report. All relevant tests pass. No new files or modules introduced; no changes to file responsibilities. See report_generator.py for Markdown/report logic and backtest.py for metrics logic.
 
 **End of summary. Update this file as you add new modules or major features.**

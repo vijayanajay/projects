@@ -148,6 +148,45 @@ def run_pipeline(tickers, output_dir=None, config_path=None):
         traceback.print_exc()
         raise
 
+    return stats
+
+# --- Parameter Sensitivity/Robustness Analysis ---
+def run_parameter_sensitivity_analysis(tickers, output_dir=None, config_path=None):
+    """
+    Runs the pipeline twice with different strategy parameters to show sensitivity.
+    Plots both equity curves for comparison and saves the plot for the report.
+    """
+    import copy
+    from report_generator import plot_parameter_sensitivity
+    # 1. Run with default config
+    result1 = run_pipeline(tickers, output_dir=output_dir, config_path=config_path)
+    # 2. Load config and modify one parameter (e.g., short_window)
+    if config_path is None:
+        config_path = Path(__file__).parent / "config.json"
+    else:
+        config_path = Path(config_path)
+    with open(config_path, "r") as f:
+        config = json.load(f)
+    alt_config = copy.deepcopy(config)
+    alt_config["strategy_params"]["short_window"] = max(5, config["strategy_params"].get("short_window", 20) // 2)
+    alt_config_path = Path("alt_config.json")
+    with open(alt_config_path, "w") as f:
+        json.dump(alt_config, f)
+    # 3. Run with alternative config
+    result2 = run_pipeline(tickers, output_dir=output_dir, config_path=alt_config_path)
+    # 4. Plot both equity curves
+    eq1 = result1["equity_curve"] if isinstance(result1, dict) else None
+    eq2 = result2["equity_curve"] if isinstance(result2, dict) else None
+    label1 = f"short_window={config['strategy_params']['short_window']}"
+    label2 = f"short_window={alt_config['strategy_params']['short_window']}"
+    plot_parameter_sensitivity(eq1, eq2, label1, label2, save_path="plots/parameter_sensitivity.png")
+    # 5. Clean up alt_config.json
+    try:
+        os.remove(alt_config_path)
+    except Exception:
+        pass
+    return True
+
 if __name__ == "__main__":
     import traceback
     from tech_analysis.data.stocks_list import STOCKS_LIST
@@ -162,3 +201,10 @@ if __name__ == "__main__":
         traceback.print_exc()
     print("[DEBUG] End of main block")
     print(f"[INFO] Pipeline completed. Unified PDF report should be generated in {output_dir}.")
+    # --- Parameter Sensitivity/Robustness Analysis ---
+    try:
+        print("[INFO] Running parameter sensitivity analysis...")
+        run_parameter_sensitivity_analysis(STOCKS_LIST, output_dir=".")
+        print("[INFO] Parameter sensitivity plot generated.")
+    except Exception as e:
+        print(f"[ERROR] Sensitivity analysis failed: {e}")

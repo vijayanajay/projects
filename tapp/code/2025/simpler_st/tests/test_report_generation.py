@@ -437,3 +437,52 @@ def test_markdown_includes_assumptions_section(tmp_path):
     assert "Assumptions: Slippage and Commission" in text, "Assumptions section missing."
     assert "No explicit slippage is modeled" in text, "Slippage assumption missing."
     assert "commission=0.003" in text, "Commission value missing or incorrect."
+
+def test_markdown_includes_parameter_sensitivity(tmp_path):
+    """
+    Test that the Markdown report includes the parameter sensitivity plot if generated.
+    """
+    import shutil
+    from report_generator import generate_markdown_report
+    # Create dummy stats and bt
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        '_trades': None,
+        'regime_summary': 'Trending: 50%, Ranging: 30%, Volatile: 20%',
+        'equity_curve': [10000, 10100, 10200, 10300, 10400],
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    class DummyBT:
+        _commission = 0.001
+        def plot(self, filename=None):
+            pass
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    # Simulate parameter sensitivity plot
+    plots_dir = tmp_path / "plots"
+    plots_dir.mkdir(parents=True, exist_ok=True)
+    sens_path = plots_dir / "parameter_sensitivity.png"
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.plot([1, 2, 3], [1, 2, 3], label='A')
+    plt.plot([1, 2, 3], [1, 1.5, 2], label='B')
+    plt.legend()
+    plt.savefig(sens_path)
+    plt.close()
+    # Generate report
+    reports_dir = tmp_path / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = reports_dir / "portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Parameter Sensitivity Analysis" in text, "Parameter sensitivity section not found in report."
+    assert "parameter_sensitivity.png" in text, "Parameter sensitivity plot not referenced in report."
