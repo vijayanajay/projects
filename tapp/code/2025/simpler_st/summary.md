@@ -8,6 +8,11 @@ This file provides a clear, single-point reference to understand the structure a
 ## File: config.json
 **Purpose:** Central configuration file for the backtesting engine. Defines parameters like the data period, initial cash, default position size, the strategy to run, and strategy-specific parameters (e.g., window sizes for SMA, RSI periods). Allows easy modification of backtest settings without changing code.
 
+**Timeframe and Frequency:**
+- `start_date`: Start of backtest (YYYY-MM-DD)
+- `end_date`: End of backtest (YYYY-MM-DD)
+- `frequency`: Data frequency/interval (e.g., '1d', '1h')
+
 ---
 
 ## Markdown Files in This Project

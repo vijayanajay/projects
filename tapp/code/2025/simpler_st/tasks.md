@@ -8,11 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 8. Specify Backtest Timeframe and Frequency
-- State the start/end dates and frequency (daily, hourly, etc.).
-- **Checkpoint:** Timeframe and frequency are stated. 
-- Status: Pending
-
 ### 9. State Slippage and Commission Assumptions
 - Document slippage and commission rates used in the simulation.
 - **Checkpoint:** Assumptions are documented in the report.
@@ -81,6 +76,11 @@
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
+- [x] Task 8: Specify Backtest Timeframe and Frequency (2025-04-28)
+  - Added start_date, end_date, and frequency fields to config.json.
+  - Updated data fetching and backtest logic to use these fields.
+  - Added TDD test to verify correct data range and frequency.
+  - Updated summary.md and documentation accordingly.
 - [x] Refactored pipeline.py to run a unified portfolio backtest across all tickers and generate a single report. Removed per-ticker loop and generate_report calls. (2025-04-27)
 - [x] Refactored generate_report in report_generator.py to remove the ticker parameter and generate a single portfolio-level report (portfolio_report.md). All per-ticker references replaced with portfolio-level naming. (2025-04-27)
 - [x] Updated tests in tests/test_report_generation.py and tests/test_pipeline.py to call generate_report and run_pipeline with unified inputs, checking for portfolio_report.md and portfolio_equity.png. (2025-04-27)

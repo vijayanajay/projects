@@ -1,4 +1,7 @@
 {
+  "start_date": "2022-01-01",
+  "end_date": "2022-12-31",
+  "frequency": "1d",
   "period": "10y",
   "initial_cash": 10000,
   "position_size": 100,

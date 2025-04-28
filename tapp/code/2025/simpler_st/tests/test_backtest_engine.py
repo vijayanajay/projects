@@ -267,3 +267,29 @@ def test_portfolio_backtest_multi_ticker():
     assert any(trade['ticker'] == 'AAA' for trade in trade_log)
     # There should be no short sells for BBB (downtrend)
     assert all(trade['action'] == 'buy' for trade in trade_log)
+
+def test_timeframe_and_frequency_applied():
+    """
+    Test that the backtest fetches data strictly within the specified start/end date and frequency from config.json.
+    """
+    import json, os
+    from tech_analysis.backtest import get_data_for_backtest, load_config
+    cfg = load_config()
+    data = get_data_for_backtest()
+    # Pick a ticker present in STOCKS_LIST
+    ticker = next(iter(data))
+    df = data[ticker]
+    # Check DataFrame date range and frequency
+    assert not df.empty, f"No data fetched for {ticker}"
+    # Index is DatetimeIndex
+    assert str(type(df.index)).endswith("DatetimeIndex'>")
+    # Check start/end
+    assert str(cfg['start_date']) <= str(df.index.min().date()), f"Data starts before config start_date: {df.index.min()} < {cfg['start_date']}"
+    assert str(cfg['end_date']) >= str(df.index.max().date()), f"Data ends after config end_date: {df.index.max()} > {cfg['end_date']}"
+    # Check frequency (roughly)
+    freq = cfg['frequency']
+    if freq == '1d':
+        # Check that the step between rows is 1 day
+        diffs = df.index.to_series().diff().dropna()
+        assert all(d.total_seconds() >= 86400 for d in diffs), "Some intervals are less than 1 day"
+    # If more granular freq, add more checks as needed

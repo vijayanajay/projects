@@ -265,3 +265,26 @@ def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
             open_positions[ticker] = None
     # Explicitly list all assets traded
     return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params, 'assets': tickers}
+
+# Utility to load config and fetch data with timeframe/frequency
+import json
+import os
+from tech_analysis.data.fetcher import fetch_all_stocks_data
+
+def load_config():
+    # Always resolve config.json relative to project root
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    config_path = os.path.join(project_root, 'config.json')
+    with open(config_path, 'r') as f:
+        cfg = json.load(f)
+    return cfg
+
+# Example utility to get data for backtests using new config fields
+def get_data_for_backtest():
+    cfg = load_config()
+    return fetch_all_stocks_data(
+        period=cfg.get('period'),
+        start_date=cfg.get('start_date'),
+        end_date=cfg.get('end_date'),
+        frequency=cfg.get('frequency')
+    )

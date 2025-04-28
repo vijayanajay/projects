@@ -4,16 +4,29 @@ import pandas as pd
 from .stocks_list import STOCKS_LIST
 
 # Fetch data for a single stock
-def fetch_stock_data(ticker, period='20y'):
+# Now supports start_date, end_date, and frequency (preferred over period)
+def fetch_stock_data(ticker, period=None, start_date=None, end_date=None, frequency=None):
     stock = yf.Ticker(ticker)
-    return stock.history(period=period)
+    if start_date and end_date:
+        # yfinance expects interval for frequency (e.g., '1d', '1h')
+        interval = frequency if frequency else '1d'
+        return stock.history(start=start_date, end=end_date, interval=interval)
+    else:
+        period = period if period else '10y'
+        return stock.history(period=period)
 
 # Fetch data for all stocks in STOCKS_LIST
-def fetch_all_stocks_data(period='10y'):
+def fetch_all_stocks_data(period=None, start_date=None, end_date=None, frequency=None):
     data = {}
     for ticker in STOCKS_LIST:
         try:
-            data[ticker] = fetch_stock_data(ticker, period)
+            data[ticker] = fetch_stock_data(
+                ticker,
+                period=period,
+                start_date=start_date,
+                end_date=end_date,
+                frequency=frequency
+            )
         except Exception as e:
             print (f"Error fetching data for {ticker}: {e}")
             data[ticker] = f"Error: {e}"
