@@ -8,11 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 12.3 Benchmark Comparison
-- Add a section comparing portfolio returns to one or more benchmarks (e.g., NIFTY, S&P 500), including outperformance/underperformance.
-- Acceptance: Table or chart shows portfolio vs. benchmark returns for the same period.
-- Status: Pending
-
 ### 12.4 Slippage, Commissions, Real-World Execution
 - Incorporate transaction cost assumptions (slippage, commissions) into backtest and show net PnL after costs.
 - Acceptance: Report states cost assumptions and net results; user can change cost parameters.
@@ -55,6 +50,11 @@
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
   - The report now documents and displays risk per trade, capital allocation logic, and position sizing method as required. The "Risk and Position Sizing Logic" section explicitly states the % risked per trade, allocation rule, and max simultaneous positions (defaulting to cash-limited if not set). All changes are TDD-verified and minimal. Tests updated to assert new report format. No further action pending.
+- [x] Task 12.3: Benchmark Comparison (2025-04-28)
+  - Add a section comparing portfolio returns to one or more benchmarks (e.g., NIFTY, S&P 500), including outperformance/underperformance.
+  - Acceptance: Table or chart shows portfolio vs. benchmark returns for the same period.
+  - Status: Complete
+  - Implemented: Markdown report now includes a "Benchmark Comparison" section with a static image chart and table comparing portfolio and benchmark returns, following Kalish Nadh's Markdown visualization philosophy. TDD test added and all tests pass. See report_generator.py and tests/test_report_generation.py for details.
 - [x] Task 8: Specify Backtest Timeframe and Frequency (2025-04-28)
   - Added start_date, end_date, and frequency fields to config.json.
   - Updated data fetching and backtest logic to use these fields.

@@ -36,8 +36,9 @@ def generate_markdown_report(stats, bt):
         plt.close()
 
     # --- Benchmark Comparison Plot (new, if both present) ---
-    chart_path = f"plots/strategy_vs_benchmark.png"
-    benchmark_curve = stats.get('benchmark_equity_curve')
+    benchmark_curve = stats.get('benchmark_curve') or stats.get('benchmark_equity_curve')
+    chart_path = f"plots/benchmark_comparison.png"
+    benchmark_name = stats.get('benchmark_name', 'Benchmark')
     if equity_curve is not None and benchmark_curve is not None:
         plt.figure(facecolor='white')
         plt.rcParams.update({
@@ -51,9 +52,10 @@ def generate_markdown_report(stats, bt):
             'grid.color': '#e0e0e0',
             'axes.prop_cycle': plt.cycler(color=["#1f77b4", "#ff7f0e"])
         })
-        plt.plot(equity_curve, label='Strategy', color='#1f77b4')
-        plt.plot(benchmark_curve, label='Benchmark', color='#ff7f0e', linestyle='--')
+        plt.plot(equity_curve, label='Portfolio', color='#1f77b4')
+        plt.plot(benchmark_curve, label=benchmark_name, color='#ff7f0e', linestyle='--')
         plt.legend(loc='best', frameon=True)
+        plt.title(f"Portfolio vs {benchmark_name}")
         plt.tight_layout()
         plt.savefig(chart_path)
         plt.close()
@@ -142,7 +144,15 @@ def generate_markdown_report(stats, bt):
     # Benchmark Comparison Section (new)
     if os.path.exists(chart_path):
         md_lines.append(f"\n## Benchmark Comparison\n")
-        md_lines.append(f"![Strategy vs Benchmark]({chart_path})\n")
+        md_lines.append(f"![]({chart_path})\n")
+        # Minimal table comparing returns if both present
+        strat_return = stats.get('Return [%]', None)
+        bench_curve = stats.get('benchmark_curve') or stats.get('benchmark_equity_curve')
+        if strat_return is not None and bench_curve is not None:
+            # Calculate benchmark return as percent change from first to last
+            bench_return = 100 * (bench_curve[-1] - bench_curve[0]) / bench_curve[0]
+            md_lines.append("\n| Metric | Portfolio | " + benchmark_name + " |\n|---|---|---|\n")
+            md_lines.append(f"| Total Return (%) | {strat_return:.2f} | {bench_return:.2f} |\n")
     # Drawdown Curve Section
     if os.path.exists(drawdown_chart_path):
         md_lines.append(f"\n## Drawdown Curve\n")

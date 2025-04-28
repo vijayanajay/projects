@@ -556,3 +556,33 @@ def test_markdown_includes_risk_and_position_sizing_details(tmp_path):
     assert "1.00% of initial capital" in text, "Percent risked per trade value incorrect in risk section."
     assert "Fixed allocation per trade" in text, "Allocation rule description incorrect in risk section."
     assert "No explicit maximum; limited by available cash" in text, "Max simultaneous positions description incorrect in risk section."
+
+def test_markdown_includes_benchmark_comparison(tmp_path):
+    """
+    Test that the Markdown report contains a section comparing portfolio returns to benchmark returns
+    and that the benchmark comparison chart is generated and embedded as a static image.
+    """
+    stats = {
+        'Return [%]': 15.0,
+        'Sharpe Ratio': 1.4,
+        'Max. Drawdown [%]': -6.0,
+        'regime_summary': 'Trending: 70%, Ranging: 20%, Volatile: 10%',
+        'equity_curve': [10000, 10100, 10200, 10400, 10700],
+        'benchmark_curve': [10000, 10050, 10150, 10200, 10300],
+        'benchmark_name': 'NIFTY',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    # Generate the report
+    generate_markdown_report(stats, bt)
+    # Check for chart
+    chart_path = tmp_path / "plots/benchmark_comparison.png"
+    assert chart_path.exists(), "Benchmark comparison chart not generated."
+    # Check for section in Markdown
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Benchmark Comparison" in text, "Benchmark Comparison section missing in Markdown report."
+    assert "![](../plots/benchmark_comparison.png)" in text or "![](plots/benchmark_comparison.png)" in text, "Benchmark comparison image not embedded in Markdown report."
