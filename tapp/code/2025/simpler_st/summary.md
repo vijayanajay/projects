@@ -35,6 +35,7 @@ This file provides a clear, single-point reference to understand the structure a
 - All reported PnL and metrics are net of costs.
 - **(2025-04-28):** Trade-level annotated charts are now generated and embedded for each ticker, with regime overlays and SMA crossover annotations. Charts are saved as static images and referenced in the Markdown report, following Kalish Nadh's Markdown visualization philosophy. TDD test verifies chart presence for all tickers. See tests/test_report_generation.py for test logic.
 - **(2025-04-29):** Now generates and embeds a Drawdown Table section as a static image of all drawdown periods (start, trough, end, depth, recovery) in the Markdown report. Table is produced as drawdown_table.png and follows Kalish Nadh's Markdown visualization philosophy. TDD test verifies presence and correctness. See tech_analysis/backtest.py and tests/test_report_generation.py for details.
+- **(2025-04-29):** Regime Breakdown section now includes both a barplot (mean PnL per regime) and a boxplot (PnL distribution per regime), embedded as static images in the Markdown report. All regime-specific performance metrics are summarized in a table and visualized, following Kalish Nadh's Markdown visualization philosophy. TDD test verifies both plots are present. See tests/test_report_generation.py.
 
 ### Report Generation
 - `generate_markdown_report(stats, bt)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images. Now generates and embeds a trade-level chart for each ticker, with regime overlays and SMA crossover annotations (2025-04-28).
@@ -166,5 +167,6 @@ This file provides a clear, single-point reference to understand the structure a
 - [x] 2025-04-28: Transaction cost logic (slippage, commission) made generic and applied to all strategies. Utility function and tests added. Report and config updated. All changes TDD-verified.
 - [x] 2025-04-29: Updated sma_crossover_backtest_with_log to include ATR at entry. Added calculate_indicator_summary_stats to the summary. Updated the relevant backtest functions description for completeness.
 - [x] 2025-04-29: Added Drawdown Table feature to report_generator.py and extract_drawdown_periods function to tech_analysis/backtest.py. TDD test added to verify presence and correctness of Drawdown Table in Markdown report.
+- [x] 2025-04-29: Regime Breakdown section in report_generator.py now includes both a barplot and boxplot for regime-specific performance, with TDD test coverage.
 
 **End of summary. Update this file as you add new modules or major features.**

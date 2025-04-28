@@ -119,9 +119,14 @@ def generate_markdown_report(stats, bt):
 
     # --- Drawdown Table Section ---
     equity_curve = stats.get('equity_curve')
-    if equity_curve is not None:
+    # Defensive: handle dict (multi-ticker) vs. list/array (single-ticker)
+    equity_curve_for_drawdown = equity_curve
+    if isinstance(equity_curve, dict):
+        first_ticker = next(iter(equity_curve)) if equity_curve else None
+        equity_curve_for_drawdown = equity_curve.get(first_ticker) if first_ticker else None
+    if equity_curve_for_drawdown is not None:
         from tech_analysis.backtest import extract_drawdown_periods
-        periods = extract_drawdown_periods(equity_curve)
+        periods = extract_drawdown_periods(equity_curve_for_drawdown)
         if periods:
             df = pd.DataFrame(periods)
             df2 = df.copy()
@@ -142,6 +147,48 @@ def generate_markdown_report(stats, bt):
             md_lines = []
             md_lines.append('## Drawdown Table\n')
             md_lines.append('![](plots/drawdown_table.png)\n')
+
+    # --- Holding Duration Histogram ---
+    holding_duration_chart_path = f"plots/holding_duration.png"
+    trade_log = stats.get('trades') or stats.get('_trades')
+    holding_durations = []
+    if isinstance(trade_log, pd.DataFrame) and not trade_log.empty:
+        for idx, trade in trade_log.iterrows():
+            entry = trade.get('EntryTime')
+            exit = trade.get('ExitTime')
+            if entry and exit:
+                try:
+                    entry_dt = pd.to_datetime(entry)
+                    exit_dt = pd.to_datetime(exit)
+                    duration = (exit_dt - entry_dt).days
+                    if duration >= 0:
+                        holding_durations.append(duration)
+                except Exception:
+                    continue
+    elif isinstance(trade_log, list):
+        for trade in trade_log:
+            entry = trade.get('EntryTime')
+            exit = trade.get('ExitTime')
+            if entry and exit:
+                try:
+                    entry_dt = pd.to_datetime(entry)
+                    exit_dt = pd.to_datetime(exit)
+                    duration = (exit_dt - entry_dt).days
+                    if duration >= 0:
+                        holding_durations.append(duration)
+                except Exception:
+                    continue
+    if holding_durations:
+        plt.figure(facecolor='white')
+        plt.hist(holding_durations, bins=range(1, max(holding_durations)+2), color='#1f77b4', alpha=0.7, rwidth=0.85)
+        plt.title('Trade Holding Duration Distribution')
+        plt.xlabel('Holding Duration (days)')
+        plt.ylabel('Number of Trades')
+        plt.tight_layout()
+        abs_holding_duration_chart_path = os.path.abspath(holding_duration_chart_path)
+        os.makedirs(os.path.dirname(abs_holding_duration_chart_path), exist_ok=True)
+        plt.savefig(abs_holding_duration_chart_path)
+        plt.close()
 
     # --- Markdown Content ---
     md_lines = []
@@ -166,9 +213,14 @@ def generate_markdown_report(stats, bt):
     md_lines.append("13. [Regime Breakdown](#regime-breakdown)\n")
     # Drawdown Table Section (must appear early in report)
     equity_curve = stats.get('equity_curve')
-    if equity_curve is not None:
+    # Defensive: handle dict (multi-ticker) vs. list/array (single-ticker)
+    equity_curve_for_drawdown = equity_curve
+    if isinstance(equity_curve, dict):
+        first_ticker = next(iter(equity_curve)) if equity_curve else None
+        equity_curve_for_drawdown = equity_curve.get(first_ticker) if first_ticker else None
+    if equity_curve_for_drawdown is not None:
         from tech_analysis.backtest import extract_drawdown_periods
-        periods = extract_drawdown_periods(equity_curve)
+        periods = extract_drawdown_periods(equity_curve_for_drawdown)
         if periods:
             df = pd.DataFrame(periods)
             df2 = df.copy()
@@ -358,20 +410,20 @@ def generate_markdown_report(stats, bt):
         # Plot trade entry/exit markers
         if hasattr(trades, 'iterrows'):
             for idx, trade in trades.iterrows():
-                entry = trade.get('EntryTime', '')
-                entry_price = trade.get('EntryPrice', '')
-                exit = trade.get('ExitTime', '')
-                exit_price = trade.get('ExitPrice', '')
+                entry = trade.get('EntryTime')
+                entry_price = trade.get('EntryPrice')
+                exit = trade.get('ExitTime')
+                exit_price = trade.get('ExitPrice')
                 if entry is not None and entry_price is not None:
                     plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if idx == 0 else "")
                 if exit is not None and exit_price is not None:
                     plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if idx == 0 else "")
         elif isinstance(trades, list):
             for i, trade in enumerate(trades):
-                entry = trade.get('EntryTime', '')
-                entry_price = trade.get('EntryPrice', '')
-                exit = trade.get('ExitTime', '')
-                exit_price = trade.get('ExitPrice', '')
+                entry = trade.get('EntryTime')
+                entry_price = trade.get('EntryPrice')
+                exit = trade.get('ExitTime')
+                exit_price = trade.get('ExitPrice')
                 if entry is not None and entry_price is not None:
                     plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if i == 0 else "")
                 if exit is not None and exit_price is not None:
@@ -508,10 +560,42 @@ def generate_markdown_report(stats, bt):
                 md_lines.append(
                     f"| {regime} | {regime_stat['count']} | {regime_stat['win_rate']:.2f} | {regime_stat['average_win']:.2f} | {regime_stat['average_loss']:.2f} | {regime_stat['largest_win']:.2f} | {regime_stat['largest_loss']:.2f} | {regime_stat['profit_factor']:.2f} | {regime_stat['expectancy']:.2f} | {regime_stat['mean_pnl']:.2f} |"
                 )
+            # --- Regime-wise Barplot and Boxplot ---
+            # Convert to DataFrame for plotting
+            trades_df = pd.DataFrame(trade_log_records)
+            if 'regime' in trades_df.columns and 'PnL' in trades_df.columns:
+                plots_dir = os.path.join(os.getcwd(), 'plots')
+                os.makedirs(plots_dir, exist_ok=True)
+                # Barplot: Mean PnL per regime
+                barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
+                plt.figure(figsize=(5,3), facecolor='white')
+                sns.barplot(data=trades_df, x='regime', y='PnL', estimator='mean', ci=None, palette='Set2')
+                plt.title('Mean PnL by Regime')
+                plt.xlabel('Regime')
+                plt.ylabel('Mean PnL')
+                plt.tight_layout()
+                plt.savefig(barplot_path)
+                plt.close()
+                md_lines.append(f"\n![Mean PnL by Regime](plots/regime_barplot.png)\n")
+                # Boxplot: PnL distribution per regime
+                boxplot_path = os.path.join(plots_dir, 'regime_boxplot.png')
+                plt.figure(figsize=(5,3), facecolor='white')
+                sns.boxplot(data=trades_df, x='regime', y='PnL', palette='Set2')
+                plt.title('PnL Distribution by Regime')
+                plt.xlabel('Regime')
+                plt.ylabel('PnL')
+                plt.tight_layout()
+                plt.savefig(boxplot_path)
+                plt.close()
+                md_lines.append(f"\n![PnL Distribution by Regime](plots/regime_boxplot.png)\n")
         else:
             md_lines.append("No regime breakdown available.\n")
     else:
         md_lines.append("No trades for regime breakdown.\n")
+    # Holding Duration Distribution Section
+    if holding_durations:
+        md_lines.append("\n## Trade Holding Duration Distribution\n")
+        md_lines.append(f"![Trade Holding Duration]({holding_duration_chart_path})\n")
     # --- Trade-Level Charts Per Ticker ---
     equity_curves = stats.get('equity_curve')
     trade_log = stats.get('trades') or stats.get('_trades')
@@ -577,9 +661,6 @@ def plot_parameter_sensitivity(eq1, eq2, label1, label2, save_path="plots/parame
     """
     Plots two equity curves for parameter sensitivity analysis and saves as a static image.
     """
-    import matplotlib.pyplot as plt
-    import os
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.figure(facecolor='white')
     if eq1 is not None:
         plt.plot(eq1, label=label1, color='#1f77b4')

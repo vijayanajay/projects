@@ -8,25 +8,12 @@
 
 ## Tasks and Progress (TODO)
 
-### 12.8 Trade Distribution and Holding Periods
-- Add histograms/tables for trade holding durations and PnL distribution across all trades.
-- Acceptance: Report includes at least one histogram for duration and one for PnL distribution.
-- Status: Pending
-
-### 12.9 Regime-Specific Performance
-- Summarize PnL, win rate, and average trade outcome for each regime type (trending/ranging).
-- Acceptance: Separate regime performance tables/plots are present.
-- Status: Pending
-
-### 12.10 Edge and Robustness Commentary
-- Add narrative/analysis on statistical significance, robustness checks, and out-of-sample/walk-forward results.
-- Acceptance: Section in report discusses robustness, overfitting, and out-of-sample performance.
-- Status: Pending
+# All project tasks are complete as of 2025-04-29. No pending items.
 
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
-- All tasks up to 12.7 are complete as of 2025-04-29. See below for details:
+- All tasks up to 12.10 are complete as of 2025-04-29. See below for details:
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
@@ -109,6 +96,15 @@
   - Implemented: ATR and volume at trade entry are now included in every trade log entry, and summary statistics (mean, min, max) for both are provided via a new function in backtest.py. All changes are TDD-verified and minimal. See tests/test_backtest_engine.py for test logic and backtest.py for implementation.
 - [x] Task 12.7: Drawdown Table or Timeline (2025-04-29)
   - Implemented extraction of all drawdown periods from the equity curve, including start, trough, end, depth, and recovery time. Generated a static image table (drawdown_table.png) and embedded it in the Markdown report as a dedicated section. All logic is TDD-driven and minimal. Test verifies presence of section and image. See report_generator.py, tech_analysis/backtest.py, and tests/test_report_generation.py for details.
+- [x] Task 12.8: Trade Distribution and Holding Periods (2025-04-29)
+  - Add histograms/tables for trade holding durations and PnL distribution across all trades.
+  - Acceptance: Report includes at least one histogram for duration and one for PnL distribution.
+  - Status: Complete
+  - Implemented: Markdown report now includes a histogram for trade holding durations and PnL distribution, following Kalish Nadh's Markdown visualization philosophy. TDD test added and all tests pass. See report_generator.py and tests/test_report_generation.py for details.
+- [x] Task 12.9: Regime-Specific Performance (2025-04-29)
+  - Summarized PnL, win rate, and average trade outcome for each regime type (trending/ranging/volatile). Report now includes a regime breakdown table, barplot (mean PnL per regime), and boxplot (PnL distribution per regime), all embedded as static images in Markdown following Kalish Nadh's philosophy. TDD-compliant, minimal code. Tests in tests/test_report_generation.py verify presence and correctness.
+- [x] Task 12.10: Edge and Robustness Commentary (2025-04-29)
+  - Added narrative/analysis on statistical significance, robustness checks, and out-of-sample/walk-forward results. Section in report discusses robustness, overfitting, and out-of-sample performance. All changes are TDD-verified and minimal. Tests updated to assert new report content. No further action pending.
 - [x] All core features for the technical analysis reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)

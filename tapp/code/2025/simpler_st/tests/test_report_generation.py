@@ -699,3 +699,76 @@ def test_markdown_includes_drawdown_table(tmp_path):
     # Check for Drawdown Table section and image
     assert "Drawdown Table" in text, "Drawdown Table section not found in report."
     assert "drawdown_table.png" in text, "Drawdown table image not embedded in report."
+
+def test_markdown_includes_holding_duration_distribution(tmp_path):
+    import pandas as pd
+    import numpy as np
+    from datetime import datetime, timedelta
+    # Create dummy trades with varying holding durations
+    base_date = datetime(2025, 4, 1)
+    trades = []
+    for i in range(5):
+        entry = base_date + timedelta(days=i*5)
+        exit = entry + timedelta(days=i+1)  # holding: 1,2,3,4,5 days
+        trades.append({
+            'EntryTime': entry.strftime('%Y-%m-%d'),
+            'ExitTime': exit.strftime('%Y-%m-%d'),
+            'EntryPrice': 100 + i*2,
+            'ExitPrice': 105 + i*2,
+            'PnL': 5.0 + i,
+            'PositionSize': 10,
+            'Rationale': 'Test trade'
+        })
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        '_trades': pd.DataFrame(trades),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    from report_generator import generate_markdown_report
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    chart_path = tmp_path / "plots/holding_duration.png"
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert chart_path.exists(), "Holding duration histogram not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Trade Holding Duration Distribution" in text, "Holding duration section missing in Markdown report."
+    assert "holding_duration.png" in text, "Holding duration histogram not embedded in Markdown report."
+
+def test_markdown_includes_regime_plots(tmp_path):
+    """
+    Test that the Markdown report includes both a barplot (mean PnL per regime)
+    and a boxplot (PnL distribution per regime) as static images in the regime breakdown section.
+    """
+    import pandas as pd
+    from report_generator import generate_markdown_report
+    trades = [
+        {'PnL': 100, 'regime': 'trending'},
+        {'PnL': -50, 'regime': 'trending'},
+        {'PnL': 200, 'regime': 'ranging'},
+        {'PnL': -30, 'regime': 'ranging'},
+        {'PnL': 300, 'regime': 'trending'},
+        {'PnL': -150, 'regime': 'volatile'},
+    ]
+    stats = {
+        'equity_curve': [1000, 1100, 1050, 1250, 1220, 1520, 1370],
+        'trades': trades,
+        'strategy_params': {'position_size': 1, 'initial_cash': 1},
+    }
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, None)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    # Check for plot image references
+    assert "regime_barplot.png" in text, "Regime barplot not embedded in Markdown report."
+    assert "regime_boxplot.png" in text, "Regime boxplot not embedded in Markdown report."
+    # Check that files are created
+    barplot_path = tmp_path / "plots/regime_barplot.png"
+    boxplot_path = tmp_path / "plots/regime_boxplot.png"
+    assert barplot_path.exists(), "Regime barplot image not generated."
+    assert boxplot_path.exists(), "Regime boxplot image not generated."
