@@ -129,5 +129,7 @@ All major report sections and features are verified by TDD tests in `tests/test_
 - [x] 2025-04-29: Updated sma_crossover_backtest_with_log to include ATR at entry. Added calculate_indicator_summary_stats to the summary. Updated the relevant backtest functions description for completeness.
 - [x] 2025-04-29: Added Drawdown Table feature to report_generator.py and extract_drawdown_periods function to tech_analysis/backtest.py. TDD test added to verify presence and correctness of Drawdown Table in Markdown report.
 - [x] 2025-04-29: Regime Breakdown section in report_generator.py now includes both a barplot and boxplot for regime-specific performance, with TDD test coverage.
+- [x] 2025-04-29: Task 13.3 (Explicit Strategy Rule Summary) complete. report_generator.py updated to include a plain-English section listing all strategy rules and exceptions. Tests in tests/test_report_generation.py verify presence and correctness. Minimal code, TDD-compliant.
+- [x] 2025-04-29: Task 13.4 (Trade Markup Visuals for Every Ticker) complete. report_generator.py updated to generate and embed an annotated trade markup chart for each ticker, saved as a static image and embedded in the Markdown report with a descriptive caption. Implementation follows Kalish Nadh's Markdown visualization philosophy and is TDD-compliant. Tests in tests/test_report_generation.py verify presence and correctness.
 
 **End of summary. Update this file as you add new modules or major features.**

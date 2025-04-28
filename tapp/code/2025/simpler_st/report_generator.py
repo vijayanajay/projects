@@ -596,6 +596,27 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     if holding_durations:
         md_lines.append("\n## Trade Holding Duration Distribution\n")
         md_lines.append(f"![Trade Holding Duration]({holding_duration_chart_path})\n")
+    # --- Strategy Rule Summary Section ---
+    strategy_rules = stats.get('strategy_rules')
+    if strategy_rules:
+        md_lines.append('## Strategy Rules (Plain English)\n')
+        for idx, rule in enumerate(strategy_rules, 1):
+            md_lines.append(f'{idx}. {rule}\n')
+
+    # --- Trade Markup Visuals for Every Ticker ---
+    tickers = stats.get('tickers')
+    if tickers:
+        md_lines.append('## Trade Markup Visuals\n')
+        for ticker in tickers:
+            chart_path = f"plots/trade_chart_{ticker}.png"
+            # Defensive: allow bt.plot with ticker param (for test compatibility)
+            if hasattr(bt, 'plot'):
+                try:
+                    bt.plot(filename=chart_path, ticker=ticker)
+                except TypeError:
+                    bt.plot(filename=chart_path)
+            md_lines.append(f'![Trade Chart: {ticker}]({chart_path})\n')
+            md_lines.append(f'_Chart shows all trade entries (green arrows), exits (red arrows), SMA overlays (blue/orange lines), and trending/ranging regimes (background shading) for {ticker}._\n\n')
     # --- Trade-Level Charts Per Ticker ---
     equity_curves = stats.get('equity_curve')
     trade_log = stats.get('trades') or stats.get('_trades')

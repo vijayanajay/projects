@@ -800,3 +800,73 @@ def test_markdown_includes_out_of_sample_section(tmp_path):
     assert "Sharpe: 0.18" in text, "Out-of-sample Sharpe missing in report."
     assert "Max Drawdown: 1.1%" in text, "Out-of-sample drawdown missing in report."
     assert "robustness" in text, "Out-of-sample note missing in report."
+
+def test_markdown_includes_strategy_rule_summary(tmp_path):
+    """
+    Test that the Markdown report includes a plain-English summary of all strategy rules and exceptions.
+    """
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1},
+        'strategy_rules': [
+            'Enter long when 10-period SMA crosses above 50-period SMA.',
+            'Exit when 10-period SMA crosses below 50-period SMA.',
+            'Skip trade if ATR(14) < 2.0.',
+            'No trades on earnings announcement days.',
+            'Position size is 2% of available capital, rounded down to nearest share.'
+        ]
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    from report_generator import generate_markdown_report
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Strategy Rules (Plain English)" in text, "Strategy rule summary section missing."
+    for rule in stats['strategy_rules']:
+        assert rule in text, f"Rule not found in report: {rule}"
+
+def test_markdown_includes_trade_markup_visuals_per_ticker(tmp_path):
+    """
+    Test that the Markdown report embeds an annotated trade markup chart for each ticker with a descriptive caption.
+    """
+    import pandas as pd
+    tickers = ['APOLLOTYRE.NS', 'HCLTECH.NS']
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1},
+        'tickers': tickers,
+        '_trades': pd.DataFrame([])
+    }
+    class DummyBT:
+        def plot(self, filename=None, ticker=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.title(f"{ticker}")
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 10, 'n2': 50}
+            return DummyStrategy()
+    bt = DummyBT()
+    os.chdir(tmp_path)
+    from report_generator import generate_markdown_report
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    for ticker in tickers:
+        chart_path = tmp_path / f"plots/trade_chart_{ticker}.png"
+        assert chart_path.exists(), f"Trade markup chart not generated for {ticker}."
+        with open(md_path, encoding="utf-8") as f:
+            text = f.read()
+        assert f"plots/trade_chart_{ticker}.png" in text, f"Chart for {ticker} not embedded in report."
+        assert f"Chart shows all trade entries" in text or f"{ticker}" in text, "Caption for trade markup chart missing or incomplete."

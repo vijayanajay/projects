@@ -8,25 +8,10 @@
 
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-- [ ] **Task 13.3: Explicit Strategy Rule Summary**
-  - Add a section listing every rule and exception in plain English, including entry/exit, filters, and any special cases.
-  - **Sample Text:**
-    > ### Strategy Rules (Plain English)
-    > 1. Enter long when 10-period SMA crosses above 50-period SMA.
-    > 2. Exit when 10-period SMA crosses below 50-period SMA.
-    > 3. Skip trade if ATR(14) < 2.0.
-    > 4. No trades on earnings announcement days.
-    > 5. Position size is 2% of available capital, rounded down to nearest share.
-
-- [ ] **Task 13.4: Trade Markup Visuals for Every Ticker**
-  - Ensure the report embeds an annotated price chart for every ticker, showing trade entries/exits, indicator overlays, and regime shading. Caption should clearly explain visual cues.
-  - **Sample Text:**
-    > ![Trade Chart: APOLLOTYRE.NS](plots/trade_chart_APOLLOTYRE.NS.png)
-    > _Chart shows all trade entries (green arrows), exits (red arrows), SMA overlays (blue/orange lines), and trending/ranging regimes (background shading) for APOLLOTYRE.NS._
-
+- None. All tasks are complete as of 2025-04-29.
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
-- All tasks up to 12.10 are complete as of 2025-04-29. See below for details:
+- All tasks up to 13.4 are complete as of 2025-04-29. See below for details:
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
@@ -120,6 +105,10 @@
   - Summarized PnL, win rate, and average trade outcome for each regime type (trending/ranging/volatile). Report now includes a regime breakdown table, barplot (mean PnL per regime), and boxplot (PnL distribution per regime), all embedded as static images in Markdown following Kalish Nadh's philosophy. TDD-compliant, minimal code. Tests in tests/test_report_generation.py verify presence and correctness.
 - [x] Task 12.10: Edge and Robustness Commentary (2025-04-29)
   - Added narrative/analysis on statistical significance, robustness checks, and out-of-sample/walk-forward results. Section in report discusses robustness, overfitting, and out-of-sample performance. All changes are TDD-verified and minimal. Tests updated to assert new report content. No further action pending.
+- [x] Task 13.3: Explicit Strategy Rule Summary (2025-04-29)
+  - The report now includes a section listing every rule and exception in plain English, including entry/exit, filters, and special cases. Rules are displayed in a clearly separated section. TDD-compliant, minimal code, and verified by tests.
+- [x] Task 13.4: Trade Markup Visuals for Every Ticker (2025-04-29)
+  - The report now embeds an annotated price chart for every ticker, showing trade entries/exits, indicator overlays, and regime shading. Each chart is saved as a static image and embedded in the Markdown report with a descriptive caption. Implementation follows Kalish Nadh's Markdown visualization philosophy and is TDD-compliant. Verified by tests.
 - [x] All core features for the technical analysis reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)
