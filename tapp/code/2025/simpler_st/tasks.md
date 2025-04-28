@@ -6,11 +6,41 @@
 - **Hours Pending:** 0
 - **% Complete (Time):** 100%
 
-## Tasks and Progress (TODO)
+## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-# All project tasks are complete as of 2025-04-29. No pending items.
+- [ ] **Task 13.1: Parameter Sensitivity/Robustness Analysis**
+  - Add a section in the report showing how results change with different strategy parameters (SMA/RSI/ATR/risk). Include a table or chart summarizing Sharpe, Return, Drawdown, etc. for various parameter sets.
+  - **Sample Text:**
+    > ### Parameter Sensitivity Analysis
+    > | SMA_short | SMA_long | Sharpe | Return | Max Drawdown |
+    > |-----------|----------|--------|--------|--------------|
+    > | 10        | 50       | 0.21   | 3.5%   | 1.2%         |
+    > | 20        | 100      | 0.12   | 2.1%   | 1.8%         |
+    > | 30        | 200      | -0.05  | -1.2%  | 2.5%         |
+    > The strategy's performance is sensitive to the choice of SMA parameters, with best results in the 10/50 range.
 
----
+- [ ] **Task 13.2: Out-of-Sample/Walk-Forward Validation**
+  - Add a section summarizing results on out-of-sample data or with walk-forward validation. Clearly state the period and performance metrics.
+  - **Sample Text:**
+    > ### Out-of-Sample Walk-Forward Results
+    > The strategy was tested on 2022-2023 data not used in optimization. Out-of-sample return: 2.7%, Sharpe: 0.18, Max Drawdown: 1.1%. Performance is consistent with in-sample results, suggesting robustness.
+
+- [ ] **Task 13.3: Explicit Strategy Rule Summary**
+  - Add a section listing every rule and exception in plain English, including entry/exit, filters, and any special cases.
+  - **Sample Text:**
+    > ### Strategy Rules (Plain English)
+    > 1. Enter long when 10-period SMA crosses above 50-period SMA.
+    > 2. Exit when 10-period SMA crosses below 50-period SMA.
+    > 3. Skip trade if ATR(14) < 2.0.
+    > 4. No trades on earnings announcement days.
+    > 5. Position size is 2% of available capital, rounded down to nearest share.
+
+- [ ] **Task 13.4: Trade Markup Visuals for Every Ticker**
+  - Ensure the report embeds an annotated price chart for every ticker, showing trade entries/exits, indicator overlays, and regime shading. Caption should clearly explain visual cues.
+  - **Sample Text:**
+    > ![Trade Chart: APOLLOTYRE.NS](plots/trade_chart_APOLLOTYRE.NS.png)
+    > _Chart shows all trade entries (green arrows), exits (red arrows), SMA overlays (blue/orange lines), and trending/ranging regimes (background shading) for APOLLOTYRE.NS._
+
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
 - All tasks up to 12.10 are complete as of 2025-04-29. See below for details:
