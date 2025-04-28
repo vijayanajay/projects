@@ -52,7 +52,10 @@ def test_pipeline_uses_config_params(tmp_path, monkeypatch):
     assert md_path.exists(), "Pipeline did not generate portfolio Markdown report."
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
-    assert "set to: 123 currency units per trade, initial cash: 5555" in text, "Report did not use config.json values for sizing."
+    assert "% Risked Per Trade" in text, "% risked per trade missing in risk section."
+    assert "position_size=123" in text and "initial_cash=5555" in text, "Report did not use config.json values for sizing."
+    assert "Allocation Rule" in text, "Allocation rule missing in risk section."
+    assert "Max Simultaneous Positions" in text, "Max simultaneous positions missing in risk section."
 
 def test_pipeline_missing_config_keys(tmp_path):
     """

@@ -325,8 +325,16 @@ def generate_markdown_report(stats, bt):
         raise KeyError("Both 'position_size' and 'initial_cash' must be present in strategy parameters (from config.json).")
     position_size = params['position_size']
     initial_cash = params['initial_cash']
+    percent_risked = (position_size / initial_cash) * 100 if initial_cash else 0
+    max_positions = params.get('max_simultaneous_positions', None)
     md_lines.append("\n## Risk and Position Sizing Logic\n")
-    md_lines.append(f"Each trade allocates capital using a fixed position size (set to: {position_size} currency units per trade, initial cash: {initial_cash}). The number of shares bought is calculated as:\n")
+    md_lines.append(f"- **% Risked Per Trade:** {percent_risked:.2f}% of initial capital allocated to each trade (position_size={position_size}, initial_cash={initial_cash}).")
+    md_lines.append("- **Allocation Rule:** Fixed allocation per trade; no leverage or short selling. Trades only executed if sufficient cash is available.")
+    if max_positions is not None:
+        md_lines.append(f"- **Max Simultaneous Positions:** {max_positions} (as set in configuration).")
+    else:
+        md_lines.append("- **Max Simultaneous Positions:** No explicit maximum; limited by available cash.")
+    md_lines.append("\nEach trade allocates capital using a fixed position size. The number of shares bought is calculated as:\n")
     md_lines.append("\n    qty = int(position_size // price)\n")
     md_lines.append("\nThis ensures that:\n- No trade exceeds the specified position size or available cash.\n- No leverage or short selling is used.\n- Trades are only executed if sufficient cash is available.\n\nThis simple approach provides basic risk control by capping exposure per trade and preventing over-allocation. More advanced risk management (e.g., stop-loss, volatility targeting) is not implemented in this version.\n")
     # Section: Analyst Notes and Suggestions (substantive note)

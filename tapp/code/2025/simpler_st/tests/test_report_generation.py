@@ -377,7 +377,11 @@ def test_report_risk_section_uses_params(tmp_path):
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
-    assert "set to: 42 currency units per trade, initial cash: 3141" in text
+    # Check for new risk section wording and config values
+    assert "% Risked Per Trade" in text
+    assert "position_size=42" in text and "initial_cash=3141" in text
+    assert "Allocation Rule" in text
+    assert "Max Simultaneous Positions" in text
 
 def test_report_risk_section_missing_keys(tmp_path):
     """
@@ -486,3 +490,69 @@ def test_markdown_includes_parameter_sensitivity(tmp_path):
         text = f.read()
     assert "Parameter Sensitivity Analysis" in text, "Parameter sensitivity section not found in report."
     assert "parameter_sensitivity.png" in text, "Parameter sensitivity plot not referenced in report."
+
+def test_markdown_includes_trade_statistics_breakdown(tmp_path):
+    """
+    Test that the Markdown report includes a trade statistics breakdown with average win, average loss, largest win/loss, profit factor, expectancy, and regime breakdown.
+    """
+    # Construct dummy trade log with regimes and PnL
+    trades = [
+        {'PnL': 100, 'regime': 'trending'},
+        {'PnL': -50, 'regime': 'trending'},
+        {'PnL': 200, 'regime': 'ranging'},
+        {'PnL': -30, 'regime': 'ranging'},
+        {'PnL': 300, 'regime': 'trending'},
+        {'PnL': -150, 'regime': 'volatile'},
+    ]
+    equity_curve = [1000, 1100, 1050, 1250, 1220, 1520, 1370]
+    from tech_analysis.backtest import calculate_performance_metrics
+    stats = {
+        'equity_curve': equity_curve,
+        'trades': trades,
+        'strategy_params': {'position_size': 1, 'initial_cash': 1},
+    }
+    # Compute and insert strategy metrics
+    stats.update(calculate_performance_metrics(equity_curve, trades))
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    # Check for key metrics
+    assert "Average Win" in text, "Average Win not found in report."
+    assert "Average Loss" in text, "Average Loss not found in report."
+    assert "Largest Win" in text, "Largest Win not found in report."
+    assert "Largest Loss" in text, "Largest Loss not found in report."
+    assert "Profit Factor" in text, "Profit Factor not found in report."
+    assert "Expectancy" in text, "Expectancy not found in report."
+    # Check regime breakdown section
+    assert "Regime Breakdown" in text, "Regime breakdown section not found."
+    assert "trending" in text and "ranging" in text and "volatile" in text, "Not all regimes present in breakdown."
+
+def test_markdown_includes_risk_and_position_sizing_details(tmp_path):
+    """
+    Test that the Markdown report includes % risked per trade, allocation rule, and max simultaneous positions in the Risk and Position Sizing Logic section.
+    """
+    stats = {
+        'Return [%]': 12.5,
+        'Sharpe Ratio': 1.2,
+        'Max. Drawdown [%]': -5.7,
+        '_trades': None,
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        'strategy_params': {'position_size': 100, 'initial_cash': 10000}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "% Risked Per Trade" in text, "% risked per trade missing in risk section."
+    assert "Allocation Rule" in text, "Allocation rule missing in risk section."
+    assert "Max Simultaneous Positions" in text, "Max simultaneous positions missing in risk section."
+    assert "1.00% of initial capital" in text, "Percent risked per trade value incorrect in risk section."
+    assert "Fixed allocation per trade" in text, "Allocation rule description incorrect in risk section."
+    assert "No explicit maximum; limited by available cash" in text, "Max simultaneous positions description incorrect in risk section."

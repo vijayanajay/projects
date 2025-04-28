@@ -8,11 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 12.2 Position Sizing & Risk Management Details
-- Document and display risk per trade, capital allocation logic, and position sizing method used by the strategy.
-- Acceptance: Report specifies % risked per trade, allocation rules, and max simultaneous positions.
-- Status: Pending
-
 ### 12.3 Benchmark Comparison
 - Add a section comparing portfolio returns to one or more benchmarks (e.g., NIFTY, S&P 500), including outperformance/underperformance.
 - Acceptance: Table or chart shows portfolio vs. benchmark returns for the same period.
@@ -58,6 +53,8 @@
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
+- [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
+  - The report now documents and displays risk per trade, capital allocation logic, and position sizing method as required. The "Risk and Position Sizing Logic" section explicitly states the % risked per trade, allocation rule, and max simultaneous positions (defaulting to cash-limited if not set). All changes are TDD-verified and minimal. Tests updated to assert new report format. No further action pending.
 - [x] Task 8: Specify Backtest Timeframe and Frequency (2025-04-28)
   - Added start_date, end_date, and frequency fields to config.json.
   - Updated data fetching and backtest logic to use these fields.
