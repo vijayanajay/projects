@@ -47,7 +47,7 @@ def test_pipeline_uses_config_params(tmp_path, monkeypatch):
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from pipeline import run_pipeline
     monkeypatch.chdir(tmp_path)
-    run_pipeline([ticker], output_dir=tmp_path)
+    run_pipeline([ticker], output_dir=tmp_path, config_path=config_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Pipeline did not generate portfolio Markdown report."
     with open(md_path, encoding="utf-8") as f:
@@ -67,7 +67,7 @@ def test_pipeline_missing_config_keys(tmp_path):
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from pipeline import run_pipeline
     try:
-        run_pipeline(["TCS.NS"], output_dir=tmp_path)
+        run_pipeline(["TCS.NS"], output_dir=tmp_path, config_path=config_path)
         assert False, "Pipeline should error if config keys are missing."
     except KeyError as e:
         assert "initial_cash" in str(e) or "position_size" in str(e)

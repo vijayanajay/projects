@@ -263,4 +263,5 @@ def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
                 'regime': entry['regime']
             })
             open_positions[ticker] = None
-    return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params}
+    # Explicitly list all assets traded
+    return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params, 'assets': tickers}

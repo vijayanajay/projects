@@ -8,16 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 6. Document Risk/Position Sizing Logic
-- Describe how capital is allocated and risk is managed per trade.
-- **Checkpoint:** Section describing risk and position sizing is present.
-- Status: Pending
-
-### 7. List Universe/Assets Traded
-- Explicitly list all assets or symbols included in the backtest.
-- **Checkpoint:** Assets or symbols are explicitly listed.
-- Status: Pending
-
 ### 8. Specify Backtest Timeframe and Frequency
 - State the start/end dates and frequency (daily, hourly, etc.).
 - **Checkpoint:** Timeframe and frequency are stated. 
@@ -152,27 +142,4 @@
 - [x] TDD and minimal code principles followed throughout.
 - [x] See summary.md for codebase structure and navigation.
 - [x] Fixed root cause of empty/zero report: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_markdown_report (2025-04-27)
-- [x] Add Regime Summary
-- Summarize market regimes (bullish, bearish, sideways) relevant to backtest.
-- **Checkpoint:** Regime summary is non-empty and reflects market conditions.
-- Status: Complete (section present and detailed)
-- [x] Add Detailed Trade Log
-- Implement trade log with entries, exits, prices, dates, position size, rationale.
-- **Checkpoint:** Trade log section shows at least one complete trade with all required fields.
-- Status: Complete (trade log now includes all required fields, including rationale and ticker, and is correctly rendered in the report. 2025-04-28)
-- [x] Add Human-Readable Rationale for Each Trade
-- Ensure each trade in the log includes a rationale string explaining the decision.
-- **Checkpoint:** Each trade in the log includes a rationale string.
-- Status: Complete (all trades now have human-readable rationale, verified by tests and report. 2025-04-28)
-- [x] Fill Analyst Notes and Suggestions
-- Add substantive analyst notes for context and improvement suggestions.
-- **Checkpoint:** Analyst notes section contains at least one substantive note.
-- Status: Complete (analyst notes section is filled with substantive content. 2025-04-28)
-- [x] Add Trade-Level Visualizations
-- Include charts with entry/exit points and indicator overlays (e.g., moving averages, RSI).
-- **Checkpoint:** At least one chart with trade markers and indicators is present.
-- Status: Complete (2025-04-28)
-- [x] Add Drawdown, Return Distribution, and Heatmap Visualizations
-- Present drawdown curve, return distribution, and heatmap of trade outcomes.
-- **Checkpoint:** Each visualization is present in the report.
-- Status: Complete
+- [x] List Universe/Assets Traded: Explicitly listed all assets or symbols included in the backtest. (2025-04-28)

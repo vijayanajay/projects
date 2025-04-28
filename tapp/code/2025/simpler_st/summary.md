@@ -5,6 +5,11 @@ This file provides a clear, single-point reference to understand the structure a
 
 ---
 
+## File: config.json
+**Purpose:** Central configuration file for the backtesting engine. Defines parameters like the data period, initial cash, default position size, the strategy to run, and strategy-specific parameters (e.g., window sizes for SMA, RSI periods). Allows easy modification of backtest settings without changing code.
+
+---
+
 ## Markdown Files in This Project
 
 - `README-task-master.md`: Documentation for Task Master integration or usage.
@@ -30,15 +35,15 @@ This file provides a clear, single-point reference to understand the structure a
 ---
 
 ## File: tech_analysis/backtest.py
-**Purpose:** Contains all backtesting logic for trading strategies and performance analysis.
+**Purpose:** Contains all backtesting logic for trading strategies and performance analysis. Parameters like window sizes, initial cash, etc., are typically loaded from `config.json`.
 
 - `sma_crossover_backtest(data, short_window, long_window)`: Simulates a simple moving average crossover strategy, returning a list of buy/sell trades. Core for strategy evaluation.
-- `sma_crossover_backtest_with_log(data, short_window, long_window)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). Each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points. Used for deeper analysis and reporting.
-- `rsi_strategy_backtest(data, period, overbought, oversold)`: Simulates an RSI-based trading strategy, returning trade signals. Enables testing alternative strategies.
+- `sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). Each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points. Uses `strategy_params` (often from `config.json`) for configuration. Used for deeper analysis and reporting.
+- `rsi_strategy_backtest(data, period, overbought, oversold)`: Simulates an RSI-based trading strategy, returning trade signals. Enables testing alternative strategies. Parameters often sourced from `config.json`.
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.
 - `correlate_performance_with_regimes(trade_log)`: Groups trade results by detected market regime, summarizing mean PnL and trade count per regime. Supports regime-aware performance analysis.
-- `portfolio_backtest(data_dict, initial_cash=10000, position_size=100)`: Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging. Accepts a dict of ticker->DataFrame, uses PortfolioState for cash/holdings, and logs each completed trade (with action, qty, entry/exit, PnL, rationale, regime) for robust reporting and test compatibility. Returns the final state and trade log. (Updated 2025-04-28)
+- `portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strategy_params=None)`: Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging. Accepts a dict of ticker->DataFrame, uses PortfolioState for cash/holdings, and logs each completed trade (with action, qty, entry/exit, PnL, rationale, regime) for robust reporting and test compatibility. Initial cash and position size are now always sourced from the config file, and risk/position sizing logic is documented in the report. Returns the final state, trade log, and an explicit list of all assets traded (as `assets`). (Updated 2025-04-28)
 
 ---
 
@@ -103,6 +108,5 @@ This file provides a clear, single-point reference to understand the structure a
 - `test_markdown_contains_regime_summary()`: Checks that the generated Markdown report includes the regime summary, validating the integration of regime analysis into reporting.
 - `test_regime_table_filters_short_runs()`: Verifies that the regime table in the Markdown report only includes regime changes that persist for more than 3 days in a row.
 
----
 
 **End of summary. Update this file as you add new modules or major features.**

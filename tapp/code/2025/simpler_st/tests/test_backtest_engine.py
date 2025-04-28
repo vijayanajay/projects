@@ -245,9 +245,11 @@ def test_portfolio_backtest_multi_ticker():
         position_size=position_size,
         strategy_params={'position_size': position_size, 'initial_cash': initial_cash}
     )
-    # results should include 'portfolio_state' and 'trade_log'
+    # results should include 'portfolio_state', 'trade_log', and 'assets' (explicitly listed)
     assert 'portfolio_state' in results
     assert 'trade_log' in results
+    assert 'assets' in results, "Backtest results must include explicit list of assets traded."
+    assert set(results['assets']) == set(data.keys()), f"Assets listed in results do not match input: {results['assets']} vs {list(data.keys())}"
     pf_result = results['portfolio_state']
     trade_log = results['trade_log']
     # PortfolioState should reflect buys only, never short sells

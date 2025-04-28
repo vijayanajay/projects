@@ -8,7 +8,7 @@ from tech_analysis.market_regimes import detect_market_regime_series
 import numpy as np
 import pandas as pd
 
-def run_pipeline(tickers, output_dir=None):
+def run_pipeline(tickers, output_dir=None, config_path=None):
     """
     Orchestrates fetching, backtesting, and reporting for a unified portfolio of tickers.
     Minimal implementation for integration test.
@@ -19,19 +19,27 @@ def run_pipeline(tickers, output_dir=None):
         reports_dir.mkdir(parents=True, exist_ok=True)
         os.chdir(output_dir)
     # Load config
-    config_path = Path(__file__).parent / "config.json"
+    if config_path is None:
+        config_path = Path(__file__).parent / "config.json"
+    else:
+        config_path = Path(config_path)
     if not config_path.exists():
-        raise FileNotFoundError("config.json not found. Please provide a config.json with required parameters.")
+        raise FileNotFoundError(f"config.json not found at {config_path}. Please provide a config.json with required parameters.")
     with open(config_path, "r") as f:
         config = json.load(f)
-    # Require keys
-    if "initial_cash" not in config or "position_size" not in config:
-        raise KeyError("Both 'initial_cash' and 'position_size' must be specified in config.json.")
+    # Ensure required config keys are present and error messages are explicit
+    required_keys = ["initial_cash", "position_size", "period"]
+    missing_keys = [k for k in required_keys if k not in config]
+    if missing_keys:
+        raise KeyError(f"Missing required config key(s): {', '.join(missing_keys)}. Please specify all required keys in config.json.")
     period = config["period"]
     initial_cash = config["initial_cash"]
     position_size = config["position_size"]
     strategy = config.get("strategy", "naive_momentum")
-    strategy_params = config.get("strategy_params", {})
+    strategy_params = dict(config.get("strategy_params", {}))  # Make a copy to avoid mutation issues
+    # Always inject sizing params into strategy_params for downstream use
+    strategy_params["position_size"] = position_size
+    strategy_params["initial_cash"] = initial_cash
     # Filter out invalid tickers
     invalid_tickers = {'', '.', None}
     filtered_tickers = [t for t in tickers if t not in invalid_tickers]
@@ -105,6 +113,11 @@ def run_pipeline(tickers, output_dir=None):
         return returns
     stats['returns_distribution'] = compute_returns_distribution(equity_curve)
 
+    # Always ensure stats['strategy_params'] contains correct sizing values for the report
+    stats['strategy_params'] = dict(stats.get('strategy_params', {}))
+    stats['strategy_params']['position_size'] = position_size
+    stats['strategy_params']['initial_cash'] = initial_cash
+
     # Ensure _trades is a DataFrame with correct columns for heatmap
     if isinstance(stats['_trades'], list):
         stats['_trades'] = pd.DataFrame(stats['_trades'])
@@ -124,14 +137,6 @@ def run_pipeline(tickers, output_dir=None):
             stats['_trades']['Regime'] = stats['_trades']['Regime'].fillna('Unknown')
         if 'Ticker' in stats['_trades'].columns:
             stats['_trades']['Ticker'] = stats['_trades']['Ticker'].fillna(sample_ticker)
-    stats['strategy_params'] = strategy_params
-    # Ensure stats['strategy_params'] exists and has required keys for reporting
-    if 'strategy_params' not in stats or not isinstance(stats['strategy_params'], dict):
-        stats['strategy_params'] = {}
-    if 'position_size' not in stats['strategy_params']:
-        stats['strategy_params']['position_size'] = position_size
-    if 'initial_cash' not in stats['strategy_params']:
-        stats['strategy_params']['initial_cash'] = initial_cash
     # DEBUG: Metrics/stats for report
     print("[DEBUG] Stats for report:", stats)
     # Pass real stats to report generator
