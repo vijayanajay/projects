@@ -37,6 +37,9 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
     data = data.copy()
     data['sma_short'] = data['close'].rolling(window=short_window, min_periods=1).mean()
     data['sma_long'] = data['close'].rolling(window=long_window, min_periods=1).mean()
+    # ATR window: use long_window or 14 as default
+    atr_window = strategy_params.get('atr_window', max(long_window, 14))
+    data['atr'] = calculate_atr(data, window=atr_window)
 
     commission = strategy_params.get('commission', 0.0)
     slippage = strategy_params.get('slippage', 0.0)
@@ -49,6 +52,7 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
     entry_volatility = None
     entry_volume = None
     entry_regime = None
+    entry_atr = None
     prev_short = data['sma_short'].shift(1)
     prev_long = data['sma_long'].shift(1)
     for idx, row in data.iterrows():
@@ -66,6 +70,7 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_regime = classify_market_regime(price_window)
             entry_volatility = price_window.std()
             entry_volume = row['volume'] if 'volume' in data.columns else 0
+            entry_atr = row['atr'] if 'atr' in data.columns else 0
         # Sell
         elif prev_short.loc[idx] >= prev_long.loc[idx] and row['sma_short'] < row['sma_long'] and position == 'long':
             trades.append({'action': 'sell', 'index': idx})
@@ -92,7 +97,9 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
                 'entry_sma_long': data.loc[entry_index, 'sma_long'] if entry_index is not None else None,
                 'exit_sma_short': data.loc[exit_index, 'sma_short'] if exit_index is not None else None,
                 'exit_sma_long': data.loc[exit_index, 'sma_long'] if exit_index is not None else None,
-                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}"
+                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}",
+                'atr_entry': entry_atr,
+                'volume_entry': entry_volume
             })
             position = None
             entry_index = None
@@ -100,6 +107,7 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_volatility = None
             entry_volume = None
             entry_regime = None
+            entry_atr = None
     return trades, trade_log
 
 def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float, strategy_params: dict = None):
@@ -356,3 +364,39 @@ def get_data_for_backtest():
         end_date=cfg.get('end_date'),
         frequency=cfg.get('frequency')
     )
+
+# --- ATR Calculation Utility ---
+def calculate_atr(data: pd.DataFrame, window: int = 14):
+    """
+    Calculate the Average True Range (ATR) for a DataFrame with columns 'high', 'low', 'close'.
+    If 'high' and 'low' are missing, fallback to use 'close' only (ATR=rolling std).
+    """
+    if all(col in data.columns for col in ['high', 'low', 'close']):
+        high = data['high']
+        low = data['low']
+        close = data['close']
+        prev_close = close.shift(1)
+        tr = pd.concat([
+            high - low,
+            (high - prev_close).abs(),
+            (low - prev_close).abs()
+        ], axis=1).max(axis=1)
+        atr = tr.rolling(window=window, min_periods=1).mean()
+    else:
+        # Fallback: rolling std as proxy
+        atr = data['close'].rolling(window=window, min_periods=1).std()
+    return atr
+
+# --- Indicator Summary Stats ---
+def calculate_indicator_summary_stats(trade_log):
+    import numpy as np
+    fields = ['atr_entry', 'volume_entry']
+    stats = {}
+    for field in fields:
+        values = [trade.get(field, 0) for trade in trade_log if field in trade]
+        stats[field] = {
+            'mean': float(np.mean(values)) if values else 0.0,
+            'min': float(np.min(values)) if values else 0.0,
+            'max': float(np.max(values)) if values else 0.0
+        }
+    return stats

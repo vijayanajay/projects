@@ -56,7 +56,7 @@ This file provides a clear, single-point reference to understand the structure a
 **Purpose:** Contains all backtesting logic for trading strategies and performance analysis. Parameters like window sizes, initial cash, etc., are typically loaded from `config.json`.
 
 - `sma_crossover_backtest(data, short_window, long_window)`: Simulates a simple moving average crossover strategy, returning a list of buy/sell trades. Core for strategy evaluation.
-- `sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). Each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points. Uses `strategy_params` (often from `config.json`) for configuration. Used for deeper analysis and reporting.
+- `sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). Each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, ATR at entry, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points. Uses `strategy_params` (often from `config.json`) for configuration. Used for deeper analysis and reporting.
 - `rsi_strategy_backtest(data, period, overbought, oversold)`: Simulates an RSI-based trading strategy, returning trade signals. Enables testing alternative strategies. Parameters often sourced from `config.json`.
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.
@@ -68,9 +68,12 @@ This file provides a clear, single-point reference to understand the structure a
 - `apply_transaction_costs(entry_price, exit_price, commission, slippage)`: Adjusts entry/exit prices for slippage, deducts commission, and returns net PnL. Used by all strategies.
 
 ### Backtest Functions
-- `sma_crossover_backtest_with_log(...)`: Now applies costs using the utility. Trade logs include net PnL, commission cost, and slippage-adjusted prices.
+- `sma_crossover_backtest_with_log(...)`: Now applies costs using the utility. Trade logs include net PnL, commission cost, slippage-adjusted prices, ATR at entry, and volume at entry.
 - `rsi_strategy_backtest(...)`: Now accepts `strategy_params` and applies transaction costs via the utility. Trade logs reflect all costs.
 - `portfolio_backtest(...)`: Trade execution and logging use the same utility for cost handling.
+
+### Indicator Summary Stats
+- `calculate_indicator_summary_stats(trade_log)`: Computes mean, min, and max for ATR and volume at entry across all trades. Supports summary reporting of additional indicators. (Added 2025-04-29)
 
 ---
 
@@ -158,5 +161,6 @@ This file provides a clear, single-point reference to understand the structure a
 - [x] 2025-04-28: Task 12.2 (Position Sizing & Risk Management Details) complete. The report's "Risk and Position Sizing Logic" section now explicitly documents % risked per trade, allocation rule, and max simultaneous positions (defaulting to cash-limited if not set). All changes are TDD-verified and minimal. Tests updated to assert new report format. No further action pending.
 - [x] 2025-04-28: Task 12.3 (Benchmark Comparison) complete. Markdown report now includes a "Benchmark Comparison" section with a static image chart and table comparing portfolio and benchmark returns, following Kalish Nadh's Markdown visualization philosophy. TDD test added and all tests pass. See report_generator.py and tests/test_report_generation.py for details.
 - [x] 2025-04-28: Transaction cost logic (slippage, commission) made generic and applied to all strategies. Utility function and tests added. Report and config updated. All changes TDD-verified.
+- [x] 2025-04-29: Updated sma_crossover_backtest_with_log to include ATR at entry. Added calculate_indicator_summary_stats to the summary. Updated the relevant backtest functions description for completeness.
 
 **End of summary. Update this file as you add new modules or major features.**

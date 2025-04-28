@@ -79,6 +79,8 @@ def test_trade_execution_and_log():
         assert 'entry_sma_long' in log, "Trade log must include entry long SMA value"
         assert 'exit_sma_short' in log, "Trade log must include exit short SMA value"
         assert 'exit_sma_long' in log, "Trade log must include exit long SMA value"
+        assert 'atr_entry' in log, "Trade log must include ATR at entry"
+        assert 'volume_entry' in log, "Trade log must include volume at entry"
         assert isinstance(log['entry_index'], int)
         assert isinstance(log['exit_index'], int)
         assert isinstance(log['entry_price'], (int, float))
@@ -91,6 +93,12 @@ def test_trade_execution_and_log():
         assert isinstance(log['entry_sma_long'], (int, float, np.floating, np.integer))
         assert isinstance(log['exit_sma_short'], (int, float, np.floating, np.integer))
         assert isinstance(log['exit_sma_long'], (int, float, np.floating, np.integer))
+        assert isinstance(log['atr_entry'], (int, float, np.floating, np.integer)), "ATR at entry must be numeric"
+        assert isinstance(log['volume_entry'], (int, float, np.floating, np.integer)), "Volume at entry must be numeric"
+    # Optionally: check trade_log structure
+    assert isinstance(trade_log, list)
+    for trade in trade_log:
+        assert 'entry_index' in trade and 'exit_index' in trade
 
 def test_performance_metrics_calculation():
     """
@@ -323,3 +331,24 @@ def test_benchmark_comparison():
     expected_benchmark_return = (135 / 100) - 1
     assert abs(metrics['strategy']['total_return'] - expected_strategy_return) < 1e-6
     assert abs(metrics['benchmark']['total_return'] - expected_benchmark_return) < 1e-6
+
+def test_summary_stats_include_atr_and_volume():
+    """
+    Test that summary statistics include ATR and volume (mean, min, max) over all trades.
+    """
+    data = pd.DataFrame({
+        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13],
+        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130]
+    })
+    short_window = 2
+    long_window = 3
+    strategy_params = {'context_window': 10}
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window, strategy_params)
+    # Assume a new function is added to calculate summary stats for ATR/volume
+    from tech_analysis import backtest as bt
+    stats = bt.calculate_indicator_summary_stats(trade_log)
+    for field in ['atr_entry', 'volume_entry']:
+        assert field in stats, f"Summary stats must include {field}"
+        for stat in ['mean', 'min', 'max']:
+            assert stat in stats[field], f"{field} summary must include {stat}"
+            assert isinstance(stats[field][stat], (int, float, np.floating, np.integer)), f"{field} {stat} must be numeric"

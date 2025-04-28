@@ -8,11 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 12.6 Volatility, Volume, and Additional Indicators
-- Display volatility (e.g., ATR), volume at trade entry, and any other indicator relevant to the strategy.
-- Acceptance: Each trade log entry includes ATR/volume at entry; summary stats are provided.
-- Status: Pending
-
 ### 12.7 Drawdown Table or Timeline
 - Create a table and/or plot of all drawdown periods, showing depth and recovery time, not just max drawdown.
 - Acceptance: Drawdown table and timeline plot are present in the report.
@@ -36,7 +31,7 @@
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
-- All tasks up to 12.5 are complete as of 2025-04-29. See below for details:
+- All tasks up to 12.6 are complete as of 2025-04-29. See below for details:
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
@@ -112,6 +107,11 @@
   - Acceptance: At least one sample chart per ticker with clear trade and regime annotation.
   - Status: Complete
   - Implemented: Each ticker now has an annotated trade chart with SMA crossovers and regime overlays, saved as static images and embedded in the Markdown report. TDD test verifies presence and embedding for all tickers. See report_generator.py and tests/test_report_generation.py for implementation and test logic.
+- [x] Task 12.6: Volatility, Volume, and Additional Indicators (2025-04-29)
+  - Display volatility (e.g., ATR), volume at trade entry, and any other indicator relevant to the strategy.
+  - Acceptance: Each trade log entry includes ATR/volume at entry; summary stats are provided.
+  - Status: Complete
+  - Implemented: ATR and volume at trade entry are now included in every trade log entry, and summary statistics (mean, min, max) for both are provided via a new function in backtest.py. All changes are TDD-verified and minimal. See tests/test_backtest_engine.py for test logic and backtest.py for implementation.
 - [x] All core features for the technical analysis reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)
