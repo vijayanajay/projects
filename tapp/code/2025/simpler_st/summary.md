@@ -36,10 +36,11 @@ This file provides a clear, single-point reference to understand the structure a
 - **(2025-04-28):** Trade-level annotated charts are now generated and embedded for each ticker, with regime overlays and SMA crossover annotations. Charts are saved as static images and referenced in the Markdown report, following Kalish Nadh's Markdown visualization philosophy. TDD test verifies chart presence for all tickers. See tests/test_report_generation.py for test logic.
 - **(2025-04-29):** Now generates and embeds a Drawdown Table section as a static image of all drawdown periods (start, trough, end, depth, recovery) in the Markdown report. Table is produced as drawdown_table.png and follows Kalish Nadh's Markdown visualization philosophy. TDD test verifies presence and correctness. See tech_analysis/backtest.py and tests/test_report_generation.py for details.
 - **(2025-04-29):** Regime Breakdown section now includes both a barplot (mean PnL per regime) and a boxplot (PnL distribution per regime), embedded as static images in the Markdown report. All regime-specific performance metrics are summarized in a table and visualized, following Kalish Nadh's Markdown visualization philosophy. TDD test verifies both plots are present. See tests/test_report_generation.py.
+- **(2025-04-29):** Parameter Sensitivity Analysis section now always included if parameter sweep results or plot are present. If results are provided, a Markdown table summarizing parameter sets and their metrics is generated and embedded, in addition to the static image. Fully TDD-compliant and minimal code. See tests/test_report_generation.py.
 
 ### Report Generation
-- `generate_markdown_report(stats, bt)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images. Now generates and embeds a trade-level chart for each ticker, with regime overlays and SMA crossover annotations (2025-04-28).
-- `plot_parameter_sensitivity(equity_curve_a, equity_curve_b, label_a, label_b)`: Plots and saves a static image comparing equity curves for two different parameter sets, used for sensitivity/robustness analysis. (Added 2025-04-28)
+- `generate_markdown_report(stats, bt, parameter_sensitivity_results=None)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images. Now generates and embeds a trade-level chart for each ticker, with regime overlays and SMA crossover annotations (2025-04-28). Now also embeds a parameter sensitivity table and plot if available (2025-04-29).
+- `plot_parameter_sensitivity(eq1, eq2, label1, label2, save_path="plots/parameter_sensitivity.png")`: Plots and saves a static image comparing equity curves for two different parameter sets, used for sensitivity/robustness analysis. (Added 2025-04-28)
 
 ### Workflow
 - After running the pipeline, the Markdown report is produced in the `reports/` directory.
@@ -47,10 +48,7 @@ This file provides a clear, single-point reference to understand the structure a
 
 ### Test Coverage
 - Tests ensure that the Markdown report is generated and contains all key sections (cover, table of contents, metrics, trade log, rationale, etc.).
-- Test added to verify that the report includes a 'Parameter Sensitivity Analysis' section and the correct plot if generated. (2025-04-28)
-
-### Update (2025-04-28): Slippage & Commission Assumptions
-- The report_generator.py now programmatically adds an "Assumptions: Slippage and Commission" section to the Markdown report, using the commission value from the backtest engine and stating that no slippage is modeled. This ensures all reports are consistent and up-to-date with respect to transaction cost assumptions. TDD test verifies the section is present in the output.
+- Test added to verify that the report includes a 'Parameter Sensitivity Analysis' section, table, and the correct plot if generated. (2025-04-29)
 
 ---
 

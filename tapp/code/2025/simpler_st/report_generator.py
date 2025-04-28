@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-def generate_markdown_report(stats, bt):
+def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     """
     Generates a portfolio report in Markdown format, including all key sections.
     Output file: reports/portfolio_report.md
@@ -18,6 +18,7 @@ def generate_markdown_report(stats, bt):
     abs_chart_path = None
     abs_drawdown_chart_path = None
     abs_return_dist_chart_path = None
+    md_lines = []
     # --- Equity Curve Chart (legacy, always present) ---
     legacy_equity_chart_path = f"plots/portfolio_equity.png"
     equity_curve = stats.get('equity_curve')
@@ -517,10 +518,20 @@ def generate_markdown_report(stats, bt):
         md_lines.append("No rationale provided.\n")
     # Parameter Sensitivity Analysis
     param_sens_path = "plots/parameter_sensitivity.png"
-    if os.path.exists(param_sens_path):
+    # Section header always present if results or plot exist
+    if (parameter_sensitivity_results and len(parameter_sensitivity_results) > 0) or os.path.exists(param_sens_path):
         md_lines.append("\n## Parameter Sensitivity Analysis\n")
-        md_lines.append("The plot below compares equity curves for different SMA short_window values, illustrating the impact of parameter changes on strategy performance.\n")
-        md_lines.append(f"![Parameter Sensitivity]({param_sens_path})\n")
+        if parameter_sensitivity_results and len(parameter_sensitivity_results) > 0:
+            # Generate Markdown table
+            keys = list(parameter_sensitivity_results[0].keys())
+            md_lines.append("| " + " | ".join(keys) + " |")
+            md_lines.append("|" + "---|" * len(keys))
+            for row in parameter_sensitivity_results:
+                md_lines.append("| " + " | ".join(str(row[k]) for k in keys) + " |")
+            md_lines.append("")
+        if os.path.exists(param_sens_path):
+            md_lines.append("The plot below compares equity curves for different parameter values, illustrating the impact of parameter changes on strategy performance.\n")
+            md_lines.append(f"![Parameter Sensitivity]({param_sens_path})\n")
     # Trade Statistics Breakdown
     md_lines.append("## Trade Statistics Breakdown\n")
     metrics = stats.get('strategy', {})

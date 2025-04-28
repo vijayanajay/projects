@@ -8,17 +8,6 @@
 
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-- [ ] **Task 13.1: Parameter Sensitivity/Robustness Analysis**
-  - Add a section in the report showing how results change with different strategy parameters (SMA/RSI/ATR/risk). Include a table or chart summarizing Sharpe, Return, Drawdown, etc. for various parameter sets.
-  - **Sample Text:**
-    > ### Parameter Sensitivity Analysis
-    > | SMA_short | SMA_long | Sharpe | Return | Max Drawdown |
-    > |-----------|----------|--------|--------|--------------|
-    > | 10        | 50       | 0.21   | 3.5%   | 1.2%         |
-    > | 20        | 100      | 0.12   | 2.1%   | 1.8%         |
-    > | 30        | 200      | -0.05  | -1.2%  | 2.5%         |
-    > The strategy's performance is sensitive to the choice of SMA parameters, with best results in the 10/50 range.
-
 - [ ] **Task 13.2: Out-of-Sample/Walk-Forward Validation**
   - Add a section summarizing results on out-of-sample data or with walk-forward validation. Clearly state the period and performance metrics.
   - **Sample Text:**
@@ -57,9 +46,9 @@
   - Incorporated transaction cost assumptions (slippage, commissions) into all backtest logic using a generic utility function. All strategies and trade logs now reflect net PnL after costs. The report states cost assumptions and net results, and users can configure cost parameters. All changes are TDD-verified with new tests in tests/test_transaction_costs.py. Legacy tests and report logic updated for new cost handling and reporting. No further action pending.
 - [x] Task 8: Specify Backtest Timeframe and Frequency (2025-04-28)
   - Added start_date, end_date, and frequency fields to config.json.
-  - Updated data fetching and backtest logic to use these fields.
-  - Added TDD test to verify correct data range and frequency.
-  - Updated summary.md and documentation accordingly.
+  - Updated data fetching and backtest logic to use these fields for all analyses.
+- [x] Task 13.1: Parameter Sensitivity/Robustness Analysis (2025-04-29)
+  - The report now includes a "Parameter Sensitivity Analysis" section with a Markdown table and static image summarizing Sharpe, Return, Drawdown, etc. for different parameter sets. Implementation follows Kalish Nadh's Markdown visualization philosophy and is fully TDD-compliant. Minimal code added to report_generator.py.
 - [x] Refactored pipeline.py to run a unified portfolio backtest across all tickers and generate a single report. Removed per-ticker loop and generate_report calls. (2025-04-27)
 - [x] Refactored generate_report in report_generator.py to remove the ticker parameter and generate a single portfolio-level report (portfolio_report.md). All per-ticker references replaced with portfolio-level naming. (2025-04-27)
 - [x] Updated tests in tests/test_report_generation.py and tests/test_pipeline.py to call generate_report and run_pipeline with unified inputs, checking for portfolio_report.md and portfolio_equity.png. (2025-04-27)

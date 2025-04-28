@@ -20,6 +20,10 @@
 12. [Trade Statistics Breakdown](#trade-statistics-breakdown)
 13. [Regime Breakdown](#regime-breakdown)
 
+## Drawdown Table
+
+![](plots/drawdown_table.png)
+
 ## Assumptions: Slippage and Commission
 
 - **Slippage:** A slippage of 0.0 per trade is applied to all executions (entry and exit prices adjusted by ±slippage). (slippage=0.0)
@@ -54,12 +58,12 @@ Note: Outlier(s) highlighted in red.
 
 **Ticker:** ESCORTS.NS
 **Entry:** 2015-06-16 00:00:00+05:30
-**Entry Price:** 99.3597412109375
+**Entry Price:** 99.1512222290039
 **Exit:** 2015-06-18 00:00:00+05:30
-**Exit Price:** 102.14641571044922
+**Exit Price:** 101.93208312988281
 **Position Size:** 1
 **PnL:** 2.38
-**Rationale:** Buy: ESCORTS.NS close 99.3597412109375 > prev 98.783203125 at idx 34 | Sell: ESCORTS.NS close 102.14641571044922 < prev 102.338623046875 at idx 36
+**Rationale:** Buy: ESCORTS.NS close 99.1512222290039 > prev 98.57588958740234 at idx 34 | Sell: ESCORTS.NS close 101.93208312988281 < prev 102.12384796142578 at idx 36
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-03-13 00:00:00+05:30
@@ -72,12 +76,12 @@ Note: Outlier(s) highlighted in red.
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-03-20 00:00:00+05:30
-**Entry Price:** 84.2496337890625
+**Entry Price:** 84.24964141845703
 **Exit:** 2020-03-23 00:00:00+05:30
 **Exit Price:** 72.49166107177734
 **Position Size:** 1
 **PnL:** -12.07
-**Rationale:** Buy: APOLLOTYRE.NS close 84.2496337890625 > prev 81.7368392944336 at idx 1207 | Sell: APOLLOTYRE.NS close 72.49166107177734 < prev 84.2496337890625 at idx 1208
+**Rationale:** Buy: APOLLOTYRE.NS close 84.24964141845703 > prev 81.73684692382812 at idx 1207 | Sell: APOLLOTYRE.NS close 72.49166107177734 < prev 84.24964141845703 at idx 1208
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-03-24 00:00:00+05:30
@@ -86,25 +90,25 @@ Note: Outlier(s) highlighted in red.
 **Exit Price:** 77.37501525878906
 **Position Size:** 1
 **PnL:** 2.59
-**Rationale:** Buy: APOLLOTYRE.NS close 74.4829330444336 > prev 72.49166107177734 at idx 1209 | Sell: APOLLOTYRE.NS close 77.37501525878906 < prev 78.32323455810547 at idx 1213
+**Rationale:** Buy: APOLLOTYRE.NS close 74.4829330444336 > prev 72.49166107177734 at idx 1209 | Sell: APOLLOTYRE.NS close 77.37501525878906 < prev 78.3232421875 at idx 1213
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-04-03 00:00:00+05:30
 **Entry Price:** 74.38809967041016
 **Exit:** 2020-04-08 00:00:00+05:30
-**Exit Price:** 79.08182525634766
+**Exit Price:** 79.08181762695312
 **Position Size:** 1
 **PnL:** 4.39
-**Rationale:** Buy: APOLLOTYRE.NS close 74.38809967041016 > prev 73.86659240722656 at idx 1216 | Sell: APOLLOTYRE.NS close 79.08182525634766 < prev 79.1766357421875 at idx 1218
+**Rationale:** Buy: APOLLOTYRE.NS close 74.38809967041016 > prev 73.86659240722656 at idx 1216 | Sell: APOLLOTYRE.NS close 79.08181762695312 < prev 79.1766357421875 at idx 1218
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-04-09 00:00:00+05:30
 **Entry Price:** 85.15045166015625
 **Exit:** 2020-04-13 00:00:00+05:30
-**Exit Price:** 81.35755920410156
+**Exit Price:** 81.35755157470703
 **Position Size:** 1
 **PnL:** -4.13
-**Rationale:** Buy: APOLLOTYRE.NS close 85.15045166015625 > prev 79.08182525634766 at idx 1219 | Sell: APOLLOTYRE.NS close 81.35755920410156 < prev 85.15045166015625 at idx 1220
+**Rationale:** Buy: APOLLOTYRE.NS close 85.15045166015625 > prev 79.08181762695312 at idx 1219 | Sell: APOLLOTYRE.NS close 81.35755157470703 < prev 85.15045166015625 at idx 1220
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-04-15 00:00:00+05:30
@@ -113,43 +117,43 @@ Note: Outlier(s) highlighted in red.
 **Exit Price:** 92.30952453613281
 **Position Size:** 1
 **PnL:** 8.37
-**Rationale:** Buy: APOLLOTYRE.NS close 83.58587646484375 > prev 81.35755920410156 at idx 1221 | Sell: APOLLOTYRE.NS close 92.30952453613281 < prev 93.11551666259766 at idx 1224
+**Rationale:** Buy: APOLLOTYRE.NS close 83.58587646484375 > prev 81.35755157470703 at idx 1221 | Sell: APOLLOTYRE.NS close 92.30952453613281 < prev 93.11551666259766 at idx 1224
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-04-22 00:00:00+05:30
-**Entry Price:** 89.46485900878906
+**Entry Price:** 89.4648666381836
 **Exit:** 2020-04-23 00:00:00+05:30
-**Exit Price:** 88.42182159423828
+**Exit Price:** 88.42181396484375
 **Position Size:** 1
 **PnL:** -1.40
-**Rationale:** Buy: APOLLOTYRE.NS close 89.46485900878906 > prev 87.18912506103516 at idx 1226 | Sell: APOLLOTYRE.NS close 88.42182159423828 < prev 89.46485900878906 at idx 1227
+**Rationale:** Buy: APOLLOTYRE.NS close 89.4648666381836 > prev 87.18913269042969 at idx 1226 | Sell: APOLLOTYRE.NS close 88.42181396484375 < prev 89.4648666381836 at idx 1227
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-04-29 00:00:00+05:30
-**Entry Price:** 90.69755554199219
+**Entry Price:** 90.69754791259766
 **Exit:** 2020-05-04 00:00:00+05:30
 **Exit Price:** 84.15481567382812
 **Position Size:** 1
 **PnL:** -6.89
-**Rationale:** Buy: APOLLOTYRE.NS close 90.69755554199219 > prev 84.8659896850586 at idx 1231 | Sell: APOLLOTYRE.NS close 84.15481567382812 < prev 91.31390380859375 at idx 1233
+**Rationale:** Buy: APOLLOTYRE.NS close 90.69754791259766 > prev 84.86598205566406 at idx 1231 | Sell: APOLLOTYRE.NS close 84.15481567382812 < prev 91.31391143798828 at idx 1233
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-05-06 00:00:00+05:30
 **Entry Price:** 82.59024047851562
 **Exit:** 2020-05-12 00:00:00+05:30
-**Exit Price:** 86.24090576171875
+**Exit Price:** 86.24089813232422
 **Position Size:** 1
 **PnL:** 3.31
-**Rationale:** Buy: APOLLOTYRE.NS close 82.59024047851562 > prev 81.26272583007812 at idx 1235 | Sell: APOLLOTYRE.NS close 86.24090576171875 < prev 88.27957916259766 at idx 1239
+**Rationale:** Buy: APOLLOTYRE.NS close 82.59024047851562 > prev 81.26272583007812 at idx 1235 | Sell: APOLLOTYRE.NS close 86.24089813232422 < prev 88.27957153320312 at idx 1239
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-05-13 00:00:00+05:30
-**Entry Price:** 89.51227569580078
+**Entry Price:** 89.51228332519531
 **Exit:** 2020-05-14 00:00:00+05:30
 **Exit Price:** 87.80546569824219
 **Position Size:** 1
 **PnL:** -2.06
-**Rationale:** Buy: APOLLOTYRE.NS close 89.51227569580078 > prev 86.24090576171875 at idx 1240 | Sell: APOLLOTYRE.NS close 87.80546569824219 < prev 89.51227569580078 at idx 1241
+**Rationale:** Buy: APOLLOTYRE.NS close 89.51228332519531 > prev 86.24089813232422 at idx 1240 | Sell: APOLLOTYRE.NS close 87.80546569824219 < prev 89.51228332519531 at idx 1241
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-05-19 00:00:00+05:30
@@ -171,12 +175,12 @@ Note: Outlier(s) highlighted in red.
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-05-26 00:00:00+05:30
-**Entry Price:** 87.56842041015625
+**Entry Price:** 87.56841278076172
 **Exit:** 2020-05-29 00:00:00+05:30
 **Exit Price:** 92.07247161865234
 **Position Size:** 1
 **PnL:** 4.14
-**Rationale:** Buy: APOLLOTYRE.NS close 87.56842041015625 > prev 85.67196655273438 at idx 1248 | Sell: APOLLOTYRE.NS close 92.07247161865234 < prev 92.9732894897461 at idx 1251
+**Rationale:** Buy: APOLLOTYRE.NS close 87.56841278076172 > prev 85.67196655273438 at idx 1248 | Sell: APOLLOTYRE.NS close 92.07247161865234 < prev 92.9732894897461 at idx 1251
 
 **Ticker:** APOLLOTYRE.NS
 **Entry:** 2020-06-01 00:00:00+05:30
@@ -194,7 +198,7 @@ Note: Outlier(s) highlighted in red.
 **Exit Price:** 99.32637786865234
 **Position Size:** 1
 **PnL:** -0.35
-**Rationale:** Buy: APOLLOTYRE.NS close 99.27896881103516 > prev 97.38252258300781 at idx 1256 | Sell: APOLLOTYRE.NS close 99.32637786865234 < prev 100.84354400634766 at idx 1258
+**Rationale:** Buy: APOLLOTYRE.NS close 99.27896881103516 > prev 97.38251495361328 at idx 1256 | Sell: APOLLOTYRE.NS close 99.32637786865234 < prev 100.84354400634766 at idx 1258
 
 ## Regime Summary
 
@@ -227,9 +231,9 @@ Trending: 25%, Ranging: 75%
 | 2017-01-18 00:00:00+05:30 | 2017-03-31 00:00:00+05:30 | ranging | 49 |
 | 2017-03-31 00:00:00+05:30 | 2017-04-21 00:00:00+05:30 | trending | 13 |
 | 2017-04-21 00:00:00+05:30 | 2017-07-25 00:00:00+05:30 | ranging | 65 |
-| 2017-07-25 00:00:00+05:30 | 2017-08-22 00:00:00+05:30 | trending | 19 |
-| 2017-08-22 00:00:00+05:30 | 2018-08-10 00:00:00+05:30 | ranging | 243 |
-| 2018-08-10 00:00:00+05:30 | 2018-09-18 00:00:00+05:30 | trending | 24 |
+| 2017-07-25 00:00:00+05:30 | 2017-08-21 00:00:00+05:30 | trending | 18 |
+| 2017-08-21 00:00:00+05:30 | 2018-08-01 00:00:00+05:30 | ranging | 237 |
+| 2018-08-01 00:00:00+05:30 | 2018-09-18 00:00:00+05:30 | trending | 31 |
 | 2018-09-18 00:00:00+05:30 | 2019-11-07 00:00:00+05:30 | ranging | 275 |
 | 2019-11-07 00:00:00+05:30 | 2019-12-26 00:00:00+05:30 | trending | 33 |
 | 2019-12-26 00:00:00+05:30 | 2020-05-26 00:00:00+05:30 | ranging | 100 |
@@ -245,8 +249,8 @@ Trending: 25%, Ranging: 75%
 | 2023-02-02 00:00:00+05:30 | 2023-02-17 00:00:00+05:30 | trending | 11 |
 | 2023-02-17 00:00:00+05:30 | 2023-05-25 00:00:00+05:30 | ranging | 63 |
 | 2023-05-25 00:00:00+05:30 | 2023-06-08 00:00:00+05:30 | trending | 10 |
-| 2023-06-08 00:00:00+05:30 | 2023-10-17 00:00:00+05:30 | ranging | 89 |
-| 2023-10-17 00:00:00+05:30 | 2023-11-02 00:00:00+05:30 | trending | 11 |
+| 2023-06-08 00:00:00+05:30 | 2023-10-16 00:00:00+05:30 | ranging | 88 |
+| 2023-10-16 00:00:00+05:30 | 2023-11-02 00:00:00+05:30 | trending | 12 |
 | 2023-11-02 00:00:00+05:30 | 2023-12-27 00:00:00+05:30 | ranging | 36 |
 | 2023-12-27 00:00:00+05:30 | 2024-03-13 00:00:00+05:30 | trending | 52 |
 | 2024-03-13 00:00:00+05:30 | 2024-10-31 00:00:00+05:30 | ranging | 156 |
@@ -287,26 +291,26 @@ The strategy underperformed in ranging markets; consider parameter tuning or reg
 
 ## Rationale Summary
 
-- Buy: ESCORTS.NS close 99.3597412109375 > prev 98.783203125 at idx 34 | Sell: ESCORTS.NS close 102.14641571044922 < prev 102.338623046875 at idx 36
+- Buy: ESCORTS.NS close 99.1512222290039 > prev 98.57588958740234 at idx 34 | Sell: ESCORTS.NS close 101.93208312988281 < prev 102.12384796142578 at idx 36
 - Buy: APOLLOTYRE.NS close 98.7574462890625 > prev 94.96456146240234 at idx 1202 | Sell: APOLLOTYRE.NS close 92.54658508300781 < prev 98.7574462890625 at idx 1203
-- Buy: APOLLOTYRE.NS close 84.2496337890625 > prev 81.7368392944336 at idx 1207 | Sell: APOLLOTYRE.NS close 72.49166107177734 < prev 84.2496337890625 at idx 1208
-- Buy: APOLLOTYRE.NS close 74.4829330444336 > prev 72.49166107177734 at idx 1209 | Sell: APOLLOTYRE.NS close 77.37501525878906 < prev 78.32323455810547 at idx 1213
-- Buy: APOLLOTYRE.NS close 74.38809967041016 > prev 73.86659240722656 at idx 1216 | Sell: APOLLOTYRE.NS close 79.08182525634766 < prev 79.1766357421875 at idx 1218
-- Buy: APOLLOTYRE.NS close 85.15045166015625 > prev 79.08182525634766 at idx 1219 | Sell: APOLLOTYRE.NS close 81.35755920410156 < prev 85.15045166015625 at idx 1220
-- Buy: APOLLOTYRE.NS close 83.58587646484375 > prev 81.35755920410156 at idx 1221 | Sell: APOLLOTYRE.NS close 92.30952453613281 < prev 93.11551666259766 at idx 1224
-- Buy: APOLLOTYRE.NS close 89.46485900878906 > prev 87.18912506103516 at idx 1226 | Sell: APOLLOTYRE.NS close 88.42182159423828 < prev 89.46485900878906 at idx 1227
-- Buy: APOLLOTYRE.NS close 90.69755554199219 > prev 84.8659896850586 at idx 1231 | Sell: APOLLOTYRE.NS close 84.15481567382812 < prev 91.31390380859375 at idx 1233
-- Buy: APOLLOTYRE.NS close 82.59024047851562 > prev 81.26272583007812 at idx 1235 | Sell: APOLLOTYRE.NS close 86.24090576171875 < prev 88.27957916259766 at idx 1239
-- Buy: APOLLOTYRE.NS close 89.51227569580078 > prev 86.24090576171875 at idx 1240 | Sell: APOLLOTYRE.NS close 87.80546569824219 < prev 89.51227569580078 at idx 1241
+- Buy: APOLLOTYRE.NS close 84.24964141845703 > prev 81.73684692382812 at idx 1207 | Sell: APOLLOTYRE.NS close 72.49166107177734 < prev 84.24964141845703 at idx 1208
+- Buy: APOLLOTYRE.NS close 74.4829330444336 > prev 72.49166107177734 at idx 1209 | Sell: APOLLOTYRE.NS close 77.37501525878906 < prev 78.3232421875 at idx 1213
+- Buy: APOLLOTYRE.NS close 74.38809967041016 > prev 73.86659240722656 at idx 1216 | Sell: APOLLOTYRE.NS close 79.08181762695312 < prev 79.1766357421875 at idx 1218
+- Buy: APOLLOTYRE.NS close 85.15045166015625 > prev 79.08181762695312 at idx 1219 | Sell: APOLLOTYRE.NS close 81.35755157470703 < prev 85.15045166015625 at idx 1220
+- Buy: APOLLOTYRE.NS close 83.58587646484375 > prev 81.35755157470703 at idx 1221 | Sell: APOLLOTYRE.NS close 92.30952453613281 < prev 93.11551666259766 at idx 1224
+- Buy: APOLLOTYRE.NS close 89.4648666381836 > prev 87.18913269042969 at idx 1226 | Sell: APOLLOTYRE.NS close 88.42181396484375 < prev 89.4648666381836 at idx 1227
+- Buy: APOLLOTYRE.NS close 90.69754791259766 > prev 84.86598205566406 at idx 1231 | Sell: APOLLOTYRE.NS close 84.15481567382812 < prev 91.31391143798828 at idx 1233
+- Buy: APOLLOTYRE.NS close 82.59024047851562 > prev 81.26272583007812 at idx 1235 | Sell: APOLLOTYRE.NS close 86.24089813232422 < prev 88.27957153320312 at idx 1239
+- Buy: APOLLOTYRE.NS close 89.51228332519531 > prev 86.24089813232422 at idx 1240 | Sell: APOLLOTYRE.NS close 87.80546569824219 < prev 89.51228332519531 at idx 1241
 - Buy: APOLLOTYRE.NS close 87.0468978881836 > prev 86.90465545654297 at idx 1244 | Sell: APOLLOTYRE.NS close 85.67196655273438 < prev 87.0468978881836 at idx 1245
 - Buy: APOLLOTYRE.NS close 87.09430694580078 > prev 85.67196655273438 at idx 1246 | Sell: APOLLOTYRE.NS close 85.67196655273438 < prev 87.09430694580078 at idx 1247
-- Buy: APOLLOTYRE.NS close 87.56842041015625 > prev 85.67196655273438 at idx 1248 | Sell: APOLLOTYRE.NS close 92.07247161865234 < prev 92.9732894897461 at idx 1251
+- Buy: APOLLOTYRE.NS close 87.56841278076172 > prev 85.67196655273438 at idx 1248 | Sell: APOLLOTYRE.NS close 92.07247161865234 < prev 92.9732894897461 at idx 1251
 - Buy: APOLLOTYRE.NS close 99.32637786865234 > prev 92.07247161865234 at idx 1252 | Sell: APOLLOTYRE.NS close 98.56781005859375 < prev 99.32637786865234 at idx 1253
-- Buy: APOLLOTYRE.NS close 99.27896881103516 > prev 97.38252258300781 at idx 1256 | Sell: APOLLOTYRE.NS close 99.32637786865234 < prev 100.84354400634766 at idx 1258
+- Buy: APOLLOTYRE.NS close 99.27896881103516 > prev 97.38251495361328 at idx 1256 | Sell: APOLLOTYRE.NS close 99.32637786865234 < prev 100.84354400634766 at idx 1258
 
 ## Parameter Sensitivity Analysis
 
-The plot below compares equity curves for different SMA short_window values, illustrating the impact of parameter changes on strategy performance.
+The plot below compares equity curves for different parameter values, illustrating the impact of parameter changes on strategy performance.
 
 ![Parameter Sensitivity](plots/parameter_sensitivity.png)
 
@@ -325,5 +329,15 @@ The plot below compares equity curves for different SMA short_window values, ill
 
 | Regime | Trades | Win Rate | Avg Win | Avg Loss | Largest Win | Largest Loss | Profit Factor | Expectancy | Mean PnL |
 |---|---|---|---|---|---|---|---|---|---|
-| trending | 4 | 0.50 | 2.49 | -6.21 | 2.59 | -12.07 | 0.40 | -1.86 | -1.86 |
+| trending | 4 | 0.50 | 2.48 | -6.21 | 2.59 | -12.07 | 0.40 | -1.86 | -1.86 |
 | ranging | 12 | 0.33 | 5.05 | -3.21 | 8.37 | -6.89 | 0.79 | -0.46 | -0.46 |
+
+![Mean PnL by Regime](plots/regime_barplot.png)
+
+
+![PnL Distribution by Regime](plots/regime_boxplot.png)
+
+
+## Trade Holding Duration Distribution
+
+![Trade Holding Duration](plots/holding_duration.png)
