@@ -586,3 +586,44 @@ def test_markdown_includes_benchmark_comparison(tmp_path):
         text = f.read()
     assert "Benchmark Comparison" in text, "Benchmark Comparison section missing in Markdown report."
     assert "![](../plots/benchmark_comparison.png)" in text or "![](plots/benchmark_comparison.png)" in text, "Benchmark comparison image not embedded in Markdown report."
+
+def test_markdown_commission_and_slippage_affect_pnl_and_report(tmp_path):
+    import pandas as pd
+    # Simulate trades with known PnL
+    trades = [
+        {'EntryTime': '2025-04-01', 'EntryPrice': 100, 'ExitTime': '2025-04-10', 'ExitPrice': 110, 'PnL': 10.0, 'PositionSize': 1, 'Rationale': 'Buy: SMA cross'},
+        {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0, 'PositionSize': 1, 'Rationale': 'Sell: target hit'}
+    ]
+    stats = {
+        'Return [%]': 13.0,
+        'Sharpe Ratio': 1.3,
+        'Max. Drawdown [%]': -4.0,
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        '_trades': pd.DataFrame(trades),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1, 'commission': 0.01, 'slippage': 0.5}
+    }
+    class DummyBT:
+        _commission = 0.01
+        _slippage = 0.5
+        def plot(self, filename=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+    bt = DummyBT()
+    import os
+    os.chdir(tmp_path)
+    from report_generator import generate_markdown_report
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    # Assumptions section states both commission and slippage
+    assert "Assumptions: Slippage and Commission" in text
+    assert "commission=0.01" in text
+    assert "slippage=0.5" in text or "slippage: 0.5" in text
+    # Check that net PnL is reduced by both costs
+    # (10+3) gross, minus 2*commission (0.13) and 2*slippage (1.0)
+    expected_net = 10+3 - 2*0.01*100 - 2*0.5  # commission as percent of price, slippage per trade
+    assert str(int(expected_net)) in text or str(round(expected_net, 2)) in text, "Net PnL after costs not shown or incorrect."

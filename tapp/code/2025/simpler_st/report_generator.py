@@ -116,9 +116,10 @@ def generate_markdown_report(stats, bt):
     md_lines.append("13. [Regime Breakdown](#regime-breakdown)\n")
     # Section: Assumptions
     md_lines.append("## Assumptions: Slippage and Commission\n")
-    commission = getattr(bt, '_commission', 0.002)
-    md_lines.append(f"- **Slippage:** No explicit slippage is modeled in the current simulation. All trades are assumed to execute at the close price of the signal bar.")
-    md_lines.append(f"- **Commission:** A fixed commission rate of {commission * 100:.2f}% per trade is applied, as set in the backtesting engine (`commission={commission}`).")
+    commission = getattr(bt, '_commission', stats.get('strategy_params', {}).get('commission', 0.002))
+    slippage = getattr(bt, '_slippage', stats.get('strategy_params', {}).get('slippage', 0.0))
+    md_lines.append(f"- **Slippage:** A slippage of {slippage} per trade is applied to all executions (entry and exit prices adjusted by ±slippage). (slippage={slippage})\n")
+    md_lines.append(f"- **Commission:** A fixed commission rate of {commission * 100:.2f}% per trade is applied, as set in the backtesting engine (commission={commission}).\n")
     md_lines.append("\nThese assumptions may affect real-world applicability and should be reviewed for live trading scenarios.\n")
     # Section: Performance Metrics
     md_lines.append("## Performance Metrics\n")
@@ -151,7 +152,7 @@ def generate_markdown_report(stats, bt):
         if strat_return is not None and bench_curve is not None:
             # Calculate benchmark return as percent change from first to last
             bench_return = 100 * (bench_curve[-1] - bench_curve[0]) / bench_curve[0]
-            md_lines.append("\n| Metric | Portfolio | " + benchmark_name + " |\n|---|---|---|\n")
+            md_lines.append("\n| Metric | Portfolio | " + benchmark_name + " |\n|---|---|---|")
             md_lines.append(f"| Total Return (%) | {strat_return:.2f} | {bench_return:.2f} |\n")
     # Drawdown Curve Section
     if os.path.exists(drawdown_chart_path):
