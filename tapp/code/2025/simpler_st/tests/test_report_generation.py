@@ -674,3 +674,28 @@ def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
         text = f.read()
     for ticker in ['AAPL', 'MSFT']:
         assert f"trade_chart_{ticker}.png" in text, f"Trade-level chart for {ticker} not embedded in Markdown report."
+
+def test_markdown_includes_drawdown_table(tmp_path):
+    """
+    Test that the Markdown report includes a drawdown table as a static image and the section is present.
+    """
+    # Construct a dummy equity curve with two drawdown periods
+    equity_curve = [1000, 950, 900, 950, 1000, 900, 850, 900, 1000]
+    from tech_analysis.backtest import calculate_performance_metrics
+    stats = {
+        'equity_curve': equity_curve,
+        'strategy_params': {'position_size': 1, 'initial_cash': 1},
+    }
+    # Compute and insert strategy metrics
+    stats.update(calculate_performance_metrics(equity_curve, []))
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    from report_generator import generate_markdown_report
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    # Check for Drawdown Table section and image
+    assert "Drawdown Table" in text, "Drawdown Table section not found in report."
+    assert "drawdown_table.png" in text, "Drawdown table image not embedded in report."

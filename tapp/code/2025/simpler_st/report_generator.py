@@ -117,6 +117,32 @@ def generate_markdown_report(stats, bt):
         plt.savefig(abs_return_dist_chart_path)
         plt.close()
 
+    # --- Drawdown Table Section ---
+    equity_curve = stats.get('equity_curve')
+    if equity_curve is not None:
+        from tech_analysis.backtest import extract_drawdown_periods
+        periods = extract_drawdown_periods(equity_curve)
+        if periods:
+            df = pd.DataFrame(periods)
+            df2 = df.copy()
+            df2['depth'] = (df2['depth'] * 100).round(2)
+            df2 = df2.rename(columns={'start': 'Start', 'trough': 'Trough', 'end': 'End', 'depth': 'Depth (%)', 'recovery': 'Recovery (bars)'})
+            plots_dir = os.path.join(os.getcwd(), 'plots')
+            os.makedirs(plots_dir, exist_ok=True)
+            table_path = os.path.join(plots_dir, 'drawdown_table.png')
+            fig, ax = plt.subplots(figsize=(min(10, 2+len(df2)*0.5), 1+0.5*len(df2)))
+            ax.axis('off')
+            tbl = ax.table(cellText=df2.values, colLabels=df2.columns, loc='center', cellLoc='center')
+            tbl.auto_set_font_size(False)
+            tbl.set_fontsize(10)
+            tbl.scale(1, 1.5)
+            plt.tight_layout()
+            plt.savefig(table_path, bbox_inches='tight', dpi=150)
+            plt.close(fig)
+            md_lines = []
+            md_lines.append('## Drawdown Table\n')
+            md_lines.append('![](plots/drawdown_table.png)\n')
+
     # --- Markdown Content ---
     md_lines = []
     # Cover Page
@@ -138,6 +164,30 @@ def generate_markdown_report(stats, bt):
     md_lines.append("11. [Rationale Summary](#rationale-summary)")
     md_lines.append("12. [Trade Statistics Breakdown](#trade-statistics-breakdown)")
     md_lines.append("13. [Regime Breakdown](#regime-breakdown)\n")
+    # Drawdown Table Section (must appear early in report)
+    equity_curve = stats.get('equity_curve')
+    if equity_curve is not None:
+        from tech_analysis.backtest import extract_drawdown_periods
+        periods = extract_drawdown_periods(equity_curve)
+        if periods:
+            df = pd.DataFrame(periods)
+            df2 = df.copy()
+            df2['depth'] = (df2['depth'] * 100).round(2)
+            df2 = df2.rename(columns={'start': 'Start', 'trough': 'Trough', 'end': 'End', 'depth': 'Depth (%)', 'recovery': 'Recovery (bars)'})
+            plots_dir = os.path.join(os.getcwd(), 'plots')
+            os.makedirs(plots_dir, exist_ok=True)
+            table_path = os.path.join(plots_dir, 'drawdown_table.png')
+            fig, ax = plt.subplots(figsize=(min(10, 2+len(df2)*0.5), 1+0.5*len(df2)))
+            ax.axis('off')
+            tbl = ax.table(cellText=df2.values, colLabels=df2.columns, loc='center', cellLoc='center')
+            tbl.auto_set_font_size(False)
+            tbl.set_fontsize(10)
+            tbl.scale(1, 1.5)
+            plt.tight_layout()
+            plt.savefig(table_path, bbox_inches='tight', dpi=150)
+            plt.close(fig)
+            md_lines.append('## Drawdown Table\n')
+            md_lines.append('![](plots/drawdown_table.png)\n')
     # Section: Assumptions
     md_lines.append("## Assumptions: Slippage and Commission\n")
     commission = getattr(bt, '_commission', stats.get('strategy_params', {}).get('commission', 0.002))

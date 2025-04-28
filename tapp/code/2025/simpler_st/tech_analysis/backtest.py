@@ -400,3 +400,55 @@ def calculate_indicator_summary_stats(trade_log):
             'max': float(np.max(values)) if values else 0.0
         }
     return stats
+
+def extract_drawdown_periods(equity_curve):
+    """
+    Given an equity curve (list or np.array), return a list of dicts:
+    Each dict: {'start': i_start, 'trough': i_trough, 'end': i_end, 'depth': float, 'recovery': int}
+    - start: index where drawdown begins
+    - trough: index of lowest equity in drawdown
+    - end: index where previous high is regained
+    - depth: % loss from peak to trough
+    - recovery: bars from trough to end (0 if never recovered)
+    """
+    import numpy as np
+    eq = np.array(equity_curve)
+    if len(eq) < 2:
+        return []
+    running_max = np.maximum.accumulate(eq)
+    drawdowns = (eq - running_max) / running_max
+    periods = []
+    in_dd = False
+    start = trough = end = None
+    min_dd = 0
+    for i in range(1, len(eq)):
+        if eq[i] < running_max[i]:
+            if not in_dd:
+                in_dd = True
+                start = i - 1
+                trough = i
+                min_dd = drawdowns[i]
+            else:
+                if drawdowns[i] < min_dd:
+                    min_dd = drawdowns[i]
+                    trough = i
+        elif in_dd:
+            end = i
+            periods.append({
+                'start': start,
+                'trough': trough,
+                'end': end,
+                'depth': float(min_dd),
+                'recovery': end - trough
+            })
+            in_dd = False
+    # If drawdown never recovered
+    if in_dd:
+        periods.append({
+            'start': start,
+            'trough': trough,
+            'end': None,
+            'depth': float(min_dd),
+            'recovery': 0
+        })
+    return periods

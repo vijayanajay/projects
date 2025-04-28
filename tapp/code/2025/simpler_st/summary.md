@@ -34,6 +34,7 @@ This file provides a clear, single-point reference to understand the structure a
 - The "Assumptions: Slippage and Commission" section now reports the actual values used and clarifies their effect on trade execution and net results.
 - All reported PnL and metrics are net of costs.
 - **(2025-04-28):** Trade-level annotated charts are now generated and embedded for each ticker, with regime overlays and SMA crossover annotations. Charts are saved as static images and referenced in the Markdown report, following Kalish Nadh's Markdown visualization philosophy. TDD test verifies chart presence for all tickers. See tests/test_report_generation.py for test logic.
+- **(2025-04-29):** Now generates and embeds a Drawdown Table section as a static image of all drawdown periods (start, trough, end, depth, recovery) in the Markdown report. Table is produced as drawdown_table.png and follows Kalish Nadh's Markdown visualization philosophy. TDD test verifies presence and correctness. See tech_analysis/backtest.py and tests/test_report_generation.py for details.
 
 ### Report Generation
 - `generate_markdown_report(stats, bt)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images. Now generates and embeds a trade-level chart for each ticker, with regime overlays and SMA crossover annotations (2025-04-28).
@@ -59,6 +60,7 @@ This file provides a clear, single-point reference to understand the structure a
 - `sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)`: Similar to above, but also returns a detailed trade log (entries, exits, PnL). Each trade log entry now also includes market context: regime (trend/range/volatile/calm, via `classify_market_regime`), volatility (rolling std), volume, ATR at entry, and indicator values (short/long SMA at entry/exit) for rationale logging at decision points. Uses `strategy_params` (often from `config.json`) for configuration. Used for deeper analysis and reporting.
 - `rsi_strategy_backtest(data, period, overbought, oversold)`: Simulates an RSI-based trading strategy, returning trade signals. Enables testing alternative strategies. Parameters often sourced from `config.json`.
 - `calculate_performance_metrics(equity_curve, trade_log)`: Computes total return, win rate, Sharpe ratio, and max drawdown from results. Central for performance reporting and comparison.
+- `extract_drawdown_periods(equity_curve)`: Extracts all drawdown periods from the equity curve, returning a list of dicts (start, trough, end, depth, recovery). Used for reporting and Drawdown Table (added 2025-04-29).
 - `export_backtest_results(trade_log, metrics, output_path)`: Exports all backtest results to a JSON file for later report generation or audit.
 - `correlate_performance_with_regimes(trade_log)`: Groups trade results by detected market regime, summarizing mean PnL and trade count per regime. Supports regime-aware performance analysis.
   - Updated (2025-04-28): Now expects trade_log as a list of dicts, not a DataFrame. All callers must convert DataFrames using .to_dict('records') before passing. This ensures robust handling and avoids iteration errors. TDD test coverage in tests/test_report_generation.py.
@@ -145,6 +147,7 @@ This file provides a clear, single-point reference to understand the structure a
 - `dummy_bt()`: Provides a mock backtesting object for report tests.
 - `test_markdown_contains_regime_summary()`: Checks that the generated Markdown report includes the regime summary, validating the integration of regime analysis into reporting.
 - `test_regime_table_filters_short_runs()`: Verifies that the regime table in the Markdown report only includes regime changes that persist for more than 3 days in a row.
+- `test_drawdown_table()`: Verifies that the Markdown report includes a Drawdown Table section with the correct data. (Added 2025-04-29)
 
 ---
 
@@ -162,5 +165,6 @@ This file provides a clear, single-point reference to understand the structure a
 - [x] 2025-04-28: Task 12.3 (Benchmark Comparison) complete. Markdown report now includes a "Benchmark Comparison" section with a static image chart and table comparing portfolio and benchmark returns, following Kalish Nadh's Markdown visualization philosophy. TDD test added and all tests pass. See report_generator.py and tests/test_report_generation.py for details.
 - [x] 2025-04-28: Transaction cost logic (slippage, commission) made generic and applied to all strategies. Utility function and tests added. Report and config updated. All changes TDD-verified.
 - [x] 2025-04-29: Updated sma_crossover_backtest_with_log to include ATR at entry. Added calculate_indicator_summary_stats to the summary. Updated the relevant backtest functions description for completeness.
+- [x] 2025-04-29: Added Drawdown Table feature to report_generator.py and extract_drawdown_periods function to tech_analysis/backtest.py. TDD test added to verify presence and correctness of Drawdown Table in Markdown report.
 
 **End of summary. Update this file as you add new modules or major features.**

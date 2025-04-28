@@ -8,11 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 12.7 Drawdown Table or Timeline
-- Create a table and/or plot of all drawdown periods, showing depth and recovery time, not just max drawdown.
-- Acceptance: Drawdown table and timeline plot are present in the report.
-- Status: Pending
-
 ### 12.8 Trade Distribution and Holding Periods
 - Add histograms/tables for trade holding durations and PnL distribution across all trades.
 - Acceptance: Report includes at least one histogram for duration and one for PnL distribution.
@@ -31,7 +26,7 @@
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
-- All tasks up to 12.6 are complete as of 2025-04-29. See below for details:
+- All tasks up to 12.7 are complete as of 2025-04-29. See below for details:
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
@@ -112,6 +107,8 @@
   - Acceptance: Each trade log entry includes ATR/volume at entry; summary stats are provided.
   - Status: Complete
   - Implemented: ATR and volume at trade entry are now included in every trade log entry, and summary statistics (mean, min, max) for both are provided via a new function in backtest.py. All changes are TDD-verified and minimal. See tests/test_backtest_engine.py for test logic and backtest.py for implementation.
+- [x] Task 12.7: Drawdown Table or Timeline (2025-04-29)
+  - Implemented extraction of all drawdown periods from the equity curve, including start, trough, end, depth, and recovery time. Generated a static image table (drawdown_table.png) and embedded it in the Markdown report as a dedicated section. All logic is TDD-driven and minimal. Test verifies presence of section and image. See report_generator.py, tech_analysis/backtest.py, and tests/test_report_generation.py for details.
 - [x] All core features for the technical analysis reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)
