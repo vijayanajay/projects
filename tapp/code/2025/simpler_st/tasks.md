@@ -8,11 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 9. State Slippage and Commission Assumptions
-- Document slippage and commission rates used in the simulation.
-- **Checkpoint:** Assumptions are documented in the report.
-- Status: Pending
-
 ### 10. Add Parameter Sensitivity/Robustness Analysis
 - Show how results change with different parameter values.
 - **Checkpoint:** Results for at least one parameter variation are shown.
@@ -143,3 +138,7 @@
 - [x] See summary.md for codebase structure and navigation.
 - [x] Fixed root cause of empty/zero report: pipeline.py now computes and passes real portfolio stats, equity curve, and trade log to generate_markdown_report (2025-04-27)
 - [x] List Universe/Assets Traded: Explicitly listed all assets or symbols included in the backtest. (2025-04-28)
+- [x] Task 9: State Slippage and Commission Assumptions (2025-04-28)
+  - The report generation logic now programmatically inserts a dedicated section for slippage (none modeled, all trades at close price) and commission (dynamic, from backtest engine) assumptions.
+  - TDD test added to verify this section in the report.
+  - No manual edits required; assumptions are always up-to-date.

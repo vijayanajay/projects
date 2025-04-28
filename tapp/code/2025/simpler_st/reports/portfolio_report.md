@@ -8,12 +8,20 @@
 
 1. [Cover Page](#technical-analysis-report)
 2. [Table of Contents](#table-of-contents)
-3. [Performance Metrics](#performance-metrics)
-4. [Trade Log](#trade-log)
-5. [Regime Summary](#regime-summary)
-6. [Strategy Parameters](#strategy-parameters)
-7. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)
-8. [Rationale Summary](#rationale-summary)
+3. [Assumptions: Slippage and Commission](#assumptions-slippage-and-commission)
+4. [Performance Metrics](#performance-metrics)
+5. [Trade Log](#trade-log)
+6. [Regime Summary](#regime-summary)
+7. [Strategy Parameters](#strategy-parameters)
+8. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)
+9. [Rationale Summary](#rationale-summary)
+
+## Assumptions: Slippage and Commission
+
+- **Slippage:** No explicit slippage is modeled in the current simulation. All trades are assumed to execute at the close price of the signal bar.
+- **Commission:** A fixed commission rate of 0.2% per trade is applied, as set in the backtesting engine (`commission=0.002`).
+
+These assumptions may affect real-world applicability and should be reviewed for live trading scenarios.
 
 ## Performance Metrics
 

@@ -411,3 +411,29 @@ def test_report_risk_section_missing_keys(tmp_path):
         assert False, "Should raise KeyError if sizing keys are missing."
     except KeyError as e:
         assert "position_size" in str(e) or "initial_cash" in str(e)
+
+def test_markdown_includes_assumptions_section(tmp_path):
+    stats = {
+        'total_return': 0.1,
+        'sharpe_ratio': 1.0,
+        'max_drawdown': 0.05,
+        'win_rate': 0.6,
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    class DummyBT:
+        _commission = 0.003
+        def plot(self, filename=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+    bt = DummyBT()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Assumptions: Slippage and Commission" in text, "Assumptions section missing."
+    assert "No explicit slippage is modeled" in text, "Slippage assumption missing."
+    assert "commission=0.003" in text, "Commission value missing or incorrect."

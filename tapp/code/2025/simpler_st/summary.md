@@ -37,6 +37,9 @@ This file provides a clear, single-point reference to understand the structure a
 ### Test Coverage
 - Tests ensure that the Markdown report is generated and contains all key sections (cover, table of contents, metrics, trade log, rationale, etc.).
 
+### Update (2025-04-28): Slippage & Commission Assumptions
+- The report_generator.py now programmatically adds an "Assumptions: Slippage and Commission" section to the Markdown report, using the commission value from the backtest engine and stating that no slippage is modeled. This ensures all reports are consistent and up-to-date with respect to transaction cost assumptions. TDD test verifies the section is present in the output.
+
 ---
 
 ## File: tech_analysis/backtest.py

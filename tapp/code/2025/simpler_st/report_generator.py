@@ -55,13 +55,21 @@ def generate_markdown_report(stats, bt):
     md_lines.append("## Table of Contents\n")
     md_lines.append("1. [Cover Page](#technical-analysis-report)")
     md_lines.append("2. [Table of Contents](#table-of-contents)")
-    md_lines.append("3. [Performance Metrics](#performance-metrics)")
-    md_lines.append("4. [Trade Log](#trade-log)")
-    md_lines.append("5. [Regime Summary](#regime-summary)")
-    md_lines.append("6. [Strategy Parameters](#strategy-parameters)")
-    md_lines.append("7. [Risk and Position Sizing Logic](#risk-and-position-sizing-logic)")
-    md_lines.append("8. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
-    md_lines.append("9. [Rationale Summary](#rationale-summary)\n")
+    md_lines.append("3. [Assumptions: Slippage and Commission](#assumptions-slippage-and-commission)")
+    md_lines.append("4. [Performance Metrics](#performance-metrics)")
+    md_lines.append("5. [Trade Log](#trade-log)")
+    md_lines.append("6. [Regime Summary](#regime-summary)")
+    md_lines.append("7. [Strategy Parameters](#strategy-parameters)")
+    md_lines.append("8. [Risk and Position Sizing Logic](#risk-and-position-sizing-logic)")
+    md_lines.append("9. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
+    md_lines.append("10. [Rationale Summary](#rationale-summary)\n")
+    # Section: Assumptions
+    md_lines.append("## Assumptions: Slippage and Commission\n")
+    # Commission from backtest object if possible
+    commission = getattr(bt, '_commission', 0.002)
+    md_lines.append(f"- **Slippage:** No explicit slippage is modeled in the current simulation. All trades are assumed to execute at the close price of the signal bar.")
+    md_lines.append(f"- **Commission:** A fixed commission rate of {commission * 100:.2f}% per trade is applied, as set in the backtesting engine (`commission={commission}`).")
+    md_lines.append("\nThese assumptions may affect real-world applicability and should be reviewed for live trading scenarios.\n")
     # Section: Performance Metrics
     md_lines.append("## Performance Metrics\n")
     metrics = [
