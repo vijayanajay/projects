@@ -8,6 +8,7 @@
     "long_window": 50,
     "rsi_period": 14,
     "overbought": 70,
-    "oversold": 30
+    "oversold": 30,
+    "context_window": 10
   }
 }

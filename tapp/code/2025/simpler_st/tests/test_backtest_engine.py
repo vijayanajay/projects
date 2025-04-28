@@ -58,8 +58,9 @@ def test_trade_execution_and_log():
     })
     short_window = 2
     long_window = 3
+    strategy_params = {'context_window': 10} # Add dummy params for the test
     # This should generate at least one buy and one sell
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window)
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window, strategy_params)
     # trade_log should be a list of dicts with keys: 'entry_index', 'exit_index', 'entry_price', 'exit_price', 'pnl', 'regime', 'volatility', 'volume'
     assert isinstance(trade_log, list)
     assert len(trade_log) > 0
@@ -124,7 +125,8 @@ def test_export_backtest_results_for_report(tmp_path):
     })
     short_window = 2
     long_window = 3
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close']], short_window, long_window)
+    strategy_params = {'context_window': 10} # Add dummy params for the test
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close']], short_window, long_window, strategy_params)
     equity_curve = [row['exit_price'] if 'exit_price' in row else 0 for row in trade_log]
     metrics = backtest.calculate_performance_metrics(equity_curve, trade_log)
     output_file = tmp_path / "backtest_export.json"
@@ -173,7 +175,8 @@ def test_trade_log_includes_rationale():
     })
     short_window = 2
     long_window = 3
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window)
+    strategy_params = {'context_window': 10} # Add dummy params for the test
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window, strategy_params)
     assert isinstance(trade_log, list)
     assert len(trade_log) > 0
     for log in trade_log:
@@ -239,7 +242,8 @@ def test_portfolio_backtest_multi_ticker():
     results = backtest.portfolio_backtest(
         data,
         initial_cash=initial_cash,
-        position_size=position_size
+        position_size=position_size,
+        strategy_params={'position_size': position_size, 'initial_cash': initial_cash}
     )
     # results should include 'portfolio_state' and 'trade_log'
     assert 'portfolio_state' in results

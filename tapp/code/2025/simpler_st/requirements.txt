@@ -1,1 +1,6 @@
 fpdf
+matplotlib
+numpy
+pandas
+seaborn
+pytest

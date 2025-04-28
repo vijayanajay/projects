@@ -36,11 +36,12 @@ def classify_market_regime(prices: pd.Series) -> str:
     # Ranging: oscillates between two values
     return 'ranging'
 
-def detect_market_regime_series(prices: pd.Series, window: int = 50) -> pd.Series:
+def detect_market_regime_series(prices: pd.Series, strategy_params: dict) -> pd.Series:
     """
-    Computes the market regime for each date using a rolling window.
+    Computes the market regime for each date using a rolling window based on the long_window parameter.
     Returns a pd.Series indexed by date, with regime labels.
     """
+    window = strategy_params.get('long_window', 50) # Use long_window for regime detection window
     regimes = []
     index = prices.index
     for i in range(len(prices)):

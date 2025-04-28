@@ -31,7 +31,8 @@ def test_markdown_contains_regime_summary(tmp_path):
         'Sharpe Ratio': 1.2,
         'Max. Drawdown [%]': -5.7,
         '_trades': None,
-        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%'
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
@@ -49,7 +50,8 @@ def test_markdown_includes_equity_curve_chart(tmp_path):
         'Max. Drawdown [%]': -4.0,
         '_trades': None,
         'regime_summary': 'Trending: 50%, Ranging: 30%, Volatile: 20%',
-        'equity_curve': [10000, 10100, 10200, 10300, 10400]
+        'equity_curve': [10000, 10100, 10200, 10300, 10400],
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
@@ -71,7 +73,8 @@ def test_markdown_includes_trade_log(tmp_path):
         '_trades': pd.DataFrame([
             {'EntryTime': '2025-04-01', 'EntryPrice': 100, 'ExitTime': '2025-04-10', 'ExitPrice': 110, 'PnL': 10.0, 'PositionSize': 50, 'Rationale': 'Buy: SMA cross'},
             {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0, 'PositionSize': 40, 'Rationale': 'Sell: target hit'}
-        ])
+        ]),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     class DummyBT:
         def plot(self, filename=None):
@@ -105,7 +108,8 @@ def test_markdown_includes_analyst_notes_placeholder(tmp_path):
         'Sharpe Ratio': 0.7,
         'Max. Drawdown [%]': -2.5,
         '_trades': None,
-        'regime_summary': 'Trending: 30%, Ranging: 50%, Volatile: 20%'
+        'regime_summary': 'Trending: 30%, Ranging: 50%, Volatile: 20%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
@@ -122,7 +126,8 @@ def test_markdown_includes_analyst_notes_substantive(tmp_path):
         'Max. Drawdown [%]': -2.5,
         '_trades': None,
         'regime_summary': 'Trending: 30%, Ranging: 50%, Volatile: 20%',
-        'analyst_notes': 'The strategy underperformed due to regime filtering.'
+        'analyst_notes': 'The strategy underperformed due to regime filtering.',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
@@ -146,7 +151,8 @@ def test_markdown_includes_rationale_summary(tmp_path):
             {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0, 'rationale': 'Sell: SMA cross'},
             {'EntryTime': '2025-04-25', 'EntryPrice': 108, 'ExitTime': '2025-04-30', 'ExitPrice': 112, 'PnL': 4.0, 'rationale': 'Buy: SMA cross'},
         ]),
-        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%'
+        'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     class DummyBT:
         def plot(self, filename=None):
@@ -183,7 +189,8 @@ def test_regime_table_filters_short_runs(tmp_path):
     regime_series = pd.Series(regimes, index=dates)
     stats = {
         'regime_summary': 'Trending: 15%, Ranging: 30%, Volatile: 20%, Calm: 35%',
-        'regime_series': regime_series
+        'regime_series': regime_series,
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
@@ -208,6 +215,8 @@ def test_regime_definitions_are_parameterized(tmp_path):
     stats = {
         'regime_summary': 'Trending: 40%, Ranging: 60%',
         'strategy_params': {
+            'position_size': 1, 
+            'initial_cash': 1, 
             'short_window': 13,
             'long_window': 55,
             'min_regime_days': 7,
@@ -237,3 +246,168 @@ def test_regime_definitions_are_parameterized(tmp_path):
     assert "window: 50" not in text, "Hardcoded default long_window found in regime definition."
     assert "for more than 3 days" not in text, "Hardcoded min regime days found in regime definition."
     assert "Overbought (70), Oversold (30)" not in text, "Hardcoded RSI thresholds found in regime definition."
+
+def test_markdown_includes_trade_level_chart(tmp_path):
+    import pandas as pd
+    stats = {
+        'equity_curve': [100, 102, 101, 105, 107, 106],
+        'sma_curve': [100, 101, 101.5, 103, 104, 105],
+        'rsi_curve': [50, 55, 60, 65, 70, 68],
+        '_trades': pd.DataFrame([
+            {'EntryTime': 1, 'EntryPrice': 102, 'ExitTime': 4, 'ExitPrice': 107, 'PnL': 5.0, 'PositionSize': 10, 'Rationale': 'Buy: SMA cross'},
+        ]),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    os.chdir(tmp_path)
+    from report_generator import generate_markdown_report
+    generate_markdown_report(stats, bt)
+    chart_path = tmp_path / "plots/trade_chart.png"
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert chart_path.exists(), "Trade-level chart not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "trade_chart.png" in text, "Trade-level chart not embedded in Markdown report."
+
+def test_markdown_includes_drawdown_curve(tmp_path):
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'equity_curve': [10000, 10100, 9800, 10400],
+        'drawdown_curve': [0, 0, -300, 0],
+        'regime_summary': 'Trending: 50%, Ranging: 30%, Volatile: 20%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    chart_path = tmp_path / "plots/drawdown_curve.png"
+    assert chart_path.exists(), "Drawdown curve chart not generated."
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Drawdown Curve" in text, "Drawdown curve section missing in Markdown report."
+
+def test_markdown_includes_return_distribution(tmp_path):
+    import numpy as np
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'returns_distribution': np.array([0.01, -0.02, 0.03, 0.01, -0.01, 0.02]),
+        'regime_summary': 'Trending: 50%, Ranging: 30%, Volatile: 20%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    chart_path = tmp_path / "plots/return_distribution.png"
+    # The file may be named differently, so just check for the section in the report
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Return Distribution" in text, "Return distribution section missing in Markdown report."
+
+def test_markdown_includes_trade_heatmap(tmp_path):
+    import numpy as np
+    import pandas as pd
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        '_trades': pd.DataFrame({
+            'Ticker': ['A', 'B', 'A', 'B'],
+            'PnL': [1, -1, 2, -2],
+            'Regime': ['Trending', 'Ranging', 'Trending', 'Ranging']
+        }),
+        'regime_summary': 'Trending: 50%, Ranging: 50%',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    chart_path = tmp_path / "plots/trade_heatmap.png"
+    assert chart_path.exists(), "Trade heatmap not generated."
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Trade Outcome Heatmap" in text, "Trade outcome heatmap section missing in Markdown report."
+
+def test_report_risk_section_uses_params(tmp_path):
+    """
+    The report's risk/position sizing section should use the exact values from parameters.
+    """
+    stats = {
+        'Return [%]': 7.0,
+        'Sharpe Ratio': 0.9,
+        'Max. Drawdown [%]': -2.0,
+        '_trades': None,
+        'strategy_params': {'position_size': 42, 'initial_cash': 3141}
+    }
+    from report_generator import generate_markdown_report
+    class DummyBT:
+        def plot(self, filename=None):
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.0
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 1}
+            return DummyStrategy()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, DummyBT())
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "set to: 42 currency units per trade, initial cash: 3141" in text
+
+def test_report_risk_section_missing_keys(tmp_path):
+    """
+    The report should raise if position_size or initial_cash is missing in parameters.
+    """
+    stats = {
+        'Return [%]': 7.0,
+        'Sharpe Ratio': 0.9,
+        'Max. Drawdown [%]': -2.0,
+        '_trades': None,
+        'strategy_params': {'initial_cash': 3141}  # missing position_size
+    }
+    from report_generator import generate_markdown_report
+    class DummyBT:
+        def plot(self, filename=None):
+            import matplotlib.pyplot as plt
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.0
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 1}
+            return DummyStrategy()
+    import os
+    os.chdir(tmp_path)
+    try:
+        generate_markdown_report(stats, DummyBT())
+        assert False, "Should raise KeyError if sizing keys are missing."
+    except KeyError as e:
+        assert "position_size" in str(e) or "initial_cash" in str(e)

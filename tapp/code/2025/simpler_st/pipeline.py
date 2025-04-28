@@ -5,6 +5,8 @@ from tech_analysis.backtest import portfolio_backtest, calculate_performance_met
 from report_generator import generate_markdown_report
 import json
 from tech_analysis.market_regimes import detect_market_regime_series
+import numpy as np
+import pandas as pd
 
 def run_pipeline(tickers, output_dir=None):
     """
@@ -18,20 +20,18 @@ def run_pipeline(tickers, output_dir=None):
         os.chdir(output_dir)
     # Load config
     config_path = Path(__file__).parent / "config.json"
-    if config_path.exists():
-        with open(config_path, "r") as f:
-            config = json.load(f)
-        period = config.get("period", "10y")
-        initial_cash = config.get("initial_cash", 10000)
-        position_size = config.get("position_size", 100)
-        strategy = config.get("strategy", "naive_momentum")
-        strategy_params = config.get("strategy_params", {})
-    else:
-        period = "10y"
-        initial_cash = 10000
-        position_size = 100
-        strategy = "naive_momentum"
-        strategy_params = {}
+    if not config_path.exists():
+        raise FileNotFoundError("config.json not found. Please provide a config.json with required parameters.")
+    with open(config_path, "r") as f:
+        config = json.load(f)
+    # Require keys
+    if "initial_cash" not in config or "position_size" not in config:
+        raise KeyError("Both 'initial_cash' and 'position_size' must be specified in config.json.")
+    period = config["period"]
+    initial_cash = config["initial_cash"]
+    position_size = config["position_size"]
+    strategy = config.get("strategy", "naive_momentum")
+    strategy_params = config.get("strategy_params", {})
     # Filter out invalid tickers
     invalid_tickers = {'', '.', None}
     filtered_tickers = [t for t in tickers if t not in invalid_tickers]
@@ -55,8 +55,8 @@ def run_pipeline(tickers, output_dir=None):
     # For simplicity, use the first ticker's close prices (or aggregate as needed for your use case)
     sample_ticker = next(iter(data_dict))
     close_prices = data_dict[sample_ticker]['close']
-    # Compute full-date-range regime series
-    regime_series = detect_market_regime_series(close_prices)
+    # Compute full-date-range regime series, passing strategy_params
+    regime_series = detect_market_regime_series(close_prices, strategy_params)
     # Unified portfolio backtest
     bt_result = portfolio_backtest(data_dict, initial_cash=initial_cash, position_size=position_size, strategy_params=strategy_params)
     # DEBUG: Backtest result
@@ -90,16 +90,48 @@ def run_pipeline(tickers, output_dir=None):
         regime_summary = 'No trades or regimes detected.'
     stats['regime_summary'] = regime_summary
 
-    # --- UPDATE: Per-date regime summary table using regime_series ---
-    # regime_lines = ["| Date | Regime |", "|------|--------|"]
-    # if 'regime_series' in stats and hasattr(stats['regime_series'], 'items'):
-    #     for date, regime in stats['regime_series'].items():
-    #         regime_lines.append(f"| {date.strftime('%Y-%m-%d')} | {regime} |")
-    # if len(regime_lines) > 2:
-    #     stats['regime_summary'] += "\n\n" + "\n".join(regime_lines)
-    # --- END UPDATE ---
+    # Compute drawdown curve
+    def compute_drawdown_curve(equity_curve):
+        equity_curve = np.array(equity_curve)
+        peak = np.maximum.accumulate(equity_curve)
+        drawdown = equity_curve - peak
+        return drawdown
+    stats['drawdown_curve'] = compute_drawdown_curve(equity_curve)
 
+    # Compute returns distribution (simple daily returns)
+    def compute_returns_distribution(equity_curve):
+        equity_curve = np.array(equity_curve)
+        returns = np.diff(equity_curve) / equity_curve[:-1]
+        return returns
+    stats['returns_distribution'] = compute_returns_distribution(equity_curve)
+
+    # Ensure _trades is a DataFrame with correct columns for heatmap
+    if isinstance(stats['_trades'], list):
+        stats['_trades'] = pd.DataFrame(stats['_trades'])
+    if isinstance(stats['_trades'], pd.DataFrame):
+        # Map 'ticker' to 'Ticker', 'regime' to 'Regime', preserve correct values
+        rename_map = {}
+        if 'ticker' in stats['_trades'].columns:
+            rename_map['ticker'] = 'Ticker'
+        if 'regime' in stats['_trades'].columns:
+            rename_map['regime'] = 'Regime'
+        stats['_trades'] = stats['_trades'].rename(columns=rename_map)
+        # Ensure 'PnL' column exists (upper-case), mapping from 'pnl' if needed
+        if 'PnL' not in stats['_trades'].columns and 'pnl' in stats['_trades'].columns:
+            stats['_trades']['PnL'] = stats['_trades']['pnl']
+        # Only fill missing values, do not overwrite correct data
+        if 'Regime' in stats['_trades'].columns:
+            stats['_trades']['Regime'] = stats['_trades']['Regime'].fillna('Unknown')
+        if 'Ticker' in stats['_trades'].columns:
+            stats['_trades']['Ticker'] = stats['_trades']['Ticker'].fillna(sample_ticker)
     stats['strategy_params'] = strategy_params
+    # Ensure stats['strategy_params'] exists and has required keys for reporting
+    if 'strategy_params' not in stats or not isinstance(stats['strategy_params'], dict):
+        stats['strategy_params'] = {}
+    if 'position_size' not in stats['strategy_params']:
+        stats['strategy_params']['position_size'] = position_size
+    if 'initial_cash' not in stats['strategy_params']:
+        stats['strategy_params']['initial_cash'] = initial_cash
     # DEBUG: Metrics/stats for report
     print("[DEBUG] Stats for report:", stats)
     # Pass real stats to report generator

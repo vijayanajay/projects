@@ -24,7 +24,7 @@ def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: i
             position = None
     return trades
 
-def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_window: int):
+def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_window: int, strategy_params: dict):
     data = data.copy()
     data['sma_short'] = data['close'].rolling(window=short_window, min_periods=1).mean()
     data['sma_long'] = data['close'].rolling(window=long_window, min_periods=1).mean()
@@ -49,7 +49,8 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_index = idx
             entry_price = row['close']
             # Market context at entry
-            price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-10):data.index.get_loc(idx)+1]
+            context_window = strategy_params.get('context_window', 10) # Get from params, default 10
+            price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-context_window):data.index.get_loc(idx)+1]
             entry_regime = classify_market_regime(price_window)
             entry_volatility = price_window.std()
             entry_volume = row['volume'] if 'volume' in data.columns else 0
@@ -60,7 +61,8 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             exit_price = row['close']
             pnl = exit_price - entry_price if entry_price is not None else 0
             # Market context at exit
-            price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-10):data.index.get_loc(idx)+1]
+            context_window = strategy_params.get('context_window', 10) # Get from params, default 10
+            price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-context_window):data.index.get_loc(idx)+1]
             regime = classify_market_regime(price_window)
             volatility = price_window.std()
             volume = row['volume'] if 'volume' in data.columns else 0
@@ -161,19 +163,14 @@ def correlate_performance_with_regimes(trade_log):
         result[regime] = {'mean_pnl': sum(pnls)/len(pnls) if pnls else 0, 'count': len(pnls)}
     return result
 
-def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strategy_params=None):
+def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
     """
     Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging.
     data_dict: dict of ticker -> pd.DataFrame with 'close' column
     Returns: {'portfolio_state': PortfolioState, 'trade_log': list, 'strategy_params': dict}
     """
     if strategy_params is None:
-        strategy_params = {
-            'strategy': 'naive_momentum',
-            'rule': 'buy if price increases',
-            'position_size': position_size,
-            'initial_cash': initial_cash,
-        }
+        raise ValueError("strategy_params must be provided (from config.json)")
     from tech_analysis.portfolio import PortfolioState
     pf = PortfolioState(initial_cash, strategy_params=strategy_params)
     trade_log = []
@@ -199,7 +196,8 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                         price,
                         rationale=f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
                     )
-                    price_window = df['close'].iloc[max(0, i-10):i+1]
+                    context_window = strategy_params.get('context_window', 10) # Get from params, default 10
+                    price_window = df['close'].iloc[max(0, i-context_window):i+1]
                     regime = classify_market_regime(price_window)
                     open_positions[ticker] = {
                         'EntryTime': str(df.index[i]),
@@ -218,6 +216,7 @@ def portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strateg
                     price,
                     rationale=f"Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}"
                 )
+                # No need to get context window here as it's not used for sell rationale/logging directly
                 entry = open_positions[ticker]
                 pnl = (price - entry['EntryPrice']) * qty
                 trade_log.append({

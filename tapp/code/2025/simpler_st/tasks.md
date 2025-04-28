@@ -8,16 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 4. Add Trade-Level Visualizations
-- Include charts with entry/exit points and indicator overlays (e.g., moving averages, RSI).
-- **Checkpoint:** At least one chart with trade markers and indicators is present.
-- Status: Pending
-
-### 5. Add Drawdown, Return Distribution, and Heatmap Visualizations
-- Present drawdown curve, return distribution, and heatmap of trade outcomes.
-- **Checkpoint:** Each visualization is present in the report.
-- Status: Pending
-
 ### 6. Document Risk/Position Sizing Logic
 - Describe how capital is allocated and risk is managed per trade.
 - **Checkpoint:** Section describing risk and position sizing is present.
@@ -178,3 +168,11 @@
 - Add substantive analyst notes for context and improvement suggestions.
 - **Checkpoint:** Analyst notes section contains at least one substantive note.
 - Status: Complete (analyst notes section is filled with substantive content. 2025-04-28)
+- [x] Add Trade-Level Visualizations
+- Include charts with entry/exit points and indicator overlays (e.g., moving averages, RSI).
+- **Checkpoint:** At least one chart with trade markers and indicators is present.
+- Status: Complete (2025-04-28)
+- [x] Add Drawdown, Return Distribution, and Heatmap Visualizations
+- Present drawdown curve, return distribution, and heatmap of trade outcomes.
+- **Checkpoint:** Each visualization is present in the report.
+- Status: Complete

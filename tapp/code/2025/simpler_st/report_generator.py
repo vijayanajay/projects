@@ -3,6 +3,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+import pandas as pd
+import seaborn as sns
 
 def generate_markdown_report(stats, bt):
     """
@@ -57,8 +59,9 @@ def generate_markdown_report(stats, bt):
     md_lines.append("4. [Trade Log](#trade-log)")
     md_lines.append("5. [Regime Summary](#regime-summary)")
     md_lines.append("6. [Strategy Parameters](#strategy-parameters)")
-    md_lines.append("7. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
-    md_lines.append("8. [Rationale Summary](#rationale-summary)\n")
+    md_lines.append("7. [Risk and Position Sizing Logic](#risk-and-position-sizing-logic)")
+    md_lines.append("8. [Analyst Notes and Suggestions](#analyst-notes-and-suggestions)")
+    md_lines.append("9. [Rationale Summary](#rationale-summary)\n")
     # Section: Performance Metrics
     md_lines.append("## Performance Metrics\n")
     metrics = [
@@ -92,6 +95,45 @@ def generate_markdown_report(stats, bt):
         md_lines.append(f"\n![Metric Distribution (Returns)]({metric_chart_path})\n")
         if np.any(outliers):
             md_lines.append("Note: Outlier(s) highlighted in red.\n")
+    # Drawdown Curve Visualization
+    drawdown_curve = stats.get('drawdown_curve')
+    drawdown_chart_path = f"plots/drawdown_curve.png"
+    if drawdown_curve is not None:
+        plt.figure(facecolor='white')
+        plt.plot(drawdown_curve, label='Drawdown', color='red')
+        plt.title('Drawdown Curve')
+        plt.xlabel('Time')
+        plt.ylabel('Drawdown')
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(drawdown_chart_path)
+        plt.close()
+        md_lines.append(f"\n## Drawdown Curve\n")
+        md_lines.append(f"![Drawdown Curve]({drawdown_chart_path})\n")
+
+    # Return Distribution Visualization (dedicated section)
+    returns_dist = stats.get('returns_distribution')
+    return_dist_chart_path = f"plots/return_distribution.png"
+    if returns_dist is not None:
+        plt.figure(facecolor='white')
+        mean = np.mean(returns_dist)
+        std = np.std(returns_dist)
+        outliers = (np.abs(returns_dist - mean) > 2 * std)
+        plt.hist(returns_dist[~outliers], bins=20, color='#1f77b4', alpha=0.7, label='Normal')
+        if np.any(outliers):
+            plt.hist(returns_dist[outliers], bins=5, color='red', alpha=0.8, label='Outlier')
+        plt.title('Return Distribution')
+        plt.xlabel('Return')
+        plt.ylabel('Frequency')
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(return_dist_chart_path)
+        plt.close()
+        md_lines.append(f"\n## Return Distribution\n")
+        md_lines.append(f"![Return Distribution]({return_dist_chart_path})\n")
+        if np.any(outliers):
+            md_lines.append("Note: Outlier(s) highlighted in red.\n")
+
     # Section: Regime Summary
     md_lines.append("## Regime Summary\n")
     # Dynamically add regime definitions and classification criteria using actual parameters
@@ -118,31 +160,96 @@ def generate_markdown_report(stats, bt):
     # Render filtered regime series table
     regime_series = stats.get('regime_series')
     if regime_series is not None and len(regime_series) > 0:
-        def filter_regime_series(series):
+        # Pass min_days to the filter function
+        def filter_regime_series(series, min_duration):
             filtered = []
             prev_regime = None
             start_date = None
             count = 0
+            threshold = min_duration - 1 # Check against min_duration - 1
             for date, regime in series.items():
                 if regime != prev_regime:
-                    if prev_regime is not None and count > 3:
+                    # Use the threshold derived from min_duration
+                    if prev_regime is not None and count > threshold:
                         filtered.append((start_date, date, prev_regime, count))
                     start_date = date
                     count = 1
                     prev_regime = regime
                 else:
                     count += 1
-            # Handle last segment
-            if prev_regime is not None and count > 3:
+            # Handle last segment, using the threshold
+            if prev_regime is not None and count > threshold:
                 filtered.append((start_date, date, prev_regime, count))
             return filtered
-        filtered_regimes = filter_regime_series(regime_series)
+        # Call the function with the min_days parameter
+        filtered_regimes = filter_regime_series(regime_series, min_days)
         if filtered_regimes:
             md_lines.append("\n| Start Date | End Date | Regime | Days |\n|---|---|---|---|")
             for start, end, regime, days in filtered_regimes:
                 md_lines.append(f"| {start} | {end} | {regime} | {days} |")
         else:
-            md_lines.append("\n_No regime persisted more than 3 days in a row._\n")
+            # Update the message to use min_days
+            md_lines.append(f"\n_No regime persisted more than {min_days - 1} days in a row._\n")
+    # Trade-level chart with entry/exit markers and indicator overlays
+    trade_chart_path = f"plots/trade_chart.png"
+    price = stats.get('equity_curve')
+    sma = stats.get('sma_curve')
+    rsi = stats.get('rsi_curve')
+    trades = stats.get('_trades')
+    if trades is None or not hasattr(trades, 'iterrows'):
+        trades = stats.get('trades')
+    if price is not None and sma is not None and trades is not None:
+        plt.figure(facecolor='white')
+        plt.plot(price, label='Price', color='#1f77b4')
+        plt.plot(sma, label='SMA', color='orange')
+        if rsi is not None:
+            ax1 = plt.gca()
+            ax2 = ax1.twinx()
+            ax2.plot(rsi, label='RSI', color='purple', alpha=0.4)
+            ax2.set_ylabel('RSI', color='purple')
+        # Plot trade entry/exit markers
+        if hasattr(trades, 'iterrows'):
+            for idx, trade in trades.iterrows():
+                entry = trade.get('EntryTime')
+                entry_price = trade.get('EntryPrice')
+                exit = trade.get('ExitTime')
+                exit_price = trade.get('ExitPrice')
+                if entry is not None and entry_price is not None:
+                    plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if idx == 0 else "")
+                if exit is not None and exit_price is not None:
+                    plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if idx == 0 else "")
+        elif isinstance(trades, list):
+            for i, trade in enumerate(trades):
+                entry = trade.get('EntryTime')
+                entry_price = trade.get('EntryPrice')
+                exit = trade.get('ExitTime')
+                exit_price = trade.get('ExitPrice')
+                if entry is not None and entry_price is not None:
+                    plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if i == 0 else "")
+                if exit is not None and exit_price is not None:
+                    plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if i == 0 else "")
+        plt.legend(loc='best', frameon=True)
+        plt.title('Trade Chart with Entry/Exit and Indicators')
+        plt.tight_layout()
+        plt.savefig(trade_chart_path)
+        plt.close()
+    # Embed trade-level chart in Markdown
+    if os.path.exists(trade_chart_path):
+        md_lines.append(f"\n![Trade Chart]({trade_chart_path})\n")
+    # Trade Outcome Heatmap Visualization
+    heatmap_chart_path = f"plots/trade_heatmap.png"
+    if trades is not None and isinstance(trades, pd.DataFrame):
+        # Minimal: Heatmap by Ticker vs Regime, values = mean PnL
+        if all(col in trades.columns for col in ['Ticker', 'Regime', 'PnL']):
+            pivot = trades.pivot_table(index='Ticker', columns='Regime', values='PnL', aggfunc='mean', fill_value=0)
+            plt.figure(figsize=(6,4), facecolor='white')
+            sns.heatmap(pivot, annot=True, fmt=".2f", cmap="RdYlGn", cbar=True)
+            plt.title('Trade Outcome Heatmap (Mean PnL by Ticker & Regime)')
+            plt.tight_layout()
+            plt.savefig(heatmap_chart_path)
+            plt.close()
+            md_lines.append(f"\n## Trade Outcome Heatmap\n")
+            md_lines.append(f"![Trade Outcome Heatmap]({heatmap_chart_path})\n")
     # Section: Strategy Parameters
     md_lines.append("## Strategy Parameters\n")
     params = stats.get('strategy_params', {})
@@ -151,6 +258,15 @@ def generate_markdown_report(stats, bt):
             md_lines.append(f"- **{k}:** {v}")
     else:
         md_lines.append("No strategy parameters available.\n")
+    # Section: Risk and Position Sizing Logic
+    if 'position_size' not in params or 'initial_cash' not in params:
+        raise KeyError("Both 'position_size' and 'initial_cash' must be present in strategy parameters (from config.json).")
+    position_size = params['position_size']
+    initial_cash = params['initial_cash']
+    md_lines.append("\n## Risk and Position Sizing Logic\n")
+    md_lines.append(f"Each trade allocates capital using a fixed position size (set to: {position_size} currency units per trade, initial cash: {initial_cash}). The number of shares bought is calculated as:\n")
+    md_lines.append("\n    qty = int(position_size // price)\n")
+    md_lines.append("\nThis ensures that:\n- No trade exceeds the specified position size or available cash.\n- No leverage or short selling is used.\n- Trades are only executed if sufficient cash is available.\n\nThis simple approach provides basic risk control by capping exposure per trade and preventing over-allocation. More advanced risk management (e.g., stop-loss, volatility targeting) is not implemented in this version.\n")
     # Section: Trade Log
     md_lines.append("## Trade Log\n")
     trades = stats.get('_trades')

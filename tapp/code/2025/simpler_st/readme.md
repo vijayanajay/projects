@@ -192,12 +192,25 @@ class MACDCrossover(Strategy):
 1. Fetch data → cache as Parquet
 2. Load cached data → run backtest
 3. Generate report with visualizations (Markdown)
-### 6. Suggested Extensions
+### 6. Risk and Position Sizing Logic
+
+Each trade allocates capital using a fixed position size (default: 100 currency units per trade). The number of shares bought is calculated as:
+
+    qty = int(position_size // price)
+
+This ensures that:
+- No trade exceeds the specified position size or available cash.
+- No leverage or short selling is used.
+- Trades are only executed if sufficient cash is available.
+
+This simple approach provides basic risk control by capping exposure per trade and preventing over-allocation. More advanced risk management (e.g., stop-loss, volatility targeting) is not implemented in this version.
+
+### 7. Suggested Extensions
 - Add more indicators (RSI, MACD) 
 - Parameter optimization
 - Live trading integration
 - Sentiment analysis inputs
-### 7. Dependencies
+### 8. Dependencies
 ```python
 # requirements.txt
 yfinance==0.2.31
