@@ -13,10 +13,21 @@ def generate_markdown_report(stats, bt):
     """
     os.makedirs("plots", exist_ok=True)
     os.makedirs("reports", exist_ok=True)
+    # --- Pre-initialize chart path variables to None to avoid UnboundLocalError ---
+    abs_legacy_equity_chart_path = None
+    abs_chart_path = None
+    abs_drawdown_chart_path = None
+    abs_return_dist_chart_path = None
     # --- Equity Curve Chart (legacy, always present) ---
     legacy_equity_chart_path = f"plots/portfolio_equity.png"
     equity_curve = stats.get('equity_curve')
-    if equity_curve is not None:
+    # If dict (multi-ticker), pick first ticker for legacy chart
+    if isinstance(equity_curve, dict):
+        first_ticker = next(iter(equity_curve)) if equity_curve else None
+        equity_curve_legacy = equity_curve.get(first_ticker) if first_ticker else None
+    else:
+        equity_curve_legacy = equity_curve
+    if equity_curve_legacy is not None:
         plt.figure(facecolor='white')
         plt.rcParams.update({
             'font.size': 12,
@@ -29,17 +40,24 @@ def generate_markdown_report(stats, bt):
             'grid.color': '#e0e0e0',
             'axes.prop_cycle': plt.cycler(color=["#1f77b4"])
         })
-        plt.plot(equity_curve, label='Equity Curve', color='#1f77b4')
+        plt.plot(equity_curve_legacy, label='Equity Curve', color='#1f77b4')
         plt.legend(loc='best', frameon=True)
         plt.tight_layout()
-        plt.savefig(legacy_equity_chart_path)
+        abs_legacy_equity_chart_path = os.path.abspath(legacy_equity_chart_path)
+        os.makedirs(os.path.dirname(abs_legacy_equity_chart_path), exist_ok=True)
+        plt.savefig(abs_legacy_equity_chart_path)
         plt.close()
 
     # --- Benchmark Comparison Plot (new, if both present) ---
     benchmark_curve = stats.get('benchmark_curve') or stats.get('benchmark_equity_curve')
     chart_path = f"plots/benchmark_comparison.png"
     benchmark_name = stats.get('benchmark_name', 'Benchmark')
-    if equity_curve is not None and benchmark_curve is not None:
+    # Handle dicts for benchmark too
+    if isinstance(benchmark_curve, dict):
+        benchmark_curve_legacy = benchmark_curve.get(first_ticker) if first_ticker else None
+    else:
+        benchmark_curve_legacy = benchmark_curve
+    if equity_curve_legacy is not None and benchmark_curve_legacy is not None:
         plt.figure(facecolor='white')
         plt.rcParams.update({
             'font.size': 12,
@@ -52,12 +70,14 @@ def generate_markdown_report(stats, bt):
             'grid.color': '#e0e0e0',
             'axes.prop_cycle': plt.cycler(color=["#1f77b4", "#ff7f0e"])
         })
-        plt.plot(equity_curve, label='Portfolio', color='#1f77b4')
-        plt.plot(benchmark_curve, label=benchmark_name, color='#ff7f0e', linestyle='--')
+        plt.plot(equity_curve_legacy, label='Portfolio', color='#1f77b4')
+        plt.plot(benchmark_curve_legacy, label=benchmark_name, color='#ff7f0e', linestyle='--')
         plt.legend(loc='best', frameon=True)
         plt.title(f"Portfolio vs {benchmark_name}")
         plt.tight_layout()
-        plt.savefig(chart_path)
+        abs_chart_path = os.path.abspath(chart_path)
+        os.makedirs(os.path.dirname(abs_chart_path), exist_ok=True)
+        plt.savefig(abs_chart_path)
         plt.close()
 
     # --- Drawdown Curve Visualization ---
@@ -71,7 +91,9 @@ def generate_markdown_report(stats, bt):
         plt.ylabel('Drawdown')
         plt.legend()
         plt.tight_layout()
-        plt.savefig(drawdown_chart_path)
+        abs_drawdown_chart_path = os.path.abspath(drawdown_chart_path)
+        os.makedirs(os.path.dirname(abs_drawdown_chart_path), exist_ok=True)
+        plt.savefig(abs_drawdown_chart_path)
         plt.close()
 
     # --- Return Distribution Visualization ---
@@ -90,7 +112,9 @@ def generate_markdown_report(stats, bt):
         plt.ylabel('Frequency')
         plt.legend()
         plt.tight_layout()
-        plt.savefig(return_dist_chart_path)
+        abs_return_dist_chart_path = os.path.abspath(return_dist_chart_path)
+        os.makedirs(os.path.dirname(abs_return_dist_chart_path), exist_ok=True)
+        plt.savefig(abs_return_dist_chart_path)
         plt.close()
 
     # --- Markdown Content ---
@@ -140,10 +164,10 @@ def generate_markdown_report(stats, bt):
         ])
     md_lines.extend(metrics)
     # Embed equity curve chart (legacy)
-    if os.path.exists(legacy_equity_chart_path):
+    if abs_legacy_equity_chart_path is not None and os.path.exists(abs_legacy_equity_chart_path):
         md_lines.append(f"\n![Equity Curve]({legacy_equity_chart_path})\n")
     # Benchmark Comparison Section (new)
-    if os.path.exists(chart_path):
+    if abs_chart_path is not None and os.path.exists(abs_chart_path):
         md_lines.append(f"\n## Benchmark Comparison\n")
         md_lines.append(f"![]({chart_path})\n")
         # Minimal table comparing returns if both present
@@ -155,11 +179,11 @@ def generate_markdown_report(stats, bt):
             md_lines.append("\n| Metric | Portfolio | " + benchmark_name + " |\n|---|---|---|")
             md_lines.append(f"| Total Return (%) | {strat_return:.2f} | {bench_return:.2f} |\n")
     # Drawdown Curve Section
-    if os.path.exists(drawdown_chart_path):
+    if abs_drawdown_chart_path is not None and os.path.exists(abs_drawdown_chart_path):
         md_lines.append(f"\n## Drawdown Curve\n")
         md_lines.append(f"![Drawdown Curve]({drawdown_chart_path})\n")
     # Return Distribution Section
-    if os.path.exists(return_dist_chart_path):
+    if abs_return_dist_chart_path is not None and os.path.exists(abs_return_dist_chart_path):
         md_lines.append(f"\n## Return Distribution\n")
         md_lines.append(f"![Return Distribution]({return_dist_chart_path})\n")
         if returns_dist is not None:
@@ -271,11 +295,12 @@ def generate_markdown_report(stats, bt):
     trades = stats.get('_trades')
     if trades is None or not hasattr(trades, 'iterrows'):
         trades = stats.get('trades')
-    if price is not None and sma is not None and trades is not None:
+    # Only plot summary chart if price and sma are 1D (not dict)
+    if price is not None and sma is not None and trades is not None and not isinstance(price, dict) and not isinstance(sma, dict):
         plt.figure(facecolor='white')
         plt.plot(price, label='Price', color='#1f77b4')
         plt.plot(sma, label='SMA', color='orange')
-        if rsi is not None:
+        if rsi is not None and not isinstance(rsi, dict):
             ax1 = plt.gca()
             ax2 = ax1.twinx()
             ax2.plot(rsi, label='RSI', color='purple', alpha=0.4)
@@ -283,32 +308,34 @@ def generate_markdown_report(stats, bt):
         # Plot trade entry/exit markers
         if hasattr(trades, 'iterrows'):
             for idx, trade in trades.iterrows():
-                entry = trade.get('EntryTime')
-                entry_price = trade.get('EntryPrice')
-                exit = trade.get('ExitTime')
-                exit_price = trade.get('ExitPrice')
+                entry = trade.get('EntryTime', '')
+                entry_price = trade.get('EntryPrice', '')
+                exit = trade.get('ExitTime', '')
+                exit_price = trade.get('ExitPrice', '')
                 if entry is not None and entry_price is not None:
                     plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if idx == 0 else "")
                 if exit is not None and exit_price is not None:
                     plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if idx == 0 else "")
         elif isinstance(trades, list):
             for i, trade in enumerate(trades):
-                entry = trade.get('EntryTime')
-                entry_price = trade.get('EntryPrice')
-                exit = trade.get('ExitTime')
-                exit_price = trade.get('ExitPrice')
+                entry = trade.get('EntryTime', '')
+                entry_price = trade.get('EntryPrice', '')
+                exit = trade.get('ExitTime', '')
+                exit_price = trade.get('ExitPrice', '')
                 if entry is not None and entry_price is not None:
                     plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if i == 0 else "")
                 if exit is not None and exit_price is not None:
                     plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if i == 0 else "")
         plt.legend(loc='best', frameon=True)
-        plt.title('Trade Chart with Entry/Exit and Indicators')
+        plt.title('Trade Chart with Entry/Exit, SMA, Regime')
         plt.tight_layout()
-        plt.savefig(trade_chart_path)
+        abs_trade_chart_path = os.path.abspath(trade_chart_path)
+        os.makedirs(os.path.dirname(abs_trade_chart_path), exist_ok=True)
+        plt.savefig(abs_trade_chart_path)
         plt.close()
-    # Embed trade-level chart in Markdown
-    if os.path.exists(trade_chart_path):
-        md_lines.append(f"\n![Trade Chart]({trade_chart_path})\n")
+        if os.path.exists(abs_trade_chart_path):
+            md_lines.append(f"\n![Trade Chart]({trade_chart_path})\n")
+    # If price is a dict (multi-ticker), skip this summary chart (per-ticker charts are generated below)
     # Trade Outcome Heatmap Visualization
     heatmap_chart_path = f"plots/trade_heatmap.png"
     if trades is not None and isinstance(trades, pd.DataFrame):
@@ -319,7 +346,9 @@ def generate_markdown_report(stats, bt):
             sns.heatmap(pivot, annot=True, fmt=".2f", cmap="RdYlGn", cbar=True)
             plt.title('Trade Outcome Heatmap (Mean PnL by Ticker & Regime)')
             plt.tight_layout()
-            plt.savefig(heatmap_chart_path)
+            abs_heatmap_chart_path = os.path.abspath(heatmap_chart_path)
+            os.makedirs(os.path.dirname(abs_heatmap_chart_path), exist_ok=True)
+            plt.savefig(abs_heatmap_chart_path)
             plt.close()
             md_lines.append(f"\n## Trade Outcome Heatmap\n")
             md_lines.append(f"![Trade Outcome Heatmap]({heatmap_chart_path})\n")
@@ -425,14 +454,69 @@ def generate_markdown_report(stats, bt):
         if regime_stats:
             md_lines.append("| Regime | Trades | Win Rate | Avg Win | Avg Loss | Largest Win | Largest Loss | Profit Factor | Expectancy | Mean PnL |")
             md_lines.append("|---|---|---|---|---|---|---|---|---|---|")
-            for regime, stats in regime_stats.items():
+            for regime, regime_stat in regime_stats.items():
                 md_lines.append(
-                    f"| {regime} | {stats['count']} | {stats['win_rate']:.2f} | {stats['average_win']:.2f} | {stats['average_loss']:.2f} | {stats['largest_win']:.2f} | {stats['largest_loss']:.2f} | {stats['profit_factor']:.2f} | {stats['expectancy']:.2f} | {stats['mean_pnl']:.2f} |"
+                    f"| {regime} | {regime_stat['count']} | {regime_stat['win_rate']:.2f} | {regime_stat['average_win']:.2f} | {regime_stat['average_loss']:.2f} | {regime_stat['largest_win']:.2f} | {regime_stat['largest_loss']:.2f} | {regime_stat['profit_factor']:.2f} | {regime_stat['expectancy']:.2f} | {regime_stat['mean_pnl']:.2f} |"
                 )
         else:
             md_lines.append("No regime breakdown available.\n")
     else:
         md_lines.append("No trades for regime breakdown.\n")
+    # --- Trade-Level Charts Per Ticker ---
+    equity_curves = stats.get('equity_curve')
+    trade_log = stats.get('trades') or stats.get('_trades')
+    regime_series = stats.get('regime_series', {})
+    sma_curves = stats.get('sma_curve', {})
+    if isinstance(equity_curves, dict):
+        for ticker, eq_curve in equity_curves.items():
+            chart_path = f"plots/trade_chart_{ticker}.png"
+            os.makedirs(os.path.dirname(chart_path), exist_ok=True)
+            plt.figure(facecolor='white')
+            # Robustly check eq_curve validity
+            valid_curve = False
+            if eq_curve is not None:
+                if isinstance(eq_curve, (list, np.ndarray, pd.Series)) and len(eq_curve) > 0:
+                    valid_curve = True
+            if valid_curve:
+                plt.plot(eq_curve, label='Equity Curve', color='#1f77b4')
+                # Overlay SMA if available
+                if isinstance(sma_curves, dict) and ticker in sma_curves:
+                    sma = sma_curves.get(ticker)
+                    if isinstance(sma, (list, np.ndarray, pd.Series)) and len(sma) == len(eq_curve):
+                        plt.plot(sma, label='SMA', color='orange')
+                # Overlay regime if available
+                if isinstance(regime_series, dict) and ticker in regime_series:
+                    regimes = regime_series.get(ticker)
+                    for i, regime in enumerate(regimes):
+                        if regime == 'uptrend':
+                            plt.axvspan(i, i+1, color='green', alpha=0.1)
+                        elif regime == 'downtrend':
+                            plt.axvspan(i, i+1, color='red', alpha=0.1)
+                # Overlay trades if available
+                if isinstance(trade_log, pd.DataFrame):
+                    ticker_trades = trade_log[trade_log['Ticker'] == ticker] if 'Ticker' in trade_log.columns else trade_log[trade_log['ticker'] == ticker]
+                    for idx, trade in ticker_trades.iterrows():
+                        entry = trade.get('EntryTime', '')
+                        entry_price = trade.get('EntryPrice', '')
+                        exit = trade.get('ExitTime', '')
+                        exit_price = trade.get('ExitPrice', '')
+                        if entry is not None and entry_price is not None:
+                            plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if idx == 0 else "")
+                        if exit is not None and exit_price is not None:
+                            plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if idx == 0 else "")
+                plt.legend(loc='best', frameon=True)
+                plt.title(f'Trade-Level Chart: {ticker}')
+            else:
+                # Fallback: plot a placeholder chart
+                plt.plot([0, 1], [0, 1], color='#cccccc', linestyle='--')
+                plt.title(f'Trade-Level Chart: {ticker} (No Data)')
+            plt.tight_layout()
+            plt.savefig(chart_path)
+            plt.close()
+            # Embed in Markdown
+            md_lines.append(f"\n## Trade-Level Chart: {ticker}\n")
+            md_lines.append(f"![Trade-Level Chart for {ticker}]({chart_path})\n")
+
     # Write to Markdown file
     md_path = "reports/portfolio_report.md"
     with open(md_path, "w", encoding="utf-8") as f:
@@ -456,5 +540,14 @@ def plot_parameter_sensitivity(eq1, eq2, label1, label2, save_path="plots/parame
     plt.ylabel('Equity')
     plt.legend()
     plt.tight_layout()
-    plt.savefig(save_path)
+    abs_save_path = os.path.abspath(save_path)
+    plt.savefig(abs_save_path)
     plt.close()
+
+def regime_color(regime):
+    if regime == 'uptrend':
+        return '#34C759'
+    elif regime == 'downtrend':
+        return '#FF3B30'
+    else:
+        return '#808080'

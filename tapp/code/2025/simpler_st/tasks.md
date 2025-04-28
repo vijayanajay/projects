@@ -8,16 +8,6 @@
 
 ## Tasks and Progress (TODO)
 
-### 12.4 Slippage, Commissions, Real-World Execution
-- Incorporate transaction cost assumptions (slippage, commissions) into backtest and show net PnL after costs.
-- Acceptance: Report states cost assumptions and net results; user can change cost parameters.
-- Status: Pending
-
-### 12.5 Visuals: Trade Markups on Charts
-- Generate annotated price charts for each ticker, marking trade entries/exits, SMA crossovers, and regime overlays.
-- Acceptance: At least one sample chart per ticker with clear trade and regime annotation.
-- Status: Pending
-
 ### 12.6 Volatility, Volume, and Additional Indicators
 - Display volatility (e.g., ATR), volume at trade entry, and any other indicator relevant to the strategy.
 - Acceptance: Each trade log entry includes ATR/volume at entry; summary stats are provided.
@@ -46,6 +36,7 @@
 ---
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
+- All tasks up to 12.5 are complete as of 2025-04-29. See below for details:
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
@@ -55,6 +46,8 @@
   - Acceptance: Table or chart shows portfolio vs. benchmark returns for the same period.
   - Status: Complete
   - Implemented: Markdown report now includes a "Benchmark Comparison" section with a static image chart and table comparing portfolio and benchmark returns, following Kalish Nadh's Markdown visualization philosophy. TDD test added and all tests pass. See report_generator.py and tests/test_report_generation.py for details.
+- [x] Task 12.4: Slippage, Commissions, Real-World Execution (2025-04-28)
+  - Incorporated transaction cost assumptions (slippage, commissions) into all backtest logic using a generic utility function. All strategies and trade logs now reflect net PnL after costs. The report states cost assumptions and net results, and users can configure cost parameters. All changes are TDD-verified with new tests in tests/test_transaction_costs.py. Legacy tests and report logic updated for new cost handling and reporting. No further action pending.
 - [x] Task 8: Specify Backtest Timeframe and Frequency (2025-04-28)
   - Added start_date, end_date, and frequency fields to config.json.
   - Updated data fetching and backtest logic to use these fields.
@@ -109,13 +102,16 @@
 - [x] Log algorithmic rationale at each transaction for report (trade log now includes a human-readable rationale string for each trade; TDD, minimal code, 2025-04-27)
 - [x] Visualize metric distributions and highlight outliers in report (Added chart to report visualizing performance metric distributions (e.g., returns) and highlighting outliers in red, with annotation and legend. Implemented using TDD and minimal code in report_generator.py and tests/test_report_generation.py. All tests pass and feature is robust to headless environments, 2025-04-27)
 - [x] Analyst Notes & Improvement Suggestions section:
-  - 9.1: Designed a visually distinct notes section in the report template with a dedicated area for analyst notes and suggestions. (TDD, minimal code, 2025-04-27)
-  - 9.2: Confirmed section is visible and clearly marked in the report. Editable fields not required per user. (2025-04-27)
-- [x] Implemented portfolio-level backtest function (portfolio_backtest) in tech_analysis/backtest.py: Accepts all stock data, iterates over time, evaluates buy/hold/sell for all stocks, prefers buy if signal and cash available, allocates position size (configurable), no short selling logic, updates holdings/cash, and logs each trade with rationale. Fully TDD-compliant and minimal code added. (2025-04-27)
+  - 9.1: Designed a visually distinct notes section in the report (2025-04-27)
 - [x] Task 11: Add Benchmark Comparison (2025-04-28)
   - Added benchmark equity curve and metrics to performance calculation and report.
   - Updated Markdown report to include equity curve, drawdown, return distribution, and strategy-vs-benchmark charts.
   - All related tests pass (TDD, minimal code, 2025-04-28)
+- [x] Task 12.5: Visuals: Trade Markups on Charts (2025-04-28)
+  - Generate annotated price charts for each ticker, marking trade entries/exits, SMA crossovers, and regime overlays.
+  - Acceptance: At least one sample chart per ticker with clear trade and regime annotation.
+  - Status: Complete
+  - Implemented: Each ticker now has an annotated trade chart with SMA crossovers and regime overlays, saved as static images and embedded in the Markdown report. TDD test verifies presence and embedding for all tickers. See report_generator.py and tests/test_report_generation.py for implementation and test logic.
 - [x] All core features for the technical analysis reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)

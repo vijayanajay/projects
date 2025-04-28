@@ -193,13 +193,11 @@ if __name__ == "__main__":
     output_dir = "."
     print(f"[INFO] Running unified pipeline for all tickers in STOCKS_LIST...")
     try:
-        print("[DEBUG] About to call run_pipeline")
         run_pipeline(STOCKS_LIST, output_dir)
         print(f"[INFO] Unified portfolio report generated.")
     except Exception as e:
         print(f"[ERROR] Exception in main pipeline: {e}")
         traceback.print_exc()
-    print("[DEBUG] End of main block")
     print(f"[INFO] Pipeline completed. Unified PDF report should be generated in {output_dir}.")
     # --- Parameter Sensitivity/Robustness Analysis ---
     try:

@@ -41,12 +41,14 @@ def test_rsi_strategy_basic():
     oversold = 30
     # For this test, expect a buy when RSI crosses above oversold, sell when crosses below overbought
     # We'll just check that the function returns a list of trades with correct actions
-    trades = backtest.rsi_strategy_backtest(data[['close']], period, overbought, oversold)
-    print('DEBUG RSI TRADES:', trades)
-    assert isinstance(trades, list)
-    for trade in trades:
-        assert trade['action'] in ('buy', 'sell')
-        assert isinstance(trade['index'], int)
+    signals, trade_log = backtest.rsi_strategy_backtest(data[['close']], period, overbought, oversold)
+    print('DEBUG RSI TRADES:', signals, trade_log)
+    assert isinstance(signals, list)
+    assert all(isinstance(sig, dict) for sig in signals)
+    # Optionally: check trade_log structure
+    assert isinstance(trade_log, list)
+    for trade in trade_log:
+        assert 'entry_index' in trade and 'exit_index' in trade
 
 def test_trade_execution_and_log():
     """
@@ -104,17 +106,18 @@ def test_performance_metrics_calculation():
         {'entry_index': 4, 'exit_index': 5, 'entry_price': 130, 'exit_price': 120, 'pnl': -10}, # loss
     ]
     metrics = backtest.calculate_performance_metrics(equity_curve, trade_log)
-    # Check all required keys exist
+    # Check all required keys exist under 'strategy'
+    strat_metrics = metrics['strategy']
     for key in ['total_return', 'sharpe_ratio', 'max_drawdown', 'win_rate']:
-        assert key in metrics
+        assert key in strat_metrics
     # Check total return (final/initial - 1)
     expected_return = (140 / 100) - 1
-    assert abs(metrics['total_return'] - expected_return) < 1e-6
+    assert abs(strat_metrics['total_return'] - expected_return) < 1e-6
     # Check win rate (3/4)
-    assert abs(metrics['win_rate'] - 0.75) < 1e-6
+    assert abs(strat_metrics['win_rate'] - 0.75) < 1e-6
     # Sharpe ratio and drawdown: just check they are floats (detailed checks can be added later)
-    assert isinstance(metrics['sharpe_ratio'], float)
-    assert isinstance(metrics['max_drawdown'], float)
+    assert isinstance(strat_metrics['sharpe_ratio'], float) or hasattr(strat_metrics['sharpe_ratio'], '__float__')
+    assert isinstance(strat_metrics['max_drawdown'], float) or hasattr(strat_metrics['max_drawdown'], '__float__')
 
 def test_export_backtest_results_for_report(tmp_path):
     """
@@ -293,3 +296,30 @@ def test_timeframe_and_frequency_applied():
         diffs = df.index.to_series().diff().dropna()
         assert all(d.total_seconds() >= 86400 for d in diffs), "Some intervals are less than 1 day"
     # If more granular freq, add more checks as needed
+
+def test_benchmark_comparison():
+    """
+    Test that the backtest engine can compare strategy performance to a benchmark (e.g., buy-and-hold).
+    """
+    # Simulate strategy and benchmark equity curves
+    strategy_curve = [100, 110, 120, 115, 130, 120, 140]
+    benchmark_curve = [100, 105, 110, 120, 125, 130, 135]  # e.g., buy-and-hold
+    trade_log = [
+        {'entry_index': 0, 'exit_index': 1, 'entry_price': 100, 'exit_price': 110, 'pnl': 10},
+        {'entry_index': 1, 'exit_index': 2, 'entry_price': 110, 'exit_price': 120, 'pnl': 10},
+        {'entry_index': 2, 'exit_index': 4, 'entry_price': 120, 'exit_price': 130, 'pnl': 10},
+        {'entry_index': 4, 'exit_index': 5, 'entry_price': 130, 'exit_price': 120, 'pnl': -10},
+    ]
+    # Call the updated metrics function
+    metrics = backtest.calculate_performance_metrics(strategy_curve, trade_log, benchmark_equity_curve=benchmark_curve)
+    # Check that both strategy and benchmark metrics are present
+    assert 'strategy' in metrics
+    assert 'benchmark' in metrics
+    for key in ['total_return', 'sharpe_ratio', 'max_drawdown', 'win_rate']:
+        assert key in metrics['strategy']
+        assert key in metrics['benchmark']
+    # Check that strategy and benchmark returns are as expected
+    expected_strategy_return = (140 / 100) - 1
+    expected_benchmark_return = (135 / 100) - 1
+    assert abs(metrics['strategy']['total_return'] - expected_strategy_return) < 1e-6
+    assert abs(metrics['benchmark']['total_return'] - expected_benchmark_return) < 1e-6

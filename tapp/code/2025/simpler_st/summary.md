@@ -13,6 +13,9 @@ This file provides a clear, single-point reference to understand the structure a
 - `end_date`: End of backtest (YYYY-MM-DD)
 - `frequency`: Data frequency/interval (e.g., '1d', '1h')
 
+**Update:**
+- Now includes `commission` and `slippage` fields at both the root and within `strategy_params` for flexible transaction cost modeling.
+
 ---
 
 ## Markdown Files in This Project
@@ -25,10 +28,15 @@ This file provides a clear, single-point reference to understand the structure a
 ---
 
 ## File: report_generator.py
-**Purpose:** Generates the technical analysis Markdown report, including plots, metrics, regime summaries, trade logs, and now an analyst notes section. The Markdown report includes a cover page, table of contents, and section headers (Performance Metrics, Regime Summary, Strategy Parameters, Trade Log, Analyst Notes, Parameter Sensitivity Analysis) for clarity and professional presentation. All charts use a consistent color palette and legends are always present, with section headers in bold for visual standardization. The trade log section robustly displays trade entry/exit data and PnL for each trade.
+**Purpose:** Generates the technical analysis Markdown report, including plots, metrics, regime summaries, trade logs, and analyst notes.
+
+**Update:**
+- The "Assumptions: Slippage and Commission" section now reports the actual values used and clarifies their effect on trade execution and net results.
+- All reported PnL and metrics are net of costs.
+- **(2025-04-28):** Trade-level annotated charts are now generated and embedded for each ticker, with regime overlays and SMA crossover annotations. Charts are saved as static images and referenced in the Markdown report, following Kalish Nadh's Markdown visualization philosophy. TDD test verifies chart presence for all tickers. See tests/test_report_generation.py for test logic.
 
 ### Report Generation
-- `generate_markdown_report(stats, bt)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images.
+- `generate_markdown_report(stats, bt)`: Generates a detailed technical analysis report as Markdown at `reports/portfolio_report.md`. Includes cover, table of contents, performance metrics, trade log, regime summary, strategy parameters, analyst notes, rationale summary, and embedded charts as images. Now generates and embeds a trade-level chart for each ticker, with regime overlays and SMA crossover annotations (2025-04-28).
 - `plot_parameter_sensitivity(equity_curve_a, equity_curve_b, label_a, label_b)`: Plots and saves a static image comparing equity curves for two different parameter sets, used for sensitivity/robustness analysis. (Added 2025-04-28)
 
 ### Workflow
@@ -55,6 +63,22 @@ This file provides a clear, single-point reference to understand the structure a
 - `correlate_performance_with_regimes(trade_log)`: Groups trade results by detected market regime, summarizing mean PnL and trade count per regime. Supports regime-aware performance analysis.
   - Updated (2025-04-28): Now expects trade_log as a list of dicts, not a DataFrame. All callers must convert DataFrames using .to_dict('records') before passing. This ensures robust handling and avoids iteration errors. TDD test coverage in tests/test_report_generation.py.
 - `portfolio_backtest(data_dict, initial_cash=10000, position_size=100, strategy_params=None)`: Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging. Accepts a dict of ticker->DataFrame, uses PortfolioState for cash/holdings, and logs each completed trade (with action, qty, entry/exit, PnL, rationale, regime) for robust reporting and test compatibility. Initial cash and position size are now always sourced from the config file, and risk/position sizing logic is documented in the report. Returns the final state, trade log, and an explicit list of all assets traded (as `assets`). (Updated 2025-04-28)
+
+### Transaction Cost Utility
+- `apply_transaction_costs(entry_price, exit_price, commission, slippage)`: Adjusts entry/exit prices for slippage, deducts commission, and returns net PnL. Used by all strategies.
+
+### Backtest Functions
+- `sma_crossover_backtest_with_log(...)`: Now applies costs using the utility. Trade logs include net PnL, commission cost, and slippage-adjusted prices.
+- `rsi_strategy_backtest(...)`: Now accepts `strategy_params` and applies transaction costs via the utility. Trade logs reflect all costs.
+- `portfolio_backtest(...)`: Trade execution and logging use the same utility for cost handling.
+
+---
+
+## Transaction Costs (Generic Handling)
+**Update 2025-04-28:**
+- All backtest strategies (SMA, RSI, portfolio, etc.) now apply slippage and commission using a generic utility function `apply_transaction_costs(entry_price, exit_price, commission, slippage)` in `tech_analysis/backtest.py`.
+- This ensures that every trade, regardless of strategy, is cost-aware and net PnL is always reported after transaction costs.
+- Commission and slippage parameters are configurable in `config.json` (both at root and in `strategy_params`).
 
 ---
 
@@ -121,10 +145,18 @@ This file provides a clear, single-point reference to understand the structure a
 
 ---
 
+## File: tests/test_transaction_costs.py
+**Purpose:** Dedicated tests for transaction cost logic.
+- Unit tests for the utility function ensure correct adjustment of prices and PnL.
+- Integration tests for SMA and RSI strategies verify that costs are always applied and reflected in trade logs.
+
+---
+
 ## Changelog
 
 - [x] 2025-04-28: Task 11 (Benchmark Comparison) complete. `tech_analysis/backtest.py` and `report_generator.py` updated to support benchmark equity curve, metrics, and strategy-vs-benchmark chart in Markdown report. All relevant tests pass. No new files or modules introduced; no changes to file responsibilities. See report_generator.py for Markdown/report logic and backtest.py for metrics logic.
 - [x] 2025-04-28: Task 12.2 (Position Sizing & Risk Management Details) complete. The report's "Risk and Position Sizing Logic" section now explicitly documents % risked per trade, allocation rule, and max simultaneous positions (defaulting to cash-limited if not set). All changes are TDD-verified and minimal. Tests updated to assert new report format. No further action pending.
 - [x] 2025-04-28: Task 12.3 (Benchmark Comparison) complete. Markdown report now includes a "Benchmark Comparison" section with a static image chart and table comparing portfolio and benchmark returns, following Kalish Nadh's Markdown visualization philosophy. TDD test added and all tests pass. See report_generator.py and tests/test_report_generation.py for details.
+- [x] 2025-04-28: Transaction cost logic (slippage, commission) made generic and applied to all strategies. Utility function and tests added. Report and config updated. All changes TDD-verified.
 
 **End of summary. Update this file as you add new modules or major features.**

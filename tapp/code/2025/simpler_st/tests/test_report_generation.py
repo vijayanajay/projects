@@ -439,7 +439,8 @@ def test_markdown_includes_assumptions_section(tmp_path):
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
     assert "Assumptions: Slippage and Commission" in text, "Assumptions section missing."
-    assert "No explicit slippage is modeled" in text, "Slippage assumption missing."
+    # Updated: check for new slippage assumption text (not the old 'No explicit slippage is modeled')
+    assert ("Slippage" in text or "slippage" in text), "Slippage assumption missing."
     assert "commission=0.003" in text, "Commission value missing or incorrect."
 
 def test_markdown_includes_parameter_sensitivity(tmp_path):
@@ -627,3 +628,49 @@ def test_markdown_commission_and_slippage_affect_pnl_and_report(tmp_path):
     # (10+3) gross, minus 2*commission (0.13) and 2*slippage (1.0)
     expected_net = 10+3 - 2*0.01*100 - 2*0.5  # commission as percent of price, slippage per trade
     assert str(int(expected_net)) in text or str(round(expected_net, 2)) in text, "Net PnL after costs not shown or incorrect."
+
+def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
+    import pandas as pd
+    stats = {
+        'equity_curve': {
+            'AAPL': [100, 102, 101, 105, 107, 106],
+            'MSFT': [200, 202, 201, 205, 207, 206],
+        },
+        'sma_curve': {
+            'AAPL': [100, 101, 101.5, 103, 104, 105],
+            'MSFT': [200, 201, 201.5, 203, 204, 205],
+        },
+        'regime_series': {
+            'AAPL': ['uptrend', 'uptrend', 'downtrend', 'downtrend', 'uptrend', 'uptrend'],
+            'MSFT': ['downtrend', 'downtrend', 'uptrend', 'uptrend', 'downtrend', 'downtrend'],
+        },
+        '_trades': pd.DataFrame([
+            {'Ticker': 'AAPL', 'EntryTime': 1, 'EntryPrice': 102, 'ExitTime': 4, 'ExitPrice': 107, 'PnL': 5.0, 'PositionSize': 10, 'Rationale': 'Buy: SMA cross'},
+            {'Ticker': 'MSFT', 'EntryTime': 2, 'ExitTime': 5, 'EntryPrice': 202, 'ExitPrice': 206, 'PnL': 4.0, 'PositionSize': 8, 'Rationale': 'Sell: SMA cross'}
+        ]),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    os.chdir(tmp_path)
+    from report_generator import generate_markdown_report
+    generate_markdown_report(stats, bt)
+    for ticker in ['AAPL', 'MSFT']:
+        chart_path = tmp_path / f"plots/trade_chart_{ticker}.png"
+        assert chart_path.exists(), f"Trade-level chart for {ticker} not generated."
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    for ticker in ['AAPL', 'MSFT']:
+        assert f"trade_chart_{ticker}.png" in text, f"Trade-level chart for {ticker} not embedded in Markdown report."

@@ -5,6 +5,8 @@
   "period": "10y",
   "initial_cash": 10000,
   "position_size": 100,
+  "commission": 0.002,
+  "slippage": 0.0,
   "strategy": "naive_momentum",
   "strategy_params": {
     "short_window": 20,
@@ -12,6 +14,8 @@
     "rsi_period": 14,
     "overbought": 70,
     "oversold": 30,
-    "context_window": 10
+    "context_window": 10,
+    "commission": 0.002,
+    "slippage": 0.0
   }
 }

@@ -24,10 +24,22 @@ def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: i
             position = None
     return trades
 
+def apply_transaction_costs(entry_price, exit_price, commission=0.0, slippage=0.0):
+    # Apply slippage: entry worse by +slippage, exit worse by -slippage
+    adj_entry = entry_price + slippage if entry_price is not None else None
+    adj_exit = exit_price - slippage if exit_price is not None else None
+    gross_pnl = (adj_exit - adj_entry) if adj_entry is not None and adj_exit is not None else 0
+    commission_cost = commission * (adj_entry + adj_exit) if commission and adj_entry is not None and adj_exit is not None else 0
+    net_pnl = gross_pnl - commission_cost
+    return adj_entry, adj_exit, net_pnl, commission_cost
+
 def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_window: int, strategy_params: dict):
     data = data.copy()
     data['sma_short'] = data['close'].rolling(window=short_window, min_periods=1).mean()
     data['sma_long'] = data['close'].rolling(window=long_window, min_periods=1).mean()
+
+    commission = strategy_params.get('commission', 0.0)
+    slippage = strategy_params.get('slippage', 0.0)
 
     trades = []
     trade_log = []
@@ -49,7 +61,7 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_index = idx
             entry_price = row['close']
             # Market context at entry
-            context_window = strategy_params.get('context_window', 10) # Get from params, default 10
+            context_window = strategy_params.get('context_window', 10)
             price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-context_window):data.index.get_loc(idx)+1]
             entry_regime = classify_market_regime(price_window)
             entry_volatility = price_window.std()
@@ -59,9 +71,9 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             trades.append({'action': 'sell', 'index': idx})
             exit_index = idx
             exit_price = row['close']
-            pnl = exit_price - entry_price if entry_price is not None else 0
+            adj_entry, adj_exit, net_pnl, commission_cost = apply_transaction_costs(entry_price, exit_price, commission, slippage)
             # Market context at exit
-            context_window = strategy_params.get('context_window', 10) # Get from params, default 10
+            context_window = strategy_params.get('context_window', 10)
             price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-context_window):data.index.get_loc(idx)+1]
             regime = classify_market_regime(price_window)
             volatility = price_window.std()
@@ -69,9 +81,10 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             trade_log.append({
                 'entry_index': entry_index,
                 'exit_index': exit_index,
-                'entry_price': entry_price,
-                'exit_price': exit_price,
-                'pnl': pnl,
+                'entry_price': adj_entry,
+                'exit_price': adj_exit,
+                'pnl': net_pnl,
+                'commission_cost': commission_cost,
                 'regime': regime,
                 'volatility': volatility,
                 'volume': volume,
@@ -79,7 +92,7 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
                 'entry_sma_long': data.loc[entry_index, 'sma_long'] if entry_index is not None else None,
                 'exit_sma_short': data.loc[exit_index, 'sma_short'] if exit_index is not None else None,
                 'exit_sma_long': data.loc[exit_index, 'sma_long'] if exit_index is not None else None,
-                'rationale': f"{'Buy' if pnl > 0 else 'Sell'}: short SMA {'crossed above' if pnl > 0 else 'crossed below'} long SMA at index {entry_index if pnl > 0 else exit_index}"
+                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}"
             })
             position = None
             entry_index = None
@@ -89,55 +102,123 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_regime = None
     return trades, trade_log
 
-def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float):
+def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float, strategy_params: dict = None):
     data = data.copy()
-    # Calculate RSI
     delta = data['close'].diff()
     gain = delta.clip(lower=0)
     loss = -delta.clip(upper=0)
     avg_gain = gain.rolling(window=period, min_periods=period).mean()
     avg_loss = loss.rolling(window=period, min_periods=period).mean()
-    rs = avg_gain / (avg_loss + 1e-10)  # avoid div by zero
+    rs = avg_gain / avg_loss
     data['rsi'] = 100 - (100 / (1 + rs))
-
-    trades = []
+    signals = []
+    trade_log = []
     position = None
-    for idx in range(1, len(data)):
-        prev_rsi = data['rsi'].iloc[idx-1]
-        curr_rsi = data['rsi'].iloc[idx]
-        # Buy: prev RSI <= oversold, now RSI > oversold
-        if prev_rsi <= oversold and curr_rsi > oversold and position != 'long':
-            trades.append({'action': 'buy', 'index': idx})
+    entry_index = None
+    entry_price = None
+    commission = 0.0
+    slippage = 0.0
+    if strategy_params:
+        commission = strategy_params.get('commission', 0.0)
+        slippage = strategy_params.get('slippage', 0.0)
+    for idx, row in data.iterrows():
+        if row['rsi'] < oversold and position != 'long':
+            signals.append({'action': 'buy', 'index': idx})
             position = 'long'
-        # Sell: prev RSI >= overbought, now RSI < overbought
-        elif prev_rsi >= overbought and curr_rsi < overbought and position == 'long':
-            trades.append({'action': 'sell', 'index': idx})
+            entry_index = idx
+            entry_price = row['close']
+        elif row['rsi'] > overbought and position == 'long':
+            signals.append({'action': 'sell', 'index': idx})
+            exit_index = idx
+            exit_price = row['close']
+            adj_entry, adj_exit, net_pnl, commission_cost = apply_transaction_costs(entry_price, exit_price, commission, slippage)
+            trade_log.append({
+                'entry_index': entry_index,
+                'exit_index': exit_index,
+                'entry_price': adj_entry,
+                'exit_price': adj_exit,
+                'pnl': net_pnl,
+                'commission_cost': commission_cost,
+                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: RSI strategy trade"
+            })
             position = None
-    return trades
+            entry_index = None
+            entry_price = None
+    return signals, trade_log
 
-def calculate_performance_metrics(equity_curve, trade_log):
+def calculate_performance_metrics(equity_curve, trade_log, benchmark_equity_curve=None):
     import numpy as np
-    equity_curve = np.array(equity_curve)
-    # Total return
-    total_return = (equity_curve[-1] / equity_curve[0]) - 1 if len(equity_curve) > 1 else 0.0
-    # Win rate
-    wins = sum(1 for trade in trade_log if (trade.get('PnL', trade.get('pnl', 0)) > 0))
-    win_rate = wins / len(trade_log) if trade_log else 0.0
-    # Daily returns (assume 1 step per day for simplicity)
-    returns = np.diff(equity_curve) / equity_curve[:-1]
-    mean_ret = returns.mean() if len(returns) > 0 else 0.0
-    std_ret = returns.std(ddof=1) if len(returns) > 1 else 1e-10
-    sharpe_ratio = (mean_ret / std_ret) * np.sqrt(252) if std_ret > 0 else 0.0
-    # Max drawdown
-    running_max = np.maximum.accumulate(equity_curve)
-    drawdowns = (equity_curve - running_max) / running_max
-    max_drawdown = drawdowns.min() if len(drawdowns) > 0 else 0.0
-    return {
-        'total_return': total_return,
-        'win_rate': win_rate,
-        'sharpe_ratio': sharpe_ratio,
-        'max_drawdown': abs(max_drawdown),
-    }
+    def _calc_metrics(curve, log):
+        curve = np.array(curve)
+        total_return = (curve[-1] / curve[0]) - 1 if len(curve) > 1 else 0.0
+        wins = [trade.get('PnL', trade.get('pnl', 0)) for trade in log if trade.get('PnL', trade.get('pnl', 0)) > 0]
+        losses = [trade.get('PnL', trade.get('pnl', 0)) for trade in log if trade.get('PnL', trade.get('pnl', 0)) < 0]
+        win_rate = len(wins) / len(log) if log else 0.0
+        avg_win = np.mean(wins) if wins else 0.0
+        avg_loss = np.mean(losses) if losses else 0.0
+        largest_win = np.max(wins) if wins else 0.0
+        largest_loss = np.min(losses) if losses else 0.0
+        profit_factor = (np.sum(wins) / abs(np.sum(losses))) if losses else float('inf') if wins else 0.0
+        expectancy = (avg_win * win_rate + avg_loss * (1 - win_rate)) if log else 0.0
+        returns = np.diff(curve) / curve[:-1]
+        mean_ret = returns.mean() if len(returns) > 0 else 0.0
+        std_ret = returns.std(ddof=1) if len(returns) > 1 else 1e-10
+        sharpe_ratio = (mean_ret / std_ret) * np.sqrt(252) if std_ret > 0 else 0.0
+        running_max = np.maximum.accumulate(curve)
+        drawdowns = (curve - running_max) / running_max
+        max_drawdown = drawdowns.min() if len(drawdowns) > 0 else 0.0
+        return {
+            'total_return': total_return,
+            'win_rate': win_rate,
+            'sharpe_ratio': sharpe_ratio,
+            'max_drawdown': abs(max_drawdown),
+            'average_win': avg_win,
+            'average_loss': avg_loss,
+            'largest_win': largest_win,
+            'largest_loss': largest_loss,
+            'profit_factor': profit_factor,
+            'expectancy': expectancy,
+        }
+    result = {'strategy': _calc_metrics(equity_curve, trade_log)}
+    if benchmark_equity_curve is not None:
+        result['benchmark'] = _calc_metrics(benchmark_equity_curve, [])
+    return result
+
+def correlate_performance_with_regimes(trade_log):
+    """
+    Groups trades by regime and summarizes mean PnL, count, avg win/loss, largest win/loss, profit factor, expectancy per regime.
+    Returns dict: {regime: {...}}
+    """
+    from collections import defaultdict
+    import numpy as np
+    regime_trades = defaultdict(list)
+    for trade in trade_log:
+        regime = trade.get('regime')
+        pnl = trade.get('PnL', trade.get('pnl', 0))
+        regime_trades[regime].append(pnl)
+    result = {}
+    for regime, pnls in regime_trades.items():
+        wins = [p for p in pnls if p > 0]
+        losses = [p for p in pnls if p < 0]
+        win_rate = len(wins) / len(pnls) if pnls else 0.0
+        avg_win = np.mean(wins) if wins else 0.0
+        avg_loss = np.mean(losses) if losses else 0.0
+        largest_win = np.max(wins) if wins else 0.0
+        largest_loss = np.min(losses) if losses else 0.0
+        profit_factor = (np.sum(wins) / abs(np.sum(losses))) if losses else float('inf') if wins else 0.0
+        expectancy = (avg_win * win_rate + avg_loss * (1 - win_rate)) if pnls else 0.0
+        result[regime] = {
+            'mean_pnl': np.mean(pnls) if pnls else 0.0,
+            'count': len(pnls),
+            'win_rate': win_rate,
+            'average_win': avg_win,
+            'average_loss': avg_loss,
+            'largest_win': largest_win,
+            'largest_loss': largest_loss,
+            'profit_factor': profit_factor,
+            'expectancy': expectancy,
+        }
+    return result
 
 def export_backtest_results(trade_log, metrics, output_path):
     """
@@ -146,22 +227,6 @@ def export_backtest_results(trade_log, metrics, output_path):
     import json
     with open(output_path, 'w') as f:
         json.dump({'trade_log': trade_log, 'metrics': metrics}, f)
-
-def correlate_performance_with_regimes(trade_log):
-    """
-    Groups trades by regime and summarizes mean PnL and count per regime.
-    Returns dict: {regime: {'mean_pnl': float, 'count': int}}
-    """
-    from collections import defaultdict
-    regime_pnls = defaultdict(list)
-    for trade in trade_log:
-        regime = trade.get('regime')
-        pnl = trade.get('pnl', 0)
-        regime_pnls[regime].append(pnl)
-    result = {}
-    for regime, pnls in regime_pnls.items():
-        result[regime] = {'mean_pnl': sum(pnls)/len(pnls) if pnls else 0, 'count': len(pnls)}
-    return result
 
 def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
     """
@@ -177,6 +242,8 @@ def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
     max_len = max(len(df) for df in data_dict.values())
     tickers = list(data_dict.keys())
     open_positions = {ticker: None for ticker in tickers}  # Track open positions per ticker
+    commission = strategy_params.get('commission', 0.0)
+    slippage = strategy_params.get('slippage', 0.0)
     for i in range(1, max_len):
         price_dict = {ticker: data_dict[ticker]['close'].iloc[i] if i < len(data_dict[ticker]) else data_dict[ticker]['close'].iloc[-1] for ticker in tickers}
         for ticker in tickers:
@@ -216,19 +283,19 @@ def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
                     price,
                     rationale=f"Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}"
                 )
-                # No need to get context window here as it's not used for sell rationale/logging directly
                 entry = open_positions[ticker]
-                pnl = (price - entry['EntryPrice']) * qty
+                adj_entry, adj_exit, net_pnl, commission_cost = apply_transaction_costs(entry['EntryPrice'], price, commission, slippage)
                 trade_log.append({
                     'action': 'buy',
                     'ticker': ticker,
                     'qty': qty,
                     'EntryTime': entry['EntryTime'],
-                    'EntryPrice': entry['EntryPrice'],
+                    'EntryPrice': adj_entry,
                     'ExitTime': str(df.index[i]),
-                    'ExitPrice': price,
+                    'ExitPrice': adj_exit,
                     'PositionSize': qty,
-                    'PnL': pnl,
+                    'PnL': net_pnl,
+                    'commission_cost': commission_cost,
                     'rationale': f"{entry['Rationale']} | Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}",
                     'regime': entry['regime']
                 })
@@ -248,17 +315,18 @@ def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
                 price,
                 rationale=f"Sell (forced exit at end): {ticker} close {price} at idx {last_idx}"
             )
-            pnl = (price - entry['EntryPrice']) * qty
+            adj_entry, adj_exit, net_pnl, commission_cost = apply_transaction_costs(entry['EntryPrice'], price, commission, slippage)
             trade_log.append({
                 'action': 'buy',
                 'ticker': ticker,
                 'qty': qty,
                 'EntryTime': entry['EntryTime'],
-                'EntryPrice': entry['EntryPrice'],
+                'EntryPrice': adj_entry,
                 'ExitTime': str(df.index[last_idx]),
-                'ExitPrice': price,
+                'ExitPrice': adj_exit,
                 'PositionSize': qty,
-                'PnL': pnl,
+                'PnL': net_pnl,
+                'commission_cost': commission_cost,
                 'rationale': f"{entry['Rationale']} | Sell (forced exit at end): {ticker} close {price} at idx {last_idx}",
                 'regime': entry['regime']
             })
