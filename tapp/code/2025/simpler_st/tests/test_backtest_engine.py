@@ -377,3 +377,31 @@ def test_summary_stats_include_atr_and_volume():
         for stat in ['mean', 'min', 'max']:
             assert stat in stats[field], f"{field} summary must include {stat}"
             assert isinstance(stats[field][stat], (int, float, np.floating, np.integer)), f"{field} {stat} must be numeric"
+
+def test_export_backtest_results_serializes_numpy_types(tmp_path):
+    """
+    Test that export_backtest_results correctly serializes NumPy types in trade_log and metrics.
+    Should not raise TypeError: Object of type int64/float64 is not JSON serializable.
+    """
+    import numpy as np
+    import json
+    from tech_analysis import backtest
+    # Create trade_log and metrics with NumPy types
+    trade_log = [
+        {'entry_index': np.int64(0), 'exit_index': np.int64(1), 'pnl': np.float64(10.5)}
+    ]
+    metrics = {
+        'total_return': np.float64(0.123),
+        'num_trades': np.int64(1)
+    }
+    output_file = tmp_path / "backtest_export_numpy.json"
+    # Should not raise
+    backtest.export_backtest_results(trade_log, metrics, str(output_file))
+    # Check file exists and loads
+    with open(output_file, 'r') as f:
+        result = json.load(f)
+    assert result['trade_log'][0]['entry_index'] == 0
+    assert result['trade_log'][0]['exit_index'] == 1
+    assert result['trade_log'][0]['pnl'] == 10.5
+    assert result['metrics']['total_return'] == 0.123
+    assert result['metrics']['num_trades'] == 1
