@@ -703,11 +703,15 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
     # --- Regime Barplot (always generate if regime_series present) ---
     regime_barplot_path = os.path.join('plots', 'regime_barplot.png')
     abs_regime_barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
+    regime_boxplot_path = os.path.join('plots', 'regime_boxplot.png')
+    abs_regime_boxplot_path = os.path.join(plots_dir, 'regime_boxplot.png')
     regime_series = stats.get('regime_series')
+    trades = stats.get('trades')
+
+    # Generate regime barplot (frequency)
     if regime_series is not None and len(regime_series) > 0:
         if not isinstance(regime_series, pd.Series):
             regime_series = pd.Series(regime_series)
-        # Use value_counts() directly, as per Pandas idiom
         regime_counts = regime_series.value_counts()
         plt.figure(facecolor='white')
         regime_counts.plot(kind='bar', color=['#1f77b4', '#ff7f0e', '#2ca02c'])
@@ -715,44 +719,54 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
         plt.xlabel('Regime')
         plt.ylabel('Number of Days')
         plt.tight_layout()
-        if not os.path.exists(abs_regime_barplot_path):
-            plt.figure(figsize=(6, 3))
-            plt.text(0.5, 0.5, 'No regime data', ha='center', va='center')
-            plt.axis('off')
-            plt.savefig(abs_regime_barplot_path)
+        plt.savefig(abs_regime_barplot_path)
+        plt.close()
+    else:
+        # If no data, generate placeholder
+        plt.figure(figsize=(6, 3))
+        plt.text(0.5, 0.5, 'No regime data', ha='center', va='center')
+        plt.axis('off')
+        plt.savefig(abs_regime_barplot_path)
+        plt.close()
+
+    # Generate regime boxplot (PnL distribution per regime)
+    has_boxplot = False
+    if trades and isinstance(trades, list) and len(trades) > 0:
+        trades_df = pd.DataFrame(trades)
+        if 'regime' in trades_df.columns and ('PnL' in trades_df.columns or 'pnl' in trades_df.columns):
+            ycol = 'PnL' if 'PnL' in trades_df.columns else 'pnl'
+            plt.figure(figsize=(5,3), facecolor='white')
+            sns.boxplot(data=trades_df, x='regime', y=ycol, hue='regime', palette='Set2', legend=False)
+            plt.title('PnL Distribution by Regime')
+            plt.xlabel('Regime')
+            plt.ylabel('PnL')
+            plt.tight_layout()
+            plt.savefig(abs_regime_boxplot_path)
             plt.close()
-        md_lines.append(f"\n## Regime Breakdown\n")
-        md_lines.append(f"![]({regime_barplot_path})\n")
-        # Always generate and embed regime boxplot
-        regime_boxplot_path = os.path.join(plots_dir, 'regime_boxplot.png')
-        if os.path.exists(abs_regime_barplot_path):
-            # Use same data as for barplot; fallback to placeholder if needed
-            trades = stats.get('trades')
-            if trades and isinstance(trades, list) and len(trades) > 0:
-                trades_df = pd.DataFrame(trades)
-                if 'regime' in trades_df.columns and ('PnL' in trades_df.columns or 'pnl' in trades_df.columns):
-                    ycol = 'PnL' if 'PnL' in trades_df.columns else 'pnl'
-                    plt.figure(figsize=(5,3), facecolor='white')
-                    sns.boxplot(data=trades_df, x='regime', y=ycol, hue='regime', palette='Set2', legend=False)
-                    plt.title('PnL Distribution by Regime')
-                    plt.xlabel('Regime')
-                    plt.ylabel('PnL')
-                    plt.tight_layout()
-                    plt.savefig(regime_boxplot_path)
-                    plt.close()
-                else:
-                    plt.figure(figsize=(6, 3))
-                    plt.text(0.5, 0.5, 'No regime PnL data', ha='center', va='center')
-                    plt.axis('off')
-                    plt.savefig(regime_boxplot_path)
-                    plt.close()
-            else:
-                plt.figure(figsize=(6, 3))
-                plt.text(0.5, 0.5, 'No regime PnL data', ha='center', va='center')
-                plt.axis('off')
-                plt.savefig(regime_boxplot_path)
-                plt.close()
-        md_lines.append(f"![](plots/regime_boxplot.png)\n")
+            has_boxplot = True
+    if not has_boxplot:
+        plt.figure(figsize=(6, 3))
+        plt.text(0.5, 0.5, 'No regime PnL data', ha='center', va='center')
+        plt.axis('off')
+        plt.savefig(abs_regime_boxplot_path)
+        plt.close()
+
+    # Embed both images in Markdown, always, using standard helper
+    def embed_image(image_path):
+        # Always embed as ![](plots/filename.png) regardless of alt text
+        rel_path = os.path.relpath(image_path, reports_dir)
+        # If path starts with '../', convert to 'plots/filename.png'
+        if rel_path.startswith('..'):
+            rel_path = os.path.join('plots', os.path.basename(image_path))
+        elif not rel_path.startswith('plots'):
+            rel_path = os.path.join('plots', os.path.basename(image_path))
+        rel_path = rel_path.replace('\\','/')
+        return f"![]({rel_path})"
+
+    md_lines.append('## Regime Breakdown\n')
+    md_lines.append(f"{embed_image(abs_regime_barplot_path)}\n")
+    md_lines.append(f"{embed_image(abs_regime_boxplot_path)}\n")
+
     # Per-Ticker Trade-Level Charts
     tickers = stats.get('tickers')
     if tickers is not None:
