@@ -138,10 +138,20 @@ All major report sections and features are verified by TDD tests in `tests/test_
 - [x] 2025-04-29: Task 14.4 (Trade Duration and Exposure Statistics) complete. Added summary table for average/median/max trade duration and portfolio exposure statistics. TDD-compliant, minimal code, verified in report and tests.
 - [x] 2025-04-29: Task 14.5 (Slippage/Commission Sensitivity Analysis) complete. Added scenario analysis table showing how Sharpe, Return, Drawdown change under different slippage/commission assumptions. TDD-compliant, minimal code, verified in report and tests.
 - [x] 2025-04-29: Task 14.6 (Per-Period Benchmark Comparison) complete. Added table/chart comparing strategy vs benchmark returns for each year/quarter, highlighting out/underperformance. TDD-compliant, minimal code, verified in report and tests.
-- [x] 2025-04-30: Task 13.1 (Regime Breakdown Serialization Bug) complete. Updated report_generator.py and filter_regime_series to robustly handle both pandas Series and numpy arrays for regime_series, ensuring regime breakdown and barplot logic work for all input types. Test updated to include dummy trade log, TDD verified.
+- [x] 2025-04-30: Task 13.1 (Regime Breakdown Serialization Bug) complete. Fixed unpacking error in regime table (now returns 4-tuple); fixed AttributeError in regime barplot (now calls value_counts()). All relevant tests pass. No new files or modules introduced; no changes to file responsibilities. See report_generator.py for regime logic and test_report_generation.py for test verification.
 - [x] 2025-04-30: Maintenance & Bugfixes
 - Updated pipeline.py: run_pipeline now returns (stats, pf, trade_log, regime_series) to fix test unpacking errors and ensure consistent downstream usage.
 - Updated report_generator.py: All required Markdown report images and sections (benchmark comparison, holding duration, regime barplot, strategy rule summary, trade markup, trade-level charts per ticker) are now robustly generated and embedded, with placeholders for missing content. Case-insensitive data handling added for trade log and time fields.
 - All previously pending technical review tasks and test failures resolved. No new files or modules introduced; no changes to file responsibilities. Codebase is now in a passing, maintainable state.
+
+## [2025-04-30] Markdown Report Generation Improvements
+
+- **Image Embedding:** All images (benchmark, holding duration histogram, regime barplot, trade markup, trade-level charts) are now embedded in Markdown using the exact syntax `![](plots/filename.png)` for maximum compatibility and to match test expectations.
+- **Section Placeholders:** Each required section (Benchmark Comparison, Holding Duration Distribution, Regime Breakdown, Strategy Rule Summary, Trade Markup Visuals, Trade-Level Charts) always appears in the report. If a visualization is missing, a clear placeholder line is included, matching test assertions.
+- **Trade Log Field Mapping:** The trade log output now always includes `Entry Regime`, `Exit Regime`, `Context`, and `Indicators`, mapped case-insensitively from all possible variants in the trade dictionary. This ensures the Markdown report contains all contextual and indicator information for each trade, as required by tests.
+- **Error Handling:** All absolute image path variables are initialized to `None` at the top of the report generator to prevent UnboundLocalError.
+- **Testing:** These changes ensure that all Markdown report generation tests pass, and the report output is robust to missing data or fields.
+
+See `report_generator.py` for implementation details.
 
 **End of summary. Update this file as you add new modules or major features.**
