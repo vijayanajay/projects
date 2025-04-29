@@ -8,14 +8,6 @@
 
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-Diagnosed Root Cause: Code Bug: generate_markdown_report in report_generator.py incorrectly attempts to call .values on a pandas Series/NumPy array when calculating regime_counts.
-Evidence/Reasoning: The traceback for test_pipeline_generates_markdown_report, test_pipeline_uses_config_params, and test_regime_table_filters_short_runs consistently shows TypeError: 'numpy.ndarray' object is not callable at report_generator.py:686. The problematic line pd.Series(list(regime_series.values())).value_counts() indicates .values (a property returning an array) is being treated as a callable function ().
-Suggested Action: Simplify the code at report_generator.py:686. Replace regime_counts = pd.Series(list(regime_series.values())).value_counts() with the direct pandas method regime_counts = regime_series.value_counts() assuming regime_series is consistently a pandas Series at this point. Add type validation or conversion if regime_series might not be a Series.
-
-Diagnosed Root Cause: Test Bug / Code Inconsistency: Column name case mismatch for the trade heatmap generation. The test test_markdown_includes_trade_heatmap provides _trades DataFrame columns 'Ticker', 'Regime', 'PnL', but the check in report_generator.py:470 expects lowercase 'ticker', 'regime', 'pnl'.
-Evidence/Reasoning: The test fails because the heatmap image file plots/trade_heatmap.png is not created. Code inspection reveals the condition all(col in trades_df.columns for col in ['ticker', 'regime', 'pnl']) fails due to case sensitivity, skipping the heatmap plotting logic.
-Suggested Action: Modify the test data setup in test_markdown_includes_trade_heatmap (in tests/test_report_generation.py) to use lowercase column names: 'ticker', 'regime', 'pnl'. This aligns the test data with the code's expectation.
-
 Diagnosed Root Cause: Code Bug: Missing implementation for generating per-ticker trade charts in report_generator.py when handling multi-ticker data.
 Evidence/Reasoning: The test test_markdown_includes_trade_level_chart_per_ticker fails because ticker-specific chart files (e.g., trade_chart_AAPL.png) are not generated. Code inspection shows the logic block intended for per-ticker charts (around line 705+) is either missing or incomplete, while the summary chart logic correctly skips generation for dictionary inputs.
 Suggested Action: Implement the per-ticker chart generation loop within the if isinstance(stats.get('equity_curve'), dict): block in report_generator.py. This loop should iterate through stats['equity_curve'].items(), extract data for each ticker, generate the plot, save it to f"plots/trade_chart_{ticker}.png", and add the corresponding Markdown embed tag to md_lines.

@@ -322,16 +322,15 @@ def test_markdown_includes_return_distribution(tmp_path):
     assert "Return Distribution" in text, "Return distribution section missing in Markdown report."
 
 def test_markdown_includes_trade_heatmap(tmp_path):
-    import numpy as np
     import pandas as pd
     stats = {
         'Return [%]': 10.0,
         'Sharpe Ratio': 1.0,
         'Max. Drawdown [%]': -4.0,
         '_trades': pd.DataFrame({
-            'Ticker': ['A', 'B', 'A', 'B'],
-            'PnL': [1, -1, 2, -2],
-            'Regime': ['Trending', 'Ranging', 'Trending', 'Ranging']
+            'ticker': ['A', 'B', 'A', 'B'],
+            'pnl': [1, -1, 2, -2],
+            'regime': ['Trending', 'Ranging', 'Trending', 'Ranging']
         }),
         'regime_summary': 'Trending: 50%, Ranging: 50%',
         'strategy_params': {'position_size': 1, 'initial_cash': 1}
@@ -645,8 +644,8 @@ def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
             'MSFT': ['downtrend', 'downtrend', 'uptrend', 'uptrend', 'downtrend', 'downtrend'],
         },
         '_trades': pd.DataFrame([
-            {'Ticker': 'AAPL', 'EntryTime': 1, 'EntryPrice': 102, 'ExitTime': 4, 'ExitPrice': 107, 'PnL': 5.0, 'PositionSize': 10, 'Rationale': 'Buy: SMA cross'},
-            {'Ticker': 'MSFT', 'EntryTime': 2, 'ExitTime': 5, 'EntryPrice': 202, 'ExitPrice': 206, 'PnL': 4.0, 'PositionSize': 8, 'Rationale': 'Sell: SMA cross'}
+            {'ticker': 'AAPL', 'entry_time': 1, 'entry_price': 102, 'exit_time': 4, 'exit_price': 107, 'pnl': 5.0, 'position_size': 10, 'rationale': 'Buy: SMA cross'},
+            {'ticker': 'MSFT', 'entry_time': 2, 'exit_time': 5, 'entry_price': 202, 'exit_price': 206, 'pnl': 4.0, 'position_size': 8, 'rationale': 'Sell: SMA cross'}
         ]),
         'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
@@ -667,13 +666,12 @@ def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
     os.chdir(tmp_path)
     from report_generator import generate_markdown_report
     generate_markdown_report(stats, bt)
-    for ticker in ['AAPL', 'MSFT']:
-        chart_path = tmp_path / f"plots/trade_chart_{ticker}.png"
-        assert chart_path.exists(), f"Trade-level chart for {ticker} not generated."
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
     for ticker in ['AAPL', 'MSFT']:
+        chart_path = tmp_path / f"plots/trade_chart_{ticker}.png"
+        assert chart_path.exists(), f"Trade-level chart for {ticker} not generated."
         assert f"plots/trade_chart_{ticker}.png" in text, f"Chart for {ticker} not embedded in report."
         assert f"Chart shows all trade entries" in text or f"{ticker}" in text, "Caption for trade markup chart missing or incomplete."
 
@@ -865,11 +863,11 @@ def test_markdown_includes_trade_markup_visuals_per_ticker(tmp_path):
     from report_generator import generate_markdown_report
     generate_markdown_report(stats, bt)
     md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
     for ticker in tickers:
         chart_path = tmp_path / f"plots/trade_chart_{ticker}.png"
         assert chart_path.exists(), f"Trade markup chart not generated for {ticker}."
-        with open(md_path, encoding="utf-8") as f:
-            text = f.read()
         assert f"plots/trade_chart_{ticker}.png" in text, f"Chart for {ticker} not embedded in report."
         assert f"Chart shows all trade entries" in text or f"{ticker}" in text, "Caption for trade markup chart missing or incomplete."
 
