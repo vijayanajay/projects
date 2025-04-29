@@ -997,3 +997,27 @@ def test_markdown_includes_per_period_benchmark_comparison(tmp_path):
     assert "Per-Period Benchmark Comparison" in text, "Per-period benchmark section missing."
     assert "2024" in text and "2025" in text, "Period labels missing."
     assert "Strategy Return" in text and "Benchmark Return" in text, "Return headers missing."
+
+def test_regime_barplot_handles_series_and_array(tmp_path):
+    import pandas as pd
+    import numpy as np
+    from report_generator import generate_markdown_report
+
+    # Provide regime_series as a pandas Series
+    stats_series = {
+        'regime_series': pd.Series(['trending', 'ranging', 'trending', 'volatile', 'trending']),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats_series, bt)
+    barplot_path = tmp_path / "plots/regime_barplot.png"
+    assert barplot_path.exists(), "Regime barplot not generated for pandas Series."
+
+    # Provide regime_series as a numpy array
+    stats_array = {
+        'regime_series': np.array(['trending', 'ranging', 'trending', 'volatile', 'trending']),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    generate_markdown_report(stats_array, bt)
+    assert barplot_path.exists(), "Regime barplot not generated for numpy array."
