@@ -6,12 +6,17 @@
 - **Hours Pending:** 0
 - **% Complete (Time):** 100%
 
+## Completed Tasks (Summary)
+
+- Fixed bug in rsi_strategy_backtest to handle None for strategy_params (tech_analysis/backtest.py). Added TDD test to ensure ticker defaults to 'UNKNOWN'.
+- All previously pending tasks have been completed and summarized in the changelog below.
+
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-- None. All tasks are complete as of 2025-04-29.
+(No pending tasks. All tasks completed as of 2025-04-29.)
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
-- All tasks up to 13.4 are complete as of 2025-04-29. See below for details:
+
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
@@ -109,6 +114,18 @@
   - The report now includes a section listing every rule and exception in plain English, including entry/exit, filters, and special cases. Rules are displayed in a clearly separated section. TDD-compliant, minimal code, and verified by tests.
 - [x] Task 13.4: Trade Markup Visuals for Every Ticker (2025-04-29)
   - The report now embeds an annotated price chart for every ticker, showing trade entries/exits, indicator overlays, and regime shading. Each chart is saved as a static image and embedded in the Markdown report with a descriptive caption. Implementation follows Kalish Nadh's Markdown visualization philosophy and is TDD-compliant. Verified by tests.
+- [x] Task 14.1: Add Trade Context (Regime, Volatility, Volume) (2025-04-29)
+  - Trade log in portfolio_report.md now includes regime (trending/ranging), volatility (ATR), and volume at entry and exit for each trade. Displayed in a Markdown table per trade. TDD-compliant, minimal code, verified in report and tests.
+- [x] Task 14.2: Include Indicator Values at Entry/Exit (2025-04-29)
+  - SMA, RSI, and other indicator values at entry/exit are now included in each trade log entry in the report. Displayed side by side in a Markdown table. TDD-compliant, minimal code, verified in report and tests.
+- [x] Task 14.3: Add Strategy Logic Summary (2025-04-29)
+  - Added a concise, plain-English summary and pseudocode of the algorithm’s rules at the top of the report. TDD-compliant, minimal code, verified in report and tests.
+- [x] Task 14.4: Trade Duration and Exposure Statistics (2025-04-29)
+  - Added summary table for average/median/max trade duration and portfolio exposure statistics. TDD-compliant, minimal code, verified in report and tests.
+- [x] Task 14.5: Slippage/Commission Sensitivity Analysis (2025-04-29)
+  - Added scenario analysis table showing how Sharpe, Return, Drawdown change under different slippage/commission assumptions. TDD-compliant, minimal code, verified in report and tests.
+- [x] Task 14.6: Per-Period Benchmark Comparison (2025-04-29)
+  - Added table/chart comparing strategy vs benchmark returns for each year/quarter, highlighting out/underperformance. TDD-compliant, minimal code, verified in report and tests.
 - [x] All core features for the technical analysis reporting system are complete and fully integrated. The pipeline now:
   - Fetches and cleans data for all stocks in STOCKS_LIST (tech_analysis/data/stocks_list.py)
   - Runs backtest strategies (SMA, RSI) with robust, index-agnostic logic (tech_analysis/backtest.py)
@@ -129,3 +146,5 @@
   - Updated report_generator.py to include a Parameter Sensitivity Analysis section in the report, following Kalish Nadh's visualization philosophy.
   - Added TDD test in tests/test_report_generation.py to verify the presence of the sensitivity plot and section in the report. All tests pass.
   - Minimal code added, no change to method responsibilities. summary.md updated only for new/changed file roles if needed.
+
+---

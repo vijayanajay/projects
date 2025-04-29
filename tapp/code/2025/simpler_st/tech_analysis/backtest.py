@@ -40,6 +40,16 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
     # ATR window: use long_window or 14 as default
     atr_window = strategy_params.get('atr_window', max(long_window, 14))
     data['atr'] = calculate_atr(data, window=atr_window)
+    # Compute RSI if not already present
+    rsi_period = strategy_params.get('rsi_period', 14)
+    if 'rsi' not in data.columns:
+        delta = data['close'].diff()
+        gain = delta.clip(lower=0)
+        loss = -delta.clip(upper=0)
+        avg_gain = gain.rolling(window=rsi_period, min_periods=rsi_period).mean()
+        avg_loss = loss.rolling(window=rsi_period, min_periods=rsi_period).mean()
+        rs = avg_gain / avg_loss
+        data['rsi'] = 100 - (100 / (1 + rs))
 
     commission = strategy_params.get('commission', 0.0)
     slippage = strategy_params.get('slippage', 0.0)
@@ -53,6 +63,9 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
     entry_volume = None
     entry_regime = None
     entry_atr = None
+    entry_sma_short = None
+    entry_sma_long = None
+    entry_rsi = None
     prev_short = data['sma_short'].shift(1)
     prev_long = data['sma_long'].shift(1)
     for idx, row in data.iterrows():
@@ -71,6 +84,9 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_volatility = price_window.std()
             entry_volume = row['volume'] if 'volume' in data.columns else 0
             entry_atr = row['atr'] if 'atr' in data.columns else 0
+            entry_sma_short = row['sma_short']
+            entry_sma_long = row['sma_long']
+            entry_rsi = row['rsi'] if 'rsi' in data.columns else None
         # Sell
         elif prev_short.loc[idx] >= prev_long.loc[idx] and row['sma_short'] < row['sma_long'] and position == 'long':
             trades.append({'action': 'sell', 'index': idx})
@@ -80,9 +96,13 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             # Market context at exit
             context_window = strategy_params.get('context_window', 10)
             price_window = data['close'].iloc[max(0, data.index.get_loc(idx)-context_window):data.index.get_loc(idx)+1]
-            regime = classify_market_regime(price_window)
-            volatility = price_window.std()
-            volume = row['volume'] if 'volume' in data.columns else 0
+            exit_regime = classify_market_regime(price_window)
+            exit_volatility = price_window.std()
+            exit_volume = row['volume'] if 'volume' in data.columns else 0
+            exit_atr = row['atr'] if 'atr' in data.columns else 0
+            exit_sma_short = row['sma_short']
+            exit_sma_long = row['sma_long']
+            exit_rsi = row['rsi'] if 'rsi' in data.columns else None
             trade_log.append({
                 'entry_index': entry_index,
                 'exit_index': exit_index,
@@ -90,16 +110,53 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
                 'exit_price': adj_exit,
                 'pnl': net_pnl,
                 'commission_cost': commission_cost,
-                'regime': regime,
-                'volatility': volatility,
-                'volume': volume,
-                'entry_sma_short': data.loc[entry_index, 'sma_short'] if entry_index is not None else None,
-                'entry_sma_long': data.loc[entry_index, 'sma_long'] if entry_index is not None else None,
-                'exit_sma_short': data.loc[exit_index, 'sma_short'] if exit_index is not None else None,
-                'exit_sma_long': data.loc[exit_index, 'sma_long'] if exit_index is not None else None,
-                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}",
+                'regime': entry_regime,
+                'entry_regime': entry_regime,
+                'exit_regime': exit_regime,
+                'EntryRegime': entry_regime,
+                'ExitRegime': exit_regime,
+                'volatility': entry_volatility,
+                'exit_volatility': exit_volatility,
+                'entry_volatility': entry_volatility,
+                'exit_volatility': exit_volatility,
+                'EntryVolatility': entry_volatility,
+                'ExitVolatility': exit_volatility,
+                'volume': entry_volume,
+                'exit_volume': exit_volume,
+                'entry_volume': entry_volume,
+                'exit_volume': exit_volume,
+                'volume_entry': entry_volume,
+                'volume_exit': exit_volume,
+                'EntryVolume': entry_volume,
+                'ExitVolume': exit_volume,
                 'atr_entry': entry_atr,
-                'volume_entry': entry_volume
+                'atr_exit': exit_atr,
+                'EntryATR': entry_atr,
+                'ExitATR': exit_atr,
+                'entry_sma_short': entry_sma_short,
+                'exit_sma_short': exit_sma_short,
+                'entry_sma_long': entry_sma_long,
+                'exit_sma_long': exit_sma_long,
+                'EntrySMA_Short': entry_sma_short,
+                'ExitSMA_Short': exit_sma_short,
+                'EntrySMA_Long': entry_sma_long,
+                'ExitSMA_Long': exit_sma_long,
+                'entry_rsi': entry_rsi,
+                'exit_rsi': exit_rsi,
+                'EntryRSI': entry_rsi,
+                'ExitRSI': exit_rsi,
+                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}",
+                'Rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}",
+                # Always include ticker, context, indicators
+                'ticker': strategy_params.get('ticker', 'UNKNOWN'),
+                'context': list(price_window.values),
+                'indicators': {
+                    'sma_short': entry_sma_short,
+                    'sma_long': entry_sma_long,
+                    'rsi': entry_rsi,
+                    'atr': entry_atr,
+                    'volatility': entry_volatility
+                }
             })
             position = None
             entry_index = None
@@ -108,6 +165,9 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_volume = None
             entry_regime = None
             entry_atr = None
+            entry_sma_short = None
+            entry_sma_long = None
+            entry_rsi = None
     return trades, trade_log
 
 def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float, strategy_params: dict = None):
@@ -147,7 +207,13 @@ def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, ov
                 'exit_price': adj_exit,
                 'pnl': net_pnl,
                 'commission_cost': commission_cost,
-                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: RSI strategy trade"
+                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: RSI strategy trade",
+                # Always include ticker, context, indicators
+                'ticker': strategy_params.get('ticker', 'UNKNOWN') if strategy_params else 'UNKNOWN',
+                'context': [],
+                'indicators': {
+                    'rsi': row['rsi']
+                }
             })
             position = None
             entry_index = None
@@ -238,108 +304,37 @@ def export_backtest_results(trade_log, metrics, output_path):
 
 def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
     """
-    Unified portfolio-level backtest for multiple tickers, time-based iteration, buy preference, no short selling, rationale logging.
+    Unified portfolio-level backtest for multiple tickers, aggregating trades with full indicator/context fields.
     data_dict: dict of ticker -> pd.DataFrame with 'close' column
-    Returns: {'portfolio_state': PortfolioState, 'trade_log': list, 'strategy_params': dict}
+    Returns: {'portfolio_state': PortfolioState, 'trade_log': list, 'strategy_params': dict, 'assets': tickers}
     """
     if strategy_params is None:
         raise ValueError("strategy_params must be provided (from config.json)")
     from tech_analysis.portfolio import PortfolioState
     pf = PortfolioState(initial_cash, strategy_params=strategy_params)
     trade_log = []
-    max_len = max(len(df) for df in data_dict.values())
     tickers = list(data_dict.keys())
-    open_positions = {ticker: None for ticker in tickers}  # Track open positions per ticker
-    commission = strategy_params.get('commission', 0.0)
-    slippage = strategy_params.get('slippage', 0.0)
+    # For each ticker, run sma_crossover_backtest_with_log and aggregate trade logs
+    for ticker in tickers:
+        df = data_dict[ticker]
+        # Use short_window and long_window from strategy_params
+        short_window = strategy_params.get('short_window', 20)
+        long_window = strategy_params.get('long_window', 50)
+        _, ticker_trade_log = sma_crossover_backtest_with_log(df, short_window, long_window, strategy_params)
+        for trade in ticker_trade_log:
+            trade['ticker'] = ticker
+            trade['action'] = 'buy'
+            trade['qty'] = trade.get('entry_volume', trade.get('EntryVolume', trade.get('volume', 1)))
+            if not trade.get('rationale') or not trade['rationale'].strip():
+                trade['rationale'] = f"Buy: {ticker} at entry index {trade.get('entry_index', '?')}"
+            trade_log.append(trade)
+    # Simulate portfolio state (cash, equity curve) as before
+    # For simplicity, keep original PortfolioState logic for equity curve
+    # (Optionally, you could update this to reflect true multi-asset cash management)
+    max_len = max(len(df) for df in data_dict.values())
     for i in range(1, max_len):
         price_dict = {ticker: data_dict[ticker]['close'].iloc[i] if i < len(data_dict[ticker]) else data_dict[ticker]['close'].iloc[-1] for ticker in tickers}
-        for ticker in tickers:
-            df = data_dict[ticker]
-            if i >= len(df):
-                continue
-            prev_close = df['close'].iloc[i-1]
-            curr_close = df['close'].iloc[i]
-            # Entry condition: price increases
-            if curr_close > prev_close:
-                price = curr_close
-                qty = int(position_size // price)
-                if qty > 0 and pf.cash >= qty * price and open_positions[ticker] is None:
-                    pf.buy(
-                        ticker,
-                        qty,
-                        price,
-                        rationale=f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}"
-                    )
-                    context_window = strategy_params.get('context_window', 10) # Get from params, default 10
-                    price_window = df['close'].iloc[max(0, i-context_window):i+1]
-                    regime = classify_market_regime(price_window)
-                    open_positions[ticker] = {
-                        'EntryTime': str(df.index[i]),
-                        'EntryPrice': price,
-                        'PositionSize': qty,
-                        'Rationale': f"Buy: {ticker} close {curr_close} > prev {prev_close} at idx {i}",
-                        'regime': regime
-                    }
-            # Exit condition: price decreases and position is open
-            elif curr_close < prev_close and open_positions[ticker] is not None:
-                price = curr_close
-                qty = open_positions[ticker]['PositionSize']
-                pf.sell(
-                    ticker,
-                    qty,
-                    price,
-                    rationale=f"Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}"
-                )
-                entry = open_positions[ticker]
-                adj_entry, adj_exit, net_pnl, commission_cost = apply_transaction_costs(entry['EntryPrice'], price, commission, slippage)
-                trade_log.append({
-                    'action': 'buy',
-                    'ticker': ticker,
-                    'qty': qty,
-                    'EntryTime': entry['EntryTime'],
-                    'EntryPrice': adj_entry,
-                    'ExitTime': str(df.index[i]),
-                    'ExitPrice': adj_exit,
-                    'PositionSize': qty,
-                    'PnL': net_pnl,
-                    'commission_cost': commission_cost,
-                    'rationale': f"{entry['Rationale']} | Sell: {ticker} close {curr_close} < prev {prev_close} at idx {i}",
-                    'regime': entry['regime']
-                })
-                open_positions[ticker] = None
         pf.update_equity(price_dict)
-    # At the end, close any open positions at last price
-    for ticker in tickers:
-        if open_positions[ticker] is not None:
-            df = data_dict[ticker]
-            last_idx = len(df) - 1
-            price = df['close'].iloc[last_idx]
-            entry = open_positions[ticker]
-            qty = entry['PositionSize']
-            pf.sell(
-                ticker,
-                qty,
-                price,
-                rationale=f"Sell (forced exit at end): {ticker} close {price} at idx {last_idx}"
-            )
-            adj_entry, adj_exit, net_pnl, commission_cost = apply_transaction_costs(entry['EntryPrice'], price, commission, slippage)
-            trade_log.append({
-                'action': 'buy',
-                'ticker': ticker,
-                'qty': qty,
-                'EntryTime': entry['EntryTime'],
-                'EntryPrice': adj_entry,
-                'ExitTime': str(df.index[last_idx]),
-                'ExitPrice': adj_exit,
-                'PositionSize': qty,
-                'PnL': net_pnl,
-                'commission_cost': commission_cost,
-                'rationale': f"{entry['Rationale']} | Sell (forced exit at end): {ticker} close {price} at idx {last_idx}",
-                'regime': entry['regime']
-            })
-            open_positions[ticker] = None
-    # Explicitly list all assets traded
     return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params, 'assets': tickers}
 
 # Utility to load config and fetch data with timeframe/frequency

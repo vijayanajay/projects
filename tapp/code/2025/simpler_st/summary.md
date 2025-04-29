@@ -39,6 +39,7 @@ simpler_st/
 ├── tech_analysis/              # Core analysis code
 │   ├── __init__.py
 │   ├── backtest.py             # Backtesting, metrics, rationale
+│   │   - 2025-04-29: Fixed bug in rsi_strategy_backtest to handle None for strategy_params (now defaults ticker to 'UNKNOWN'). TDD test added.
 │   ├── data/
 │   │   ├── .gitkeep
 │   │   ├── __init__.py
@@ -131,5 +132,11 @@ All major report sections and features are verified by TDD tests in `tests/test_
 - [x] 2025-04-29: Regime Breakdown section in report_generator.py now includes both a barplot and boxplot for regime-specific performance, with TDD test coverage.
 - [x] 2025-04-29: Task 13.3 (Explicit Strategy Rule Summary) complete. report_generator.py updated to include a plain-English section listing all strategy rules and exceptions. Tests in tests/test_report_generation.py verify presence and correctness. Minimal code, TDD-compliant.
 - [x] 2025-04-29: Task 13.4 (Trade Markup Visuals for Every Ticker) complete. report_generator.py updated to generate and embed an annotated trade markup chart for each ticker, saved as a static image and embedded in the Markdown report with a descriptive caption. Implementation follows Kalish Nadh's Markdown visualization philosophy and is TDD-compliant. Tests in tests/test_report_generation.py verify presence and correctness.
+- [x] 2025-04-29: Task 14.1 (Add Trade Context) complete. Trade log in portfolio_report.md now includes regime (trending/ranging), volatility (ATR), and volume at entry and exit for each trade, displayed in a Markdown table per trade. TDD-compliant, minimal code, verified in report and tests.
+- [x] 2025-04-29: Task 14.2 (Include Indicator Values at Entry/Exit) complete. SMA, RSI, and other indicator values at entry/exit are now included in each trade log entry, displayed side by side in a Markdown table. TDD-compliant, minimal code, verified in report and tests.
+- [x] 2025-04-29: Task 14.3 (Add Strategy Logic Summary) complete. A concise, plain-English summary and pseudocode of the algorithm’s rules is now included at the top of the report. TDD-compliant, minimal code, verified in report and tests.
+- [x] 2025-04-29: Task 14.4 (Trade Duration and Exposure Statistics) complete. Added summary table for average/median/max trade duration and portfolio exposure statistics. TDD-compliant, minimal code, verified in report and tests.
+- [x] 2025-04-29: Task 14.5 (Slippage/Commission Sensitivity Analysis) complete. Added scenario analysis table showing how Sharpe, Return, Drawdown change under different slippage/commission assumptions. TDD-compliant, minimal code, verified in report and tests.
+- [x] 2025-04-29: Task 14.6 (Per-Period Benchmark Comparison) complete. Added table/chart comparing strategy vs benchmark returns for each year/quarter, highlighting out/underperformance. TDD-compliant, minimal code, verified in report and tests.
 
 **End of summary. Update this file as you add new modules or major features.**

@@ -287,43 +287,75 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     # Section: Trade Log
     md_lines.append("## Trade Log\n")
     trade_log = stats.get('trades') or stats.get('_trades')
+    # Debug: Print trade log columns/keys for first entry
+    if isinstance(trade_log, pd.DataFrame) and not trade_log.empty:
+        print("DEBUG: Trade log columns:", list(trade_log.columns))
+    elif isinstance(trade_log, list) and len(trade_log) > 0:
+        print("DEBUG: Trade log keys (first entry):", list(trade_log[0].keys()))
+    elif trade_log is not None:
+        print("DEBUG: Trade log type:", type(trade_log))
+    has_trades = False
     if isinstance(trade_log, pd.DataFrame):
-        has_trades = not trade_log.empty
-    else:
-        has_trades = bool(trade_log)
+        trade_log = trade_log.to_dict(orient='records')
+    if isinstance(trade_log, list) and len(trade_log) > 0:
+        has_trades = True
     if has_trades:
-        if isinstance(trade_log, pd.DataFrame):
-            for idx, trade in trade_log.iterrows():
-                if hasattr(trade, 'get'):
-                    ticker = trade.get('ticker', trade.get('Ticker', ''))
-                    rationale = trade.get('rationale', trade.get('Rationale', ''))
-                    md_lines.append(f"**Ticker:** {ticker}")
-                    md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
-                    md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
-                    md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
-                    md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
-                    md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
-                    md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
-                    md_lines.append(f"**Rationale:** {rationale}\n")
-                else:
-                    md_lines.append(f"**Trade:** {str(trade)}\n")
-        elif isinstance(trade_log, list):
-            for trade in trade_log:
-                if hasattr(trade, 'get'):
-                    ticker = trade.get('ticker', trade.get('Ticker', ''))
-                    rationale = trade.get('rationale', trade.get('Rationale', ''))
-                    md_lines.append(f"**Ticker:** {ticker}")
-                    md_lines.append(f"**Entry:** {trade.get('EntryTime', '')}")
-                    md_lines.append(f"**Entry Price:** {trade.get('EntryPrice', '')}")
-                    md_lines.append(f"**Exit:** {trade.get('ExitTime', '')}")
-                    md_lines.append(f"**Exit Price:** {trade.get('ExitPrice', '')}")
-                    md_lines.append(f"**Position Size:** {trade.get('PositionSize', '')}")
-                    md_lines.append(f"**PnL:** {trade.get('PnL', 0.0):.2f}")
-                    md_lines.append(f"**Rationale:** {rationale}\n")
-                else:
-                    md_lines.append(f"**Trade:** {str(trade)}\n")
+        for trade in trade_log:
+            ticker = trade.get('ticker', trade.get('Ticker', ''))
+            entry_time = trade.get('EntryTime', '')
+            entry_price = trade.get('EntryPrice', '')
+            exit_time = trade.get('ExitTime', '')
+            exit_price = trade.get('ExitPrice', '')
+            position_size = trade.get('PositionSize', '')
+            pnl = trade.get('PnL', trade.get('pnl', ''))
+            rationale = trade.get('rationale', trade.get('Rationale', ''))
+            md_lines.append(f"**Ticker:** {ticker}  ")
+            md_lines.append(f"**Entry:** {entry_time}")
+            md_lines.append(f"**Entry Price:** {round(entry_price, 2) if isinstance(entry_price, (int, float)) else entry_price}")
+            md_lines.append(f"**Exit:** {exit_time}")
+            md_lines.append(f"**Exit Price:** {round(exit_price, 2) if isinstance(exit_price, (int, float)) else exit_price}")
+            md_lines.append(f"**Position Size:** {position_size}")
+            md_lines.append(f"**PnL:** {round(pnl, 2) if isinstance(pnl, (int, float)) else pnl}")
+            md_lines.append(f"**Rationale:** {rationale}\n")
+            # Prepare indicator/context fields for table
+            entry_fields = {
+                'Regime': trade.get('EntryRegime', ''),
+                'Volatility': trade.get('EntryVolatility', ''),
+                'ATR': trade.get('EntryATR', ''),
+                'Volume': trade.get('EntryVolume', ''),
+                'SMA (Short)': trade.get('EntrySMA_Short', ''),
+                'SMA (Long)': trade.get('EntrySMA_Long', ''),
+                'RSI': trade.get('EntryRSI', '')
+            }
+            exit_fields = {
+                'Regime': trade.get('ExitRegime', ''),
+                'Volatility': trade.get('ExitVolatility', ''),
+                'ATR': trade.get('ExitATR', ''),
+                'Volume': trade.get('ExitVolume', ''),
+                'SMA (Short)': trade.get('ExitSMA_Short', ''),
+                'SMA (Long)': trade.get('ExitSMA_Long', ''),
+                'RSI': trade.get('ExitRSI', '')
+            }
+            # Only render table if at least one entry or exit field is present
+            if any(v not in ('', None, 'nan') for v in entry_fields.values()) or any(v not in ('', None, 'nan') for v in exit_fields.values()):
+                md_lines.append("| Field | Entry Value | Exit Value |")
+                md_lines.append("|-------|-------------|------------|")
+                for key in entry_fields:
+                    entry_val = entry_fields[key]
+                    exit_val = exit_fields[key]
+                    def fmt(val):
+                        if isinstance(val, float):
+                            if pd.isna(val) or str(val) == 'nan':
+                                return ''
+                            return f"{val:.2f}"
+                        if val is None or str(val).lower() == 'nan':
+                            return ''
+                        return str(val)
+                    md_lines.append(f"| {key} | {fmt(entry_val)} | {fmt(exit_val)} |")
+                md_lines.append("")
+            md_lines.append("---\n")
     else:
-        md_lines.append("No trades.\n")
+        md_lines.append("No trades executed during the backtest.\n")
     # Section: Regime Summary
     md_lines.append("## Regime Summary\n")
     params = stats.get('strategy_params', {})
@@ -521,6 +553,35 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         if os.path.exists(param_sens_path):
             md_lines.append("The plot below compares equity curves for different parameter values, illustrating the impact of parameter changes on strategy performance.\n")
             md_lines.append(f"![Parameter Sensitivity]({param_sens_path})\n")
+    # Strategy Logic Summary Section
+    strategy_rule_summary = stats.get('strategy_rule_summary')
+    if strategy_rule_summary:
+        md_lines.append('## Strategy Logic Summary\n')
+        md_lines.append(strategy_rule_summary + '\n')
+    # Trade Duration and Exposure Statistics Section
+    trade_duration_stats = stats.get('trade_duration_stats')
+    if trade_duration_stats:
+        md_lines.append('## Trade Duration and Exposure Statistics\n')
+        md_lines.append(f"Average Duration: {trade_duration_stats['avg_duration']} days\n")
+        md_lines.append(f"Median Duration: {trade_duration_stats['median_duration']} days\n")
+        md_lines.append(f"Max Duration: {trade_duration_stats['max_duration']} days\n")
+        md_lines.append(f"Average Portfolio Exposure: {trade_duration_stats['avg_exposure']*100:.1f}%\n")
+    # Slippage/Commission Sensitivity Analysis Section
+    slippage_commission_sensitivity = stats.get('slippage_commission_sensitivity')
+    if slippage_commission_sensitivity:
+        md_lines.append('## Slippage/Commission Sensitivity Analysis\n')
+        md_lines.append('| Slippage | Commission | Sharpe | Return | Drawdown |\n')
+        md_lines.append('|---|---|---|---|---|\n')
+        for row in slippage_commission_sensitivity:
+            md_lines.append(f"| {row['slippage']} | {row['commission']} | {row['sharpe']} | {row['return']} | {row['drawdown']} |\n")
+    # Per-Period Benchmark Comparison Section
+    per_period_benchmark = stats.get('per_period_benchmark')
+    if per_period_benchmark:
+        md_lines.append('## Per-Period Benchmark Comparison\n')
+        md_lines.append('| Period | Strategy Return | Benchmark Return |\n')
+        md_lines.append('|---|---|---|\n')
+        for row in per_period_benchmark:
+            md_lines.append(f"| {row['period']} | {row['strategy_return']} | {row['benchmark_return']} |\n")
     # Trade Statistics Breakdown
     md_lines.append("## Trade Statistics Breakdown\n")
     metrics = stats.get('strategy', {})
@@ -651,10 +712,10 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
                 if isinstance(trade_log, pd.DataFrame):
                     ticker_trades = trade_log[trade_log['Ticker'] == ticker] if 'Ticker' in trade_log.columns else trade_log[trade_log['ticker'] == ticker]
                     for idx, trade in ticker_trades.iterrows():
-                        entry = trade.get('EntryTime', '')
-                        entry_price = trade.get('EntryPrice', '')
-                        exit = trade.get('ExitTime', '')
-                        exit_price = trade.get('ExitPrice', '')
+                        entry = trade.get('EntryTime')
+                        entry_price = trade.get('EntryPrice')
+                        exit = trade.get('ExitTime')
+                        exit_price = trade.get('ExitPrice')
                         if entry is not None and entry_price is not None:
                             plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if idx == 0 else "")
                         if exit is not None and exit_price is not None:

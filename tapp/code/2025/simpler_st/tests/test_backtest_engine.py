@@ -50,6 +50,26 @@ def test_rsi_strategy_basic():
     for trade in trade_log:
         assert 'entry_index' in trade and 'exit_index' in trade
 
+def test_rsi_strategy_handles_none_strategy_params():
+    """
+    Ensure rsi_strategy_backtest does not raise AttributeError when strategy_params is None
+    and sets ticker to 'UNKNOWN'.
+    """
+    data = pd.DataFrame({'close': [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5]})
+    period = 5
+    overbought = 70
+    oversold = 30
+    # Call without strategy_params
+    signals, trade_log = backtest.rsi_strategy_backtest(data[['close']], period, overbought, oversold)
+    # Should not raise, and ticker should be 'UNKNOWN' in trade_log or signals if present
+    assert isinstance(trade_log, list)
+    if trade_log:
+        for trade in trade_log:
+            assert trade.get('ticker', None) == 'UNKNOWN'
+    elif signals:
+        for sig in signals:
+            assert sig.get('ticker', None) == 'UNKNOWN'
+
 def test_trade_execution_and_log():
     """
     Test that the backtest engine simulates trade execution and records a trade log with expected fields, including market context.
@@ -240,8 +260,8 @@ def test_portfolio_backtest_multi_ticker():
     from tech_analysis.portfolio import PortfolioState
     # Simulate two tickers with simple price data
     data = {
-        'AAA': pd.DataFrame({'close': [10, 12, 14, 16, 18, 20]}),
-        'BBB': pd.DataFrame({'close': [20, 18, 16, 14, 12, 10]})
+        'AAA': pd.DataFrame({'close': [10, 12, 14, 11, 15, 20], 'volume': [100, 120, 110, 130, 140, 150]}),
+        'BBB': pd.DataFrame({'close': [20, 18, 16, 14, 12, 10], 'volume': [200, 180, 170, 160, 150, 140]})
     }
     initial_cash = 1000
     position_size = 100  # Max cash per buy
@@ -254,7 +274,12 @@ def test_portfolio_backtest_multi_ticker():
         data,
         initial_cash=initial_cash,
         position_size=position_size,
-        strategy_params={'position_size': position_size, 'initial_cash': initial_cash}
+        strategy_params={
+            'position_size': position_size,
+            'initial_cash': initial_cash,
+            'short_window': 2,
+            'long_window': 3
+        }
     )
     # results should include 'portfolio_state', 'trade_log', and 'assets' (explicitly listed)
     assert 'portfolio_state' in results
