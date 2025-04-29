@@ -143,6 +143,7 @@ All major report sections and features are verified by TDD tests in `tests/test_
 - Updated pipeline.py: run_pipeline now returns (stats, pf, trade_log, regime_series) to fix test unpacking errors and ensure consistent downstream usage.
 - Updated report_generator.py: All required Markdown report images and sections (benchmark comparison, holding duration, regime barplot, strategy rule summary, trade markup, trade-level charts per ticker) are now robustly generated and embedded, with placeholders for missing content. Case-insensitive data handling added for trade log and time fields.
 - All previously pending technical review tasks and test failures resolved. No new files or modules introduced; no changes to file responsibilities. Codebase is now in a passing, maintainable state.
+- [x] 2025-04-30: Refactored `generate_markdown_report` to always generate and embed both regime barplot and boxplot as static images in the Markdown report. Standardized image embedding logic using a helper function. This resolves the test failure for regime plot embedding and ensures robust, user-focused documentation in line with Kalish Nadh's Markdown visualization philosophy. TDD verified in `tests/test_report_generation.py`.
 
 ## [2025-04-30] Markdown Report Generation Improvements
 
