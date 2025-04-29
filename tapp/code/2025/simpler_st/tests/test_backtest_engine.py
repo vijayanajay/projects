@@ -41,7 +41,7 @@ def test_rsi_strategy_basic():
     oversold = 30
     # For this test, expect a buy when RSI crosses above oversold, sell when crosses below overbought
     # We'll just check that the function returns a list of trades with correct actions
-    signals, trade_log = backtest.rsi_strategy_backtest(data[['close']], period, overbought, oversold)
+    signals, trade_log = backtest.rsi_strategy_backtest(data[['close']], period, overbought, oversold, strategy_params={})
     print('DEBUG RSI TRADES:', signals, trade_log)
     assert isinstance(signals, list)
     assert all(isinstance(sig, dict) for sig in signals)
