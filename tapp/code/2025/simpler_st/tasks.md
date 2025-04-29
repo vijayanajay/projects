@@ -8,12 +8,6 @@
 
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-5.  **Issue:** Redundant output in Trade Log section. The `report_generator.py` currently writes out *both* a bolded key (`**Field:** Value`) and a plain key (`Field: Value`) for every single field within each trade log entry in the Markdown report. This significantly bloats the report and reduces readability.
-    **Suggested Action:** Simplify the trade log output in `report_generator.py`. Choose one consistent format for displaying trade details (e.g., using the bolded key format or a Markdown table per trade) and remove the duplicate plain text lines.
-
-6.  **Issue:** Potential off-by-one error in regime filtering. The `filter_regime_series` function within `report_generator.py` uses the condition `count > threshold` where `threshold = min_duration - 1` to decide if a regime duration is long enough to be included in the summary table. This means a regime lasting exactly `min_duration` days might be excluded.
-    **Suggested Action:** Modify the condition in `report_generator.py::filter_regime_series` to `count >= min_duration` to correctly include regimes that meet the minimum duration exactly. Add a specific test case in `tests/test_report_generation.py` to verify this boundary condition.
-
 7.  **Issue:** Inefficient/Duplicated Indicator Calculation. RSI calculation logic is duplicated within `tech_analysis/backtest.py::sma_crossover_backtest_with_log`. ATR calculation falls back to using standard deviation if high/low columns are missing, which isn't a standard or necessarily meaningful fallback for ATR.
     **Suggested Action:** Refactor indicator calculations. Ideally, calculate all required indicators (SMA, RSI, ATR, etc.) once per ticker DataFrame *before* passing the data to the backtesting simulation loop. Pass the DataFrame with pre-calculated indicators. Re-evaluate the ATR fallback logic; perhaps raise an error or use a different volatility measure if required columns are missing.
 
@@ -168,5 +162,7 @@
   - Updated report_generator.py to include a Parameter Sensitivity Analysis section in the report, following Kalish Nadh's visualization philosophy.
   - Added TDD test in tests/test_report_generation.py to verify the presence of the sensitivity plot and section in the report. All tests pass.
   - Minimal code added, no change to method responsibilities. summary.md updated only for new/changed file roles if needed.
-
----
+- [x] Task 5: Remove redundant output in Trade Log section. Ensured only one format for trade log entries in the Markdown report. Test verifies no duplicate field output. (2025-04-29)
+  - Updated report_generator.py and tests/test_report_generation.py. Confirmed via TDD that only the intended format is rendered. Improved clarity and reduced report bloat.
+- [x] Task 6: Fix off-by-one error in regime filtering. Modified filter_regime_series in report_generator.py to use count >= min_duration and added a boundary test. (2025-04-30)
+  - Updated filtering logic and test. Confirmed via TDD that regimes of exactly min_duration days are included in the summary table.

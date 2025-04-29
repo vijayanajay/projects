@@ -1,7 +1,7 @@
 import pandas as pd
 from tech_analysis.market_regimes import classify_market_regime
 import numpy as np
-from tech_analysis.utils import calculate_atr, apply_transaction_costs
+from tech_analysis.utils import calculate_atr, apply_transaction_costs, calculate_indicator_summary_stats as _cis
 
 # Helper to convert NumPy types to Python types recursively
 def convert_numpy_types(obj):
@@ -45,8 +45,10 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
     data['sma_long'] = data['close'].rolling(window=long_window, min_periods=1).mean()
     # ATR window: use long_window or 14 as default
     atr_window = strategy_params.get('atr_window', max(long_window, 14))
-    data['atr'] = calculate_atr(data, window=atr_window)
-    # Compute RSI if not already present
+    # Only calculate ATR if not already present
+    if 'atr' not in data.columns:
+        data['atr'] = calculate_atr(data, window=atr_window)
+    # Only calculate RSI if not already present
     rsi_period = strategy_params.get('rsi_period', 14)
     if 'rsi' not in data.columns:
         delta = data['close'].diff()
@@ -112,57 +114,24 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             trade_log.append({
                 'entry_index': entry_index,
                 'exit_index': exit_index,
-                'entry_price': adj_entry,
-                'exit_price': adj_exit,
-                'pnl': net_pnl,
-                'commission_cost': commission_cost,
-                'regime': entry_regime,
+                'entry_price': entry_price,
+                'exit_price': exit_price,
                 'entry_regime': entry_regime,
                 'exit_regime': exit_regime,
-                'EntryRegime': entry_regime,
-                'ExitRegime': exit_regime,
-                'volatility': entry_volatility,
-                'exit_volatility': exit_volatility,
                 'entry_volatility': entry_volatility,
                 'exit_volatility': exit_volatility,
-                'EntryVolatility': entry_volatility,
-                'ExitVolatility': exit_volatility,
-                'volume': entry_volume,
-                'exit_volume': exit_volume,
                 'entry_volume': entry_volume,
                 'exit_volume': exit_volume,
-                'volume_entry': entry_volume,
-                'volume_exit': exit_volume,
-                'EntryVolume': entry_volume,
-                'ExitVolume': exit_volume,
-                'atr_entry': entry_atr,
-                'atr_exit': exit_atr,
-                'EntryATR': entry_atr,
-                'ExitATR': exit_atr,
+                'entry_atr': entry_atr,
+                'exit_atr': exit_atr,
                 'entry_sma_short': entry_sma_short,
-                'exit_sma_short': exit_sma_short,
                 'entry_sma_long': entry_sma_long,
-                'exit_sma_long': exit_sma_long,
-                'EntrySMA_Short': entry_sma_short,
-                'ExitSMA_Short': exit_sma_short,
-                'EntrySMA_Long': entry_sma_long,
-                'ExitSMA_Long': exit_sma_long,
                 'entry_rsi': entry_rsi,
+                'exit_sma_short': exit_sma_short,
+                'exit_sma_long': exit_sma_long,
                 'exit_rsi': exit_rsi,
-                'EntryRSI': entry_rsi,
-                'ExitRSI': exit_rsi,
-                'rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}",
-                'Rationale': f"{'Buy' if net_pnl > 0 else 'Sell'}: short SMA {'crossed above' if net_pnl > 0 else 'crossed below'} long SMA at index {entry_index if net_pnl > 0 else exit_index}",
-                # Always include ticker, context, indicators
-                'ticker': strategy_params.get('ticker', 'UNKNOWN'),
-                'context': list(price_window.values),
-                'indicators': {
-                    'sma_short': entry_sma_short,
-                    'sma_long': entry_sma_long,
-                    'rsi': entry_rsi,
-                    'atr': entry_atr,
-                    'volatility': entry_volatility
-                }
+                'pnl': net_pnl,
+                'commission_cost': commission_cost
             })
             position = None
             entry_index = None
@@ -174,7 +143,7 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_sma_short = None
             entry_sma_long = None
             entry_rsi = None
-    return trades, trade_log
+    return {'trade_log': trade_log, 'trades': trades}
 
 def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float, strategy_params: dict = None):
     data = data.copy()
@@ -304,3 +273,19 @@ def get_data_for_backtest():
         end_date=cfg.get('end_date'),
         frequency=cfg.get('frequency')
     )
+
+# Import calculate_indicator_summary_stats for test compatibility
+def calculate_indicator_summary_stats(trade_log, indicators=None):
+    from tech_analysis.utils import calculate_indicator_summary_stats as _cis
+    if indicators is None:
+        # Provide sensible default for legacy test: all numeric fields in trade_log
+        import pandas as pd
+        df = pd.DataFrame(trade_log)
+        indicators = [col for col in df.columns if df[col].dtype.kind in 'fi']
+        return _cis(df, indicators)
+    elif isinstance(trade_log, list):
+        import pandas as pd
+        df = pd.DataFrame(trade_log)
+        return _cis(df, indicators)
+    else:
+        return _cis(trade_log, indicators)

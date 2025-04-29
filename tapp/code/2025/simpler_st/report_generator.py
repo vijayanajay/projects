@@ -412,7 +412,6 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
             prev_regime = None
             start_date = None
             count = 0
-            threshold = min_duration - 1 # Check against min_duration - 1
             # Handle both pandas Series and numpy array/list
             if hasattr(series, 'items'):
                 iterator = series.items()
@@ -427,13 +426,13 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
                 elif regime == prev_regime:
                     count += 1
                 else:
-                    if count > threshold:
+                    if count >= min_duration:
                         filtered.append((start_date, date, prev_regime, count))  # Now includes duration
                     prev_regime = regime
                     start_date = date
                     count = 1
             # Handle last regime
-            if prev_regime is not None and count > threshold:
+            if prev_regime is not None and count >= min_duration:
                 filtered.append((start_date, date, prev_regime, count))  # Now includes duration
             return filtered
         # Call the function with the min_days parameter
@@ -441,7 +440,16 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
         if filtered_regimes:
             md_lines.append("\n| Start Date | End Date | Regime | Days |\n|---|---|---|---|")
             for start, end, regime, days in filtered_regimes:
-                md_lines.append(f"| {start} | {end} | {regime} | {days} |")
+                # Format start and end as YYYY-MM-DD if possible
+                if hasattr(start, 'strftime'):
+                    start_str = start.strftime('%Y-%m-%d')
+                else:
+                    start_str = str(start)
+                if hasattr(end, 'strftime'):
+                    end_str = end.strftime('%Y-%m-%d')
+                else:
+                    end_str = str(end)
+                md_lines.append(f"| {start_str} | {end_str} | {regime} | {days} |")
         else:
             # Update the message to use min_days
             md_lines.append(f"\n_No regime persisted more than {min_days - 1} days in a row._\n")

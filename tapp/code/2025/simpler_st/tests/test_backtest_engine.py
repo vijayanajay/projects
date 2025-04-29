@@ -411,3 +411,39 @@ def test_export_backtest_results_serializes_numpy_types(tmp_path):
     assert result['trade_log'][0]['pnl'] == 10.5
     assert result['metrics']['total_return'] == 0.123
     assert result['metrics']['num_trades'] == 1
+
+def test_calculate_atr_requires_high_low():
+    import pandas as pd
+    from tech_analysis.utils import calculate_atr
+    # DataFrame missing high/low columns
+    df = pd.DataFrame({
+        'close': [1, 2, 3, 4, 5]
+    })
+    try:
+        _ = calculate_atr(df, window=3)
+    except ValueError as e:
+        msg = str(e).lower()
+        assert "high" in msg and "low" in msg
+    else:
+        raise AssertionError("calculate_atr should raise ValueError if 'high'/'low' columns are missing.")
+
+def test_sma_crossover_does_not_recalculate_indicators():
+    import pandas as pd
+    from tech_analysis.backtest import sma_crossover_backtest_with_log
+    # Precompute indicators
+    df = pd.DataFrame({
+        'close': [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1],
+        'high': [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1],
+        'low': [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1],
+        'volume': [100]*11
+    })
+    df['sma_short'] = df['close'].rolling(window=3, min_periods=1).mean()
+    df['sma_long'] = df['close'].rolling(window=5, min_periods=1).mean()
+    df['atr'] = 42.0  # Sentinel value
+    df['rsi'] = 99.0  # Sentinel value
+    strategy_params = {'commission': 0.0, 'slippage': 0.0}
+    result = sma_crossover_backtest_with_log(df, 3, 5, strategy_params)
+    # Check that the sentinel values are preserved in the trade log
+    for trade in result['trade_log']:
+        assert trade.get('entry_rsi', 99.0) == 99.0
+        assert trade.get('entry_atr', 42.0) == 42.0

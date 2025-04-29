@@ -205,6 +205,28 @@ def test_regime_table_filters_short_runs(tmp_path):
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
+    # Look for the regime summary table
+    summary_start = text.find("## Regime Summary")
+    assert summary_start != -1, "Regime Summary section not found in report."
+    summary_text = text[summary_start:summary_start+1000]  # Extend window for robustness
+    # Look for a Markdown table row with 'Trending' and the expected duration
+    found_row = False
+    table_lines = []
+    for line in summary_text.splitlines():
+        if "|" in line:
+            table_lines.append(line)
+            if "Trending" in line and "5" in line:
+                found_row = True
+                break
+    if not found_row:
+        print("\n--- Regime Summary Table Lines ---")
+        for l in table_lines:
+            print(l)
+        print("--- End Regime Summary Table Lines ---\n")
+        print("\n--- Full Regime Summary Section ---")
+        print(summary_text)
+        print("--- End Full Regime Summary Section ---\n")
+    assert found_row, "Regime of exactly min_duration days not included as a table row in summary."
     # Table should include only ranging (4 days) and calm (5 days), not trending (2) or volatile (3)
     assert "ranging" in text and "calm" in text, "Expected regimes not found in table."
     assert "trending" not in text, "Short trending regime should not be in table."
@@ -1081,12 +1103,7 @@ def test_report_does_not_show_zero_or_unknown_for_nontrivial_stats(tmp_path):
         'Max. Drawdown [%]': -8.2,
         'regime_summary': 'Trending: 70%, Ranging: 20%, Volatile: 10%',
         'rationale_summary': 'Buy on crossover; Sell on crossunder',
-        'strategy_params': {'position_size': 1, 'initial_cash': 1},
-        '_trades': [
-            {'side': 'buy', 'price': 100, 'size': 1, 'date': '2025-01-01', 'rationale': 'SMA cross'},
-            {'side': 'sell', 'price': 110, 'size': 1, 'date': '2025-01-10', 'rationale': 'Profit target'}
-        ],
-        'equity_curve': [10000, 10100, 10200, 10400, 11570],
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     from report_generator import generate_markdown_report
     bt = dummy_bt()  # Provided earlier in this file
@@ -1101,3 +1118,114 @@ def test_report_does_not_show_zero_or_unknown_for_nontrivial_stats(tmp_path):
     assert "Max Drawdown: 0.00%" not in text, "Incorrect zero drawdown shown."
     assert "Regime Summary: Unknown: 100%" not in text, "Incorrect regime summary shown."
     assert "Rationale Summary: No rationale provided" not in text, "Incorrect rationale summary shown."
+
+def test_trade_log_no_duplicate_fields(tmp_path):
+    import pandas as pd
+    stats = {
+        'Return [%]': 8.0,
+        'Sharpe Ratio': 1.1,
+        'Max. Drawdown [%]': -3.0,
+        'regime_summary': 'Trending: 70%, Ranging: 20%, Volatile: 10%',
+        '_trades': pd.DataFrame([
+            {'EntryTime': '2025-04-01', 'EntryPrice': 100, 'ExitTime': '2025-04-10', 'ExitPrice': 110, 'PnL': 10.0, 'PositionSize': 50, 'Rationale': 'Buy: SMA cross'},
+            {'EntryTime': '2025-04-15', 'EntryPrice': 105, 'ExitTime': '2025-04-20', 'ExitPrice': 108, 'PnL': 3.0, 'PositionSize': 40, 'Rationale': 'Sell: target hit'}
+        ]),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    
+    # Find the Trade Log section
+    trade_log_start = text.find("Trade Log")
+    assert trade_log_start != -1, "Trade Log section not found in report."
+    trade_log_text = text[trade_log_start:]
+    # Only consider the first N lines after Trade Log (for the two trades)
+    trade_lines = trade_log_text.splitlines()[1:20]  # Read enough lines for two trades
+    
+    # For each field, ensure only one output per trade (no duplicate key lines)
+    fields = ['EntryTime', 'EntryPrice', 'ExitTime', 'ExitPrice', 'PnL', 'PositionSize', 'Rationale']
+    for field in fields:
+        # Count lines with either bolded or plain key for this field
+        bolded = sum(1 for line in trade_lines if f"**{field}:" in line)
+        plain = sum(1 for line in trade_lines if f"{field}:" in line and not line.strip().startswith("**"))
+        # There should not be both a bolded and a plain line for the same field in the same trade
+        assert not (bolded > 0 and plain > 0), f"Duplicate output for field '{field}' in trade log."
+        # There should not be more than one output per field per trade
+        assert bolded <= 2, f"Field '{field}' appears more than once in bold in trade log."
+        assert plain <= 2, f"Field '{field}' appears more than once in plain in trade log."
+
+def test_regime_filter_includes_exact_min_duration(tmp_path):
+    import pandas as pd
+    # Simulate a regime series with a regime of exactly min_duration days
+    min_duration = 5
+    # 5 days of 'Trending', then 3 days of 'Ranging'
+    dates = pd.date_range('2025-04-01', periods=8)
+    regimes = ['Trending'] * 5 + ['Ranging'] * 3
+    regime_series = pd.Series(regimes, index=dates)
+    # Patch stats to include this regime_series and a dummy trade log
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'regime_series': regime_series,
+        '_trades': pd.DataFrame(),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1, 'min_regime_days': 5}
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    # Look for the regime summary table
+    summary_start = text.find("## Regime Summary")
+    assert summary_start != -1, "Regime Summary section not found in report."
+    summary_text = text[summary_start:summary_start+1000]  # Extend window for robustness
+    # Look for a Markdown table row with 'Trending' and the expected duration
+    found_row = False
+    table_lines = []
+    for line in summary_text.splitlines():
+        if "|" in line:
+            table_lines.append(line)
+            if "Trending" in line and "5" in line:
+                found_row = True
+                break
+    if not found_row:
+        print("\n--- Regime Summary Table Lines ---")
+        for l in table_lines:
+            print(l)
+        print("--- End Regime Summary Table Lines ---\n")
+        print("\n--- Full Regime Summary Section ---")
+        print(summary_text)
+        print("--- End Full Regime Summary Section ---\n")
+    assert found_row, "Regime of exactly min_duration days not included as a table row in summary."
