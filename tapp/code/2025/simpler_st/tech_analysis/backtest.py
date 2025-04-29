@@ -1,6 +1,7 @@
 import pandas as pd
 from tech_analysis.market_regimes import classify_market_regime
 import numpy as np
+from tech_analysis.utils import calculate_atr
 
 # Helper to convert NumPy types to Python types recursively
 def convert_numpy_types(obj):
@@ -37,15 +38,6 @@ def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: i
             trades.append({'action': 'sell', 'index': idx})
             position = None
     return trades
-
-def apply_transaction_costs(entry_price, exit_price, commission=0.0, slippage=0.0):
-    # Apply slippage: entry worse by +slippage, exit worse by -slippage
-    adj_entry = entry_price + slippage if entry_price is not None else None
-    adj_exit = exit_price - slippage if exit_price is not None else None
-    gross_pnl = (adj_exit - adj_entry) if adj_entry is not None and adj_exit is not None else 0
-    commission_cost = commission * (adj_entry + adj_exit) if commission and adj_entry is not None and adj_exit is not None else 0
-    net_pnl = gross_pnl - commission_cost
-    return adj_entry, adj_exit, net_pnl, commission_cost
 
 def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_window: int, strategy_params: dict):
     data = data.copy()
@@ -234,80 +226,6 @@ def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, ov
             entry_price = None
     return signals, trade_log
 
-def calculate_performance_metrics(equity_curve, trade_log, benchmark_equity_curve=None):
-    import numpy as np
-    def _calc_metrics(curve, log):
-        curve = np.array(curve)
-        total_return = (curve[-1] / curve[0]) - 1 if len(curve) > 1 else 0.0
-        wins = [trade.get('PnL', trade.get('pnl', 0)) for trade in log if trade.get('PnL', trade.get('pnl', 0)) > 0]
-        losses = [trade.get('PnL', trade.get('pnl', 0)) for trade in log if trade.get('PnL', trade.get('pnl', 0)) < 0]
-        win_rate = len(wins) / len(log) if log else 0.0
-        avg_win = np.mean(wins) if wins else 0.0
-        avg_loss = np.mean(losses) if losses else 0.0
-        largest_win = np.max(wins) if wins else 0.0
-        largest_loss = np.min(losses) if losses else 0.0
-        profit_factor = (np.sum(wins) / abs(np.sum(losses))) if losses else float('inf') if wins else 0.0
-        expectancy = (avg_win * win_rate + avg_loss * (1 - win_rate)) if log else 0.0
-        returns = np.diff(curve) / curve[:-1]
-        mean_ret = returns.mean() if len(returns) > 0 else 0.0
-        std_ret = returns.std(ddof=1) if len(returns) > 1 else 1e-10
-        sharpe_ratio = (mean_ret / std_ret) * np.sqrt(252) if std_ret > 0 else 0.0
-        running_max = np.maximum.accumulate(curve)
-        drawdowns = (curve - running_max) / running_max
-        max_drawdown = drawdowns.min() if len(drawdowns) > 0 else 0.0
-        return {
-            'total_return': total_return,
-            'win_rate': win_rate,
-            'sharpe_ratio': sharpe_ratio,
-            'max_drawdown': abs(max_drawdown),
-            'average_win': avg_win,
-            'average_loss': avg_loss,
-            'largest_win': largest_win,
-            'largest_loss': largest_loss,
-            'profit_factor': profit_factor,
-            'expectancy': expectancy,
-        }
-    result = {'strategy': _calc_metrics(equity_curve, trade_log)}
-    if benchmark_equity_curve is not None:
-        result['benchmark'] = _calc_metrics(benchmark_equity_curve, [])
-    return result
-
-def correlate_performance_with_regimes(trade_log):
-    """
-    Groups trades by regime and summarizes mean PnL, count, avg win/loss, largest win/loss, profit factor, expectancy per regime.
-    Returns dict: {regime: {...}}
-    """
-    from collections import defaultdict
-    import numpy as np
-    regime_trades = defaultdict(list)
-    for trade in trade_log:
-        regime = trade.get('regime')
-        pnl = trade.get('PnL', trade.get('pnl', 0))
-        regime_trades[regime].append(pnl)
-    result = {}
-    for regime, pnls in regime_trades.items():
-        wins = [p for p in pnls if p > 0]
-        losses = [p for p in pnls if p < 0]
-        win_rate = len(wins) / len(pnls) if pnls else 0.0
-        avg_win = np.mean(wins) if wins else 0.0
-        avg_loss = np.mean(losses) if losses else 0.0
-        largest_win = np.max(wins) if wins else 0.0
-        largest_loss = np.min(losses) if losses else 0.0
-        profit_factor = (np.sum(wins) / abs(np.sum(losses))) if losses else float('inf') if wins else 0.0
-        expectancy = (avg_win * win_rate + avg_loss * (1 - win_rate)) if pnls else 0.0
-        result[regime] = {
-            'mean_pnl': np.mean(pnls) if pnls else 0.0,
-            'count': len(pnls),
-            'win_rate': win_rate,
-            'average_win': avg_win,
-            'average_loss': avg_loss,
-            'largest_win': largest_win,
-            'largest_loss': largest_loss,
-            'profit_factor': profit_factor,
-            'expectancy': expectancy,
-        }
-    return result
-
 def export_backtest_results(trade_log, metrics, output_path):
     """
     Export trade log and metrics to a JSON file for report generation.
@@ -320,7 +238,7 @@ def export_backtest_results(trade_log, metrics, output_path):
 
 def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
     """
-    Unified portfolio-level backtest for multiple tickers, aggregating trades with full indicator/context fields.
+    Unified portfolio-level backtest for multiple tickers, simulating shared cash, position sizing, and time-step-based trade selection.
     data_dict: dict of ticker -> pd.DataFrame with 'close' column
     Returns: {'portfolio_state': PortfolioState, 'trade_log': list, 'strategy_params': dict, 'assets': tickers}
     """
@@ -330,28 +248,39 @@ def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
     pf = PortfolioState(initial_cash, strategy_params=strategy_params)
     trade_log = []
     tickers = list(data_dict.keys())
-    # For each ticker, run sma_crossover_backtest_with_log and aggregate trade logs
-    for ticker in tickers:
-        df = data_dict[ticker]
-        # Use short_window and long_window from strategy_params
-        short_window = strategy_params.get('short_window', 20)
-        long_window = strategy_params.get('long_window', 50)
-        _, ticker_trade_log = sma_crossover_backtest_with_log(df, short_window, long_window, strategy_params)
-        for trade in ticker_trade_log:
-            trade['ticker'] = ticker
-            trade['action'] = 'buy'
-            trade['qty'] = trade.get('entry_volume', trade.get('EntryVolume', trade.get('volume', 1)))
-            if not trade.get('rationale') or not trade['rationale'].strip():
-                trade['rationale'] = f"Buy: {ticker} at entry index {trade.get('entry_index', '?')}"
-            trade_log.append(trade)
-    # Simulate portfolio state (cash, equity curve) as before
-    # For simplicity, keep original PortfolioState logic for equity curve
-    # (Optionally, you could update this to reflect true multi-asset cash management)
     max_len = max(len(df) for df in data_dict.values())
+    last_prices = {ticker: data_dict[ticker]['close'].iloc[0] for ticker in tickers}
+    # For each time step, evaluate all tickers and buy if signal, respecting cash and position size
     for i in range(1, max_len):
-        price_dict = {ticker: data_dict[ticker]['close'].iloc[i] if i < len(data_dict[ticker]) else data_dict[ticker]['close'].iloc[-1] for ticker in tickers}
-        pf.update_equity(price_dict)
-    return {'portfolio_state': pf, 'trade_log': trade_log, 'strategy_params': strategy_params, 'assets': tickers}
+        for ticker in tickers:
+            df = data_dict[ticker]
+            if i >= len(df):
+                continue
+            price = df['close'].iloc[i]
+            prev_price = df['close'].iloc[i-1]
+            last_prices[ticker] = price
+            # Simple signal: buy if price increased from previous step
+            signal = price > prev_price
+            if signal and pf.cash >= position_size:
+                qty = int(position_size // price)
+                if qty > 0:
+                    pf.buy(ticker, price, qty, f"Buy: {ticker} at index {i} due to price increase")
+                    trade_log.append({
+                        'ticker': ticker,
+                        'action': 'buy',
+                        'qty': qty,
+                        'price': price,
+                        'index': i,
+                        'rationale': f"Buy: {ticker} at index {i} due to price increase"
+                    })
+        pf.update_equity(last_prices)
+    result = {
+        'portfolio_state': pf,
+        'trade_log': trade_log,
+        'strategy_params': strategy_params,
+        'assets': tickers
+    }
+    return result
 
 # Utility to load config and fetch data with timeframe/frequency
 import json
@@ -375,91 +304,3 @@ def get_data_for_backtest():
         end_date=cfg.get('end_date'),
         frequency=cfg.get('frequency')
     )
-
-# --- ATR Calculation Utility ---
-def calculate_atr(data: pd.DataFrame, window: int = 14):
-    """
-    Calculate the Average True Range (ATR) for a DataFrame with columns 'high', 'low', 'close'.
-    If 'high' and 'low' are missing, fallback to use 'close' only (ATR=rolling std).
-    """
-    if all(col in data.columns for col in ['high', 'low', 'close']):
-        high = data['high']
-        low = data['low']
-        close = data['close']
-        prev_close = close.shift(1)
-        tr = pd.concat([
-            high - low,
-            (high - prev_close).abs(),
-            (low - prev_close).abs()
-        ], axis=1).max(axis=1)
-        atr = tr.rolling(window=window, min_periods=1).mean()
-    else:
-        # Fallback: rolling std as proxy
-        atr = data['close'].rolling(window=window, min_periods=1).std()
-    return atr
-
-# --- Indicator Summary Stats ---
-def calculate_indicator_summary_stats(trade_log):
-    import numpy as np
-    fields = ['atr_entry', 'volume_entry']
-    stats = {}
-    for field in fields:
-        values = [trade.get(field, 0) for trade in trade_log if field in trade]
-        stats[field] = {
-            'mean': float(np.mean(values)) if values else 0.0,
-            'min': float(np.min(values)) if values else 0.0,
-            'max': float(np.max(values)) if values else 0.0
-        }
-    return stats
-
-def extract_drawdown_periods(equity_curve):
-    """
-    Given an equity curve (list or np.array), return a list of dicts:
-    Each dict: {'start': i_start, 'trough': i_trough, 'end': i_end, 'depth': float, 'recovery': int}
-    - start: index where drawdown begins
-    - trough: index of lowest equity in drawdown
-    - end: index where previous high is regained
-    - depth: % loss from peak to trough
-    - recovery: bars from trough to end (0 if never recovered)
-    """
-    import numpy as np
-    eq = np.array(equity_curve)
-    if len(eq) < 2:
-        return []
-    running_max = np.maximum.accumulate(eq)
-    drawdowns = (eq - running_max) / running_max
-    periods = []
-    in_dd = False
-    start = trough = end = None
-    min_dd = 0
-    for i in range(1, len(eq)):
-        if eq[i] < running_max[i]:
-            if not in_dd:
-                in_dd = True
-                start = i - 1
-                trough = i
-                min_dd = drawdowns[i]
-            else:
-                if drawdowns[i] < min_dd:
-                    min_dd = drawdowns[i]
-                    trough = i
-        elif in_dd:
-            end = i
-            periods.append({
-                'start': start,
-                'trough': trough,
-                'end': end,
-                'depth': float(min_dd),
-                'recovery': end - trough
-            })
-            in_dd = False
-    # If drawdown never recovered
-    if in_dd:
-        periods.append({
-            'start': start,
-            'trough': trough,
-            'end': None,
-            'depth': float(min_dd),
-            'recovery': 0
-        })
-    return periods

@@ -38,7 +38,7 @@ simpler_st/
 ├── tasks.md                    # Task tracking and changelog
 ├── tech_analysis/              # Core analysis code
 │   ├── __init__.py
-│   ├── backtest.py             # Backtesting, metrics, rationale
+│   ├── backtest.py             # Backtesting logic: SMA/RSI strategies, unified portfolio simulation, trade/rationale logging, and data export. Now delegates all pure utilities (ATR calculation, transaction cost application, performance metrics, regime correlation, indicator summary, drawdown analysis) to `tech_analysis/utils.py`.
 │   │   - 2025-04-29: Fixed bug in rsi_strategy_backtest to handle None for strategy_params (now defaults ticker to 'UNKNOWN'). TDD test added.
 │   ├── data/
 │   │   ├── .gitkeep
@@ -46,7 +46,8 @@ simpler_st/
 │   │   ├── fetcher.py          # Data fetching, cleaning, caching
 │   │   └── stocks_list.py      # List of NSE tickers
 │   ├── market_regimes.py       # Regime classification logic
-│   └── portfolio.py            # Portfolio state/logic
+│   ├── portfolio.py            # Portfolio state/logic
+│   └── utils.py                # Utility functions for ATR calculation, transaction cost application, performance metrics, regime correlation, indicator summary, and drawdown analysis. All logic extracted from `backtest.py` for single responsibility. TDD test coverage.
 └── tests/                      # All test modules
     ├── test_backtest_engine.py
     ├── test_data_fetcher.py
@@ -97,11 +98,12 @@ All static images (charts, tables) generated for embedding in Markdown reports.
 All generated Markdown reports (e.g., `portfolio_report.md`).
 
 ### tech_analysis/
-- **backtest.py:** All backtesting logic: SMA/RSI strategies, unified portfolio simulation, trade/rationale logging, performance metrics, regime detection, parameter sensitivity, transaction cost handling. Utility functions for drawdown, indicator stats, exporting results. All trade logs and metrics are net of costs. TDD test coverage.
+- **backtest.py:** Backtesting logic: SMA/RSI strategies, unified portfolio simulation, trade/rationale logging, and data export. Now delegates all pure utilities (ATR calculation, transaction cost application, performance metrics, regime correlation, indicator summary, drawdown analysis) to `tech_analysis/utils.py`.
 - **market_regimes.py:** Implements market regime classification for price series.
 - **portfolio.py:** Portfolio state management and logic.
 - **data/fetcher.py:** Data fetching, cleaning, caching, and loading. Batch/single-ticker support, Parquet caching.
 - **data/stocks_list.py:** Curated list of NSE stock symbols for batch analysis.
+- **utils.py:** Utility functions for ATR calculation, transaction cost application, performance metrics, regime correlation, indicator summary, and drawdown analysis. All logic extracted from `backtest.py` for single responsibility. TDD test coverage.
 
 ### tests/
 All test modules, covering backtest logic, data handling, regime classification, pipeline, report generation, and transaction costs. TDD ensures all major features and report sections are robustly tested.
@@ -144,6 +146,8 @@ All major report sections and features are verified by TDD tests in `tests/test_
 - Updated report_generator.py: All required Markdown report images and sections (benchmark comparison, holding duration, regime barplot, strategy rule summary, trade markup, trade-level charts per ticker) are now robustly generated and embedded, with placeholders for missing content. Case-insensitive data handling added for trade log and time fields.
 - All previously pending technical review tasks and test failures resolved. No new files or modules introduced; no changes to file responsibilities. Codebase is now in a passing, maintainable state.
 - [x] 2025-04-30: Refactored `generate_markdown_report` to always generate and embed both regime barplot and boxplot as static images in the Markdown report. Standardized image embedding logic using a helper function. This resolves the test failure for regime plot embedding and ensures robust, user-focused documentation in line with Kalish Nadh's Markdown visualization philosophy. TDD verified in `tests/test_report_generation.py`.
+- [x] 2025-04-29: Portfolio-level backtest simulation refactored. `tech_analysis/backtest.py::portfolio_backtest` now implements a true time-step-based, portfolio-level simulation (shared cash, cross-ticker signal evaluation, portfolio-level position sizing, and rationale logging). Verified by TDD (`test_portfolio_backtest_multi_ticker`).
+- [x] 2025-04-30: Report generator commission/slippage sourcing refactored. `report_generator.py::generate_markdown_report` now sources commission and slippage exclusively from `stats['strategy_params']`, not from Backtest objects. All relevant tests updated and passing. No changes to file responsibilities, but logic is now minimal, robust, and TDD-verified.
 
 ## [2025-04-30] Markdown Report Generation Improvements
 

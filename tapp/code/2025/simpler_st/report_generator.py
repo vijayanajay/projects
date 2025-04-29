@@ -236,8 +236,8 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
     # --- Markdown Content ---
     # Section: Assumptions
     md_lines.append("## Assumptions: Slippage and Commission\n")
-    commission = getattr(bt, '_commission', stats.get('strategy_params', {}).get('commission', 0.002))
-    slippage = getattr(bt, '_slippage', stats.get('strategy_params', {}).get('slippage', 0.0))
+    commission = stats.get('strategy_params', {}).get('commission', 0.002)
+    slippage = stats.get('strategy_params', {}).get('slippage', 0.0)
     md_lines.append(f"- **Slippage:** A slippage of {slippage} per trade is applied to all executions (entry and exit prices adjusted by ±slippage). (slippage={slippage})\n")
     md_lines.append(f"- **Commission:** A fixed commission rate of {commission * 100:.2f}% per trade is applied, as set in the backtesting engine (commission={commission}).\n")
     md_lines.append("\nThese assumptions may affect real-world applicability and should be reviewed for live trading scenarios.\n")
@@ -733,8 +733,8 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
     has_boxplot = False
     if trades and isinstance(trades, list) and len(trades) > 0:
         trades_df = pd.DataFrame(trades)
-        if 'regime' in trades_df.columns and ('PnL' in trades_df.columns or 'pnl' in trades_df.columns):
-            ycol = 'PnL' if 'PnL' in trades_df.columns else 'pnl'
+        if 'regime' in trades_df.columns and 'pnl' in trades_df.columns:
+            ycol = 'pnl'
             plt.figure(figsize=(5,3), facecolor='white')
             sns.boxplot(data=trades_df, x='regime', y=ycol, hue='regime', palette='Set2', legend=False)
             plt.title('PnL Distribution by Regime')

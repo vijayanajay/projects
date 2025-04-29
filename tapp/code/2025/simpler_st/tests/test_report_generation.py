@@ -415,31 +415,37 @@ def test_report_risk_section_missing_keys(tmp_path):
         assert "position_size" in str(e) or "initial_cash" in str(e)
 
 def test_markdown_includes_assumptions_section(tmp_path):
+    import pandas as pd
     stats = {
-        'total_return': 0.1,
-        'sharpe_ratio': 1.0,
-        'max_drawdown': 0.05,
-        'win_rate': 0.6,
-        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+        'strategy_params': {
+            'commission': 0.01,
+            'slippage': 0.5,
+            'position_size': 1,
+            'initial_cash': 10000
+        },
+        '_trades': pd.DataFrame([])
     }
     class DummyBT:
-        _commission = 0.003
+        _commission = 0.002
+        _slippage = 0.0
         def plot(self, filename=None):
+            import matplotlib.pyplot as plt
             plt.figure()
             plt.plot([0, 1], [0, 1])
             plt.savefig(filename)
             plt.close()
     bt = DummyBT()
+    import os
     os.chdir(tmp_path)
+    from report_generator import generate_markdown_report
     generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
     assert "Assumptions: Slippage and Commission" in text, "Assumptions section missing."
-    # Updated: check for new slippage assumption text (not the old 'No explicit slippage is modeled')
-    assert ("Slippage" in text or "slippage" in text), "Slippage assumption missing."
-    assert "commission=0.003" in text, "Commission value missing or incorrect."
+    assert "commission=0.01" in text, "Commission value missing or incorrect."
+    assert ("slippage=0.5" in text or "slippage: 0.5" in text), "Slippage value missing or incorrect."
 
 def test_markdown_includes_parameter_sensitivity(tmp_path):
     """
@@ -599,12 +605,13 @@ def test_markdown_commission_and_slippage_affect_pnl_and_report(tmp_path):
         'Max. Drawdown [%]': -4.0,
         'regime_summary': 'Trending: 60%, Ranging: 30%, Volatile: 10%',
         '_trades': pd.DataFrame(trades),
-        'strategy_params': {'position_size': 1, 'initial_cash': 1, 'commission': 0.01, 'slippage': 0.5}
+        'strategy_params': {'position_size': 1, 'initial_cash': 1, 'commission': 0.02, 'slippage': 0.7}
     }
     class DummyBT:
-        _commission = 0.01
-        _slippage = 0.5
+        _commission = 0.01  # Should be ignored
+        _slippage = 0.5     # Should be ignored
         def plot(self, filename=None):
+            import matplotlib.pyplot as plt
             plt.figure()
             plt.plot([0, 1], [0, 1])
             plt.savefig(filename)
@@ -618,13 +625,15 @@ def test_markdown_commission_and_slippage_affect_pnl_and_report(tmp_path):
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
-    # Assumptions section states both commission and slippage
+    # Assumptions section must state commission and slippage from stats['strategy_params'], not bt
     assert "Assumptions: Slippage and Commission" in text
-    assert "commission=0.01" in text
-    assert "slippage=0.5" in text or "slippage: 0.5" in text
-    # Check that net PnL is reduced by both costs
-    # (10+3) gross, minus 2*commission (0.13) and 2*slippage (1.0)
-    expected_net = 10+3 - 2*0.01*100 - 2*0.5  # commission as percent of price, slippage per trade
+    assert "commission=0.02" in text, "Commission should be sourced from stats['strategy_params'] only."
+    assert ("slippage=0.7" in text or "slippage: 0.7" in text), "Slippage should be sourced from stats['strategy_params'] only."
+    # Should not mention bt._commission or bt._slippage values
+    assert "commission=0.01" not in text, "Should not use bt._commission."
+    assert ("slippage=0.5" not in text and "slippage: 0.5" not in text), "Should not use bt._slippage."
+    # Check that net PnL is reduced by both costs (using stats['strategy_params'] values)
+    expected_net = 10+3 - 2*0.02*100 - 2*0.7  # commission as percent of price, slippage per trade
     assert str(int(expected_net)) in text or str(round(expected_net, 2)) in text, "Net PnL after costs not shown or incorrect."
 
 def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
