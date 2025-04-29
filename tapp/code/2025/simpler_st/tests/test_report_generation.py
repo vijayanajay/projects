@@ -36,7 +36,7 @@ def test_markdown_contains_regime_summary(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -55,7 +55,7 @@ def test_markdown_includes_equity_curve_chart(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     chart_path = tmp_path / "plots/portfolio_equity.png"
     assert chart_path.exists(), "Equity curve chart not generated."
     md_path = tmp_path / "reports/portfolio_report.md"
@@ -90,7 +90,7 @@ def test_markdown_includes_trade_log(tmp_path):
             return DummyStrategy()
     bt = DummyBT()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -113,7 +113,7 @@ def test_markdown_includes_analyst_notes_placeholder(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -131,7 +131,7 @@ def test_markdown_includes_analyst_notes_substantive(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -168,7 +168,7 @@ def test_markdown_includes_rationale_summary(tmp_path):
             return DummyStrategy()
     bt = DummyBT()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -194,7 +194,7 @@ def test_regime_table_filters_short_runs(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -227,7 +227,7 @@ def test_regime_definitions_are_parameterized(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -272,8 +272,7 @@ def test_markdown_includes_trade_level_chart(tmp_path):
             return DummyStrategy()
     bt = DummyBT()
     os.chdir(tmp_path)
-    from report_generator import generate_markdown_report
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     chart_path = tmp_path / "plots/trade_chart.png"
     md_path = tmp_path / "reports/portfolio_report.md"
     assert chart_path.exists(), "Trade-level chart not generated."
@@ -293,7 +292,7 @@ def test_markdown_includes_drawdown_curve(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     chart_path = tmp_path / "plots/drawdown_curve.png"
     assert chart_path.exists(), "Drawdown curve chart not generated."
     md_path = tmp_path / "reports/portfolio_report.md"
@@ -313,7 +312,7 @@ def test_markdown_includes_return_distribution(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     chart_path = tmp_path / "plots/return_distribution.png"
     # The file may be named differently, so just check for the section in the report
     md_path = tmp_path / "reports/portfolio_report.md"
@@ -337,7 +336,7 @@ def test_markdown_includes_trade_heatmap(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     chart_path = tmp_path / "plots/trade_heatmap.png"
     assert chart_path.exists(), "Trade heatmap not generated."
     md_path = tmp_path / "reports/portfolio_report.md"
@@ -371,7 +370,7 @@ def test_report_risk_section_uses_params(tmp_path):
                 parameters = {'n1': 1}
             return DummyStrategy()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, DummyBT())
+    generate_markdown_report(stats, DummyBT(), output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -410,7 +409,7 @@ def test_report_risk_section_missing_keys(tmp_path):
     import os
     os.chdir(tmp_path)
     try:
-        generate_markdown_report(stats, DummyBT())
+        generate_markdown_report(stats, DummyBT(), output_dir=tmp_path)
         assert False, "Should raise KeyError if sizing keys are missing."
     except KeyError as e:
         assert "position_size" in str(e) or "initial_cash" in str(e)
@@ -432,7 +431,7 @@ def test_markdown_includes_assumptions_section(tmp_path):
             plt.close()
     bt = DummyBT()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -483,7 +482,7 @@ def test_markdown_includes_parameter_sensitivity(tmp_path):
     reports_dir = tmp_path / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = reports_dir / "portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -515,7 +514,7 @@ def test_markdown_includes_trade_statistics_breakdown(tmp_path):
     stats.update(calculate_performance_metrics(equity_curve, trades))
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -545,7 +544,7 @@ def test_markdown_includes_risk_and_position_sizing_details(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -575,7 +574,7 @@ def test_markdown_includes_benchmark_comparison(tmp_path):
     bt = dummy_bt()
     os.chdir(tmp_path)
     # Generate the report
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     # Check for chart
     chart_path = tmp_path / "plots/benchmark_comparison.png"
     assert chart_path.exists(), "Benchmark comparison chart not generated."
@@ -614,7 +613,7 @@ def test_markdown_commission_and_slippage_affect_pnl_and_report(tmp_path):
     import os
     os.chdir(tmp_path)
     from report_generator import generate_markdown_report
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -665,7 +664,7 @@ def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
     bt = DummyBT()
     os.chdir(tmp_path)
     from report_generator import generate_markdown_report
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -691,7 +690,7 @@ def test_markdown_includes_drawdown_table(tmp_path):
     bt = dummy_bt()
     os.chdir(tmp_path)
     from report_generator import generate_markdown_report
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -729,7 +728,7 @@ def test_markdown_includes_holding_duration_distribution(tmp_path):
     from report_generator import generate_markdown_report
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     chart_path = tmp_path / "plots/holding_duration.png"
     md_path = tmp_path / "reports/portfolio_report.md"
     assert chart_path.exists(), "Holding duration histogram not generated."
@@ -759,7 +758,7 @@ def test_markdown_includes_regime_plots(tmp_path):
         'strategy_params': {'position_size': 1, 'initial_cash': 1},
     }
     os.chdir(tmp_path)
-    generate_markdown_report(stats, None)
+    generate_markdown_report(stats, None, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -789,7 +788,7 @@ def test_markdown_includes_out_of_sample_section(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     assert md_path.exists(), "Markdown report not generated."
     with open(md_path, encoding="utf-8") as f:
@@ -822,7 +821,7 @@ def test_markdown_includes_strategy_rule_summary(tmp_path):
     bt = dummy_bt()
     os.chdir(tmp_path)
     from report_generator import generate_markdown_report
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -861,7 +860,7 @@ def test_markdown_includes_trade_markup_visuals_per_ticker(tmp_path):
     bt = DummyBT()
     os.chdir(tmp_path)
     from report_generator import generate_markdown_report
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -914,7 +913,7 @@ def test_trade_log_includes_context_and_indicators(tmp_path):
             return DummyStrategy()
     bt = DummyBT()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -944,7 +943,7 @@ def test_markdown_includes_trade_duration_and_exposure(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -967,7 +966,7 @@ def test_markdown_includes_slippage_commission_sensitivity(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -988,7 +987,7 @@ def test_markdown_includes_per_period_benchmark_comparison(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats, bt)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
     md_path = tmp_path / "reports/portfolio_report.md"
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
@@ -1008,7 +1007,7 @@ def test_regime_barplot_handles_series_and_array(tmp_path):
     }
     bt = dummy_bt()
     os.chdir(tmp_path)
-    generate_markdown_report(stats_series, bt)
+    generate_markdown_report(stats_series, bt, output_dir=tmp_path)
     barplot_path = tmp_path / "plots/regime_barplot.png"
     assert barplot_path.exists(), "Regime barplot not generated for pandas Series."
 
@@ -1017,5 +1016,40 @@ def test_regime_barplot_handles_series_and_array(tmp_path):
         'regime_series': np.array(['trending', 'ranging', 'trending', 'volatile', 'trending']),
         'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
-    generate_markdown_report(stats_array, bt)
+    generate_markdown_report(stats_array, bt, output_dir=tmp_path)
     assert barplot_path.exists(), "Regime barplot not generated for numpy array."
+
+def test_regime_breakdown_with_series(tmp_path):
+    """
+    Test that generate_markdown_report correctly handles a Pandas Series for regime_series and produces a regime breakdown.
+    Should not fail due to incorrect use of .values() and should use value_counts().
+    """
+    import pandas as pd
+    from report_generator import generate_markdown_report
+    from datetime import datetime, timedelta
+    # Create a regime_series as a Pandas Series
+    dates = pd.date_range(start="2025-04-01", periods=10)
+    regimes = ["trending", "trending", "ranging", "ranging", "volatile", "volatile", "calm", "calm", "calm", "calm"]
+    regime_series = pd.Series(regimes, index=dates)
+    # Add a minimal trade log (required for regime breakdown)
+    trades = [
+        {"EntryTime": dates[0], "ExitTime": dates[1], "EntryPrice": 100, "ExitPrice": 105, "PnL": 5.0, "PositionSize": 10, "Rationale": "Test trade", "regime": regimes[0]},
+        {"EntryTime": dates[2], "ExitTime": dates[3], "EntryPrice": 102, "ExitPrice": 107, "PnL": 5.0, "PositionSize": 10, "Rationale": "Test trade", "regime": regimes[2]},
+        {"EntryTime": dates[4], "ExitTime": dates[5], "EntryPrice": 104, "ExitPrice": 109, "PnL": 5.0, "PositionSize": 10, "Rationale": "Test trade", "regime": regimes[4]},
+        {"EntryTime": dates[6], "ExitTime": dates[7], "EntryPrice": 106, "ExitPrice": 111, "PnL": 5.0, "PositionSize": 10, "Rationale": "Test trade", "regime": regimes[6]},
+    ]
+    stats = {
+        "regime_series": regime_series,
+        "trades": trades,
+        "strategy_params": {"position_size": 1, "initial_cash": 1}
+    }
+    class DummyBT:
+        pass
+    # Run report generation
+    generate_markdown_report(stats, DummyBT(), output_dir=tmp_path)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    # The report should include the regime breakdown
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Regime Breakdown" in text, "Regime breakdown section not found."
+    assert "trending" in text and "ranging" in text and "volatile" in text and "calm" in text, "Not all regimes present in breakdown."

@@ -8,54 +8,176 @@
 
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-*No pending tasks. All actionable items have been addressed.*
-
-## Completed Tasks (Previously Pending)
-
-### 2025-04-30
-- **Test Bug (Missing Parameter) in `test_rsi_strategy_basic`:**
-    - Fixed by updating `tests/test_backtest_engine.py` to always pass a minimal dictionary for the `strategy_params` argument, preventing a `NoneType` error. Confirmed by passing all tests via TDD.
-
----
-
 Okay, let's analyze these Pytest failures systematically.
 
 **Analysis Results & Actionable Tasks:**
 
-1.  **Diagnosed Root Cause:** Code Bug (Serialization Error) in `backtest.export_backtest_results`.
-    **Evidence/Reasoning:** The traceback for `test_export_backtest_results_for_report` shows `TypeError: Object of type int64 is not JSON serializable` during `json.dump`. This indicates that the `trade_log` or `metrics` data being exported contains NumPy integer types (`int64`), which the standard `json` library cannot serialize directly. This often happens when data originates from Pandas DataFrames.
-    **Suggested Action:** Modify the `backtest.export_backtest_results` function to ensure data is JSON serializable before dumping. A simple approach is to define a helper function that recursively converts NumPy types (like `np.int64`, `np.float64`) to standard Python types (`int`, `float`) within the `trade_log` list of dictionaries and the `metrics` dictionary before calling `json.dump`. Alternatively, use `json.dump` with a custom `default` handler that converts these types.
+Okay, let's analyze these Pytest failures meticulously.
 
-2.  **Diagnosed Root Cause:** Code Bug (Incorrect Attribute Access) in `report_generator.generate_markdown_report`.
-    **Evidence/Reasoning:** The failures in `test_pipeline_generates_markdown_report`, `test_pipeline_uses_config_params`, and `test_regime_table_filters_short_runs` all point to the same error: `TypeError: 'numpy.ndarray' object is not callable` at `report_generator.py:686` on the line `regime_counts = pd.Series(list(regime_series.values())).value_counts()`. The `regime_series` obtained from `stats` is likely a Pandas Series. Accessing `.values` on a Pandas Series returns a NumPy array (an attribute), not a method. The code attempts to *call* `.values()` as if it were a function.
-    **Suggested Action:** Correct the line `report_generator.py:686`. Instead of `regime_series.values()`, simply access the attribute `regime_series.values`. Even simpler and more direct, use the Pandas `value_counts()` method directly on the Series: change the line to `regime_counts = regime_series.value_counts()`.
+**Analysis:**
 
-3.  **Diagnosed Root Cause:** Test/Code Inconsistency (Column Naming) affecting `test_markdown_includes_trade_heatmap`.
-    **Evidence/Reasoning:** The test `test_markdown_includes_trade_heatmap` fails with `AssertionError: Trade heatmap not generated.` The code in `generate_markdown_report` requires lowercase column names (`ticker`, `regime`, `pnl`) to generate the heatmap pivot table. However, the test setup provides a DataFrame with capitalized names (`Ticker`, `PnL`, `Regime`). The check `all(col in trades_df.columns for col in ['ticker', 'regime', 'pnl'])` fails, skipping heatmap generation.
-    **Suggested Action:** Modify the test data creation in `test_markdown_includes_trade_heatmap` (in `tests/test_report_generation.py`) to use lowercase column names: `'ticker'`, `'pnl'`, `'regime'`, aligning with the code's expectation and common Pandas practice.
+I'll go through each failure identified in the `py_results.txt` output.
 
-4.  **Diagnosed Root Cause:** Test/Code Inconsistency (Column Naming) affecting `test_markdown_includes_holding_duration_distribution`.
-    **Evidence/Reasoning:** The test fails with `AssertionError: Holding duration histogram not generated.` The histogram generation logic in `generate_markdown_report` uses `.get('entry_time')` and `.get('exit_time')` to calculate durations. The test data, however, provides keys `EntryTime` and `ExitTime`. This case mismatch causes the `get` calls to return `None`, leaving the `holding_durations` list empty and skipping the chart generation block.
-    **Suggested Action:** Modify the test data creation in `test_markdown_includes_holding_duration_distribution` (in `tests/test_report_generation.py`) to use lowercase dictionary keys: `'entry_time'` and `'exit_time'`, matching the code's expectation.
+**Failures 3, 4, 5: `test_pipeline_generates_markdown_report`, `test_pipeline_uses_config_params`, `test_regime_table_filters_short_runs`**
 
-5.  **Diagnosed Root Cause:** Test/Code Inconsistency (Column Naming) affecting `test_markdown_includes_regime_plots`.
-    **Evidence/Reasoning:** The test fails with `AssertionError: Regime barplot not embedded in Markdown report.` The regime plot generation code in `generate_markdown_report` checks for columns `'regime'` and `'pnl'` in the DataFrame. The test provides data with keys `'PnL'` and `'regime'`. The case mismatch for `'pnl'` causes the column check to fail, skipping the plot generation.
-    **Suggested Action:** Modify the test data creation in `test_markdown_includes_regime_plots` (in `tests/test_report_generation.py`) to use the lowercase key `'pnl'` instead of `'PnL'`.
+These three tests fail with the *exact same error*:
 
-6.  **Diagnosed Root Cause:** Test/Code Inconsistency (Data Key Naming) affecting `test_markdown_includes_strategy_rule_summary`.
-    **Evidence/Reasoning:** The test fails with `AssertionError: Strategy rule summary section missing.` The report generation code in `report_generator.py` looks for strategy rules under the key `'strategy_rule_summary'` within the `stats` dictionary. The test, however, provides this data under the key `'strategy_rules'`.
-    **Suggested Action:** Modify the test setup in `test_markdown_includes_strategy_rule_summary` (in `tests/test_report_generation.py`) to use the key `'strategy_rule_summary'` instead of `'strategy_rules'` when providing the list of rules in the `stats` dictionary.
+1.  **Parse Failure:**
+    *   `TypeError: 'numpy.ndarray' object is not callable` in `report_generator.py:686`.
+    *   The failing line is `regime_counts = pd.Series(list(regime_series.values())).value_counts()`.
 
-7.  **Diagnosed Root Cause:** Code Bug (Missing Feature) in `report_generator.generate_markdown_report`.
-    **Evidence/Reasoning:** The test `test_markdown_includes_trade_level_chart_per_ticker` fails with `AssertionError: Trade-level chart for AAPL not generated.` The test correctly provides multi-ticker data as dictionaries in `stats`. The `generate_markdown_report` function has logic to handle dictionary-based `equity_curve` (it skips the *single* legacy chart), but it lacks the implementation loop to iterate through tickers and generate *individual* charts (e.g., `trade_chart_AAPL.png`, `trade_chart_MSFT.png`) as expected by the test.
-    **Suggested Action:** Implement the per-ticker chart generation logic within `generate_markdown_report`. Add a loop after the main chart generation sections that iterates through `stats['equity_curve'].keys()` (when it's a dict), extracts the relevant data (`eq_curve`, `sma`, `rsi`, `trades`) for that ticker, generates the plot using `matplotlib` (similar to the existing single-ticker chart logic), and saves it to a ticker-specific filename (e.g., `plots/trade_chart_{ticker}.png`). Ensure these charts are embedded in the Markdown report under appropriate headers.
+2.  **Understand Test Intent vs. Reality:**
+    *   **`test_pipeline_generates_markdown_report`:** Integration test for the full pipeline, expecting a report file.
+    *   **`test_pipeline_uses_config_params`:** Integration test checking if pipeline uses `config.json` parameters, also runs the full pipeline.
+    *   **`test_regime_table_filters_short_runs`:** Unit/integration test for `generate_markdown_report`, specifically testing regime filtering logic.
+    *   **Reality:** All three tests trigger the `generate_markdown_report` function, which contains the bug.
 
-8.  **Diagnosed Root Cause:** Test/Code Inconsistency (Column Naming) affecting `test_markdown_includes_holding_duration_distribution`.
-    **Evidence/Reasoning:** The test fails with `AssertionError: Holding duration histogram not generated.` The histogram generation logic in `generate_markdown_report` uses `.get('entry_time')` and `.get('exit_time')` to calculate durations. The test data, however, provides keys `EntryTime` and `ExitTime`. This case mismatch causes the `get` calls to return `None`, leaving the `holding_durations` list empty and skipping the chart generation block.
-    **Suggested Action:** Modify the test data creation in `test_markdown_includes_holding_duration_distribution` (in `tests/test_report_generation.py`) to use lowercase dictionary keys: `'entry_time'` and `'exit_time'`, matching the code's expectation.
+3.  **Analyze Code Under Test:**
+    *   In `report_generator.py:686`, the code attempts to get the values from the `regime_series` (a Pandas Series) and calculate value counts.
+    *   The `.values` attribute of a Pandas Series returns a NumPy array. It is an *attribute*, not a *method*.
+    *   The code incorrectly calls it as a method: `regime_series.values()`. This attempts to *call* the NumPy array returned by `.values`, leading to the `TypeError`.
+
+4.  **Determine Root Cause:**
+    *   **Code Bug:** Incorrect usage of the Pandas Series `.values` attribute (called as a method `values()` instead of accessed as `values`). This single bug causes failures in three different tests that execute this code path.
+
+5.  **Evaluate Test Logic and Validity:**
+    *   All three tests are valid in their intent. They fail due to this shared underlying bug in the code being tested or executed during the test.
+
+6.  **Propose Solutions:**
+    *   Correct the specific line in `report_generator.py`.
+
+**Failure 6: `test_markdown_includes_trade_heatmap`**
+
+1.  **Parse Failure:**
+    *   `AssertionError: Trade heatmap not generated.` in `tests/test_report_generation.py:343`.
+    *   The assertion `assert chart_path.exists()` failed, meaning the file `plots/trade_heatmap.png` was not created.
+
+2.  **Understand Test Intent vs. Reality:**
+    *   **Intent:** Verify that `generate_markdown_report` creates the heatmap image when provided with appropriate trade data.
+    *   **Reality:** The test provides a `_trades` DataFrame with columns 'Ticker', 'PnL', 'Regime' (note the capitalization).
+
+3.  **Analyze Code Under Test:**
+    *   The heatmap generation logic in `report_generator.py` (around line 571) checks for the existence of columns `'ticker', 'regime', 'pnl'` (lowercase) in the `trades_df`.
+    *   `trades_df = pd.DataFrame(trade_log)` is created earlier, likely preserving the original case from the input `stats['_trades']`.
+    *   The check `all(col in trades_df.columns for col in ['ticker', 'regime', 'pnl'])` fails because the expected lowercase column names do not match the uppercase names ('Ticker', 'Regime', 'PnL') provided in the test's DataFrame. This prevents the heatmap plotting code from executing.
+
+4.  **Determine Root Cause:**
+    *   **Code Bug (Case Sensitivity/Data Handling):** The code expects specific lowercase column names for heatmap generation, but the test provides capitalized names. The code isn't robust to case variations in input DataFrame columns.
+
+5.  **Evaluate Test Logic and Validity:**
+    *   The test setup is slightly inconsistent with the code's expectation (column casing). The code could be more robust. The test *does* correctly identify that the heatmap isn't generated under these conditions.
+
+6.  **Propose Solutions:**
+    *   Make the column check in `report_generator.py` case-insensitive, or normalize column names to lowercase before the check. The simplest change is modifying the check.
+
+**Failure 7: `test_markdown_includes_trade_level_chart_per_ticker`**
+
+1.  **Parse Failure:**
+    *   `AssertionError: Trade-level chart for AAPL not generated.` in `tests/test_report_generation.py:672`.
+    *   The assertion `assert chart_path.exists()` failed for the AAPL chart.
+
+2.  **Understand Test Intent vs. Reality:**
+    *   **Intent:** Verify that when multi-ticker data (dictionaries for curves, DataFrame for trades) is passed, `generate_markdown_report` creates individual trade charts for each ticker.
+    *   **Reality:** The test provides data in the expected multi-ticker format, including a `_trades` DataFrame with capitalized 'Ticker' column.
+
+3.  **Analyze Code Under Test:**
+    *   The per-ticker chart generation loop in `report_generator.py` (around line 698) iterates through tickers. Inside the loop, it filters the `trade_log` list using `t.get('ticker') == ticker` (line 706).
+    *   The `trade_log` list is derived from the input `stats['_trades']` DataFrame provided by the test, which has the column 'Ticker'.
+    *   `t.get('ticker')` (lowercase 't') will return `None` because the dictionary keys are capitalized ('Ticker'). The filter condition `t.get('ticker') == ticker` will always be false.
+    *   This results in an empty `trades` list for each ticker within the loop.
+    *   The plotting block condition `if eq_curve is not None and sma is not None and trades:` (line 707) fails because `trades` is empty, thus `plt.savefig` is never called.
+
+4.  **Determine Root Cause:**
+    *   **Code Bug (Case Sensitivity/Data Handling):** Similar to the heatmap failure, the code expects a lowercase 'ticker' key when filtering trades for per-ticker charts, but the data derived from the test's DataFrame uses 'Ticker'.
+
+5.  **Evaluate Test Logic and Validity:**
+    *   The test logic is valid for testing multi-ticker report generation. The data casing inconsistency reveals a bug.
+
+6.  **Propose Solutions:**
+    *   Modify the trade filtering logic (line 706) to be case-insensitive or check for both 'ticker' and 'Ticker'. Using the `get_any` helper function defined later in the same file would be consistent: `ticker_in_trade = get_any(t, 'ticker', 'Ticker')`. Change the filter to `trades = [t for t in trade_log if get_any(t, 'ticker', 'Ticker') == ticker]`.
+
+**Failure 8: `test_markdown_includes_holding_duration_distribution`**
+
+1.  **Parse Failure:**
+    *   `AssertionError: Holding duration histogram not generated.` in `tests/test_report_generation.py:737`.
+    *   The assertion `assert chart_path.exists()` failed for `plots/holding_duration.png`.
+
+2.  **Understand Test Intent vs. Reality:**
+    *   **Intent:** Verify that `generate_markdown_report` creates a holding duration histogram when trade data includes entry and exit times.
+    *   **Reality:** The test provides a `_trades` DataFrame with columns 'EntryTime' and 'ExitTime'.
+
+3.  **Analyze Code Under Test:**
+    *   The holding duration logic in `report_generator.py` (lines 204-205, 216-217) attempts to retrieve time values using `trade.get('entry_time')` and `trade.get('exit_time')` (lowercase).
+    *   The input DataFrame from the test uses 'EntryTime' and 'ExitTime' (uppercase).
+    *   The `get()` calls return `None` due to the case mismatch.
+    *   The `holding_durations` list remains empty.
+    *   The plotting block condition `if holding_durations:` (line 220) fails, and `plt.savefig` is never called.
+
+4.  **Determine Root Cause:**
+    *   **Code Bug (Case Sensitivity):** The code expects lowercase time keys ('entry_time', 'exit_time') but the test data uses uppercase ('EntryTime', 'ExitTime').
+
+5.  **Evaluate Test Logic and Validity:**
+    *   The test correctly provides the necessary time data. The failure highlights the code's lack of robustness to case variations.
+
+6.  **Propose Solutions:**
+    *   Modify the `get()` calls (lines 204-205, 216-217) to use the correct case ('EntryTime', 'ExitTime') or, preferably, use the `get_any` helper: `entry = get_any(trade, 'entry_time', 'EntryTime')`, `exit = get_any(trade, 'exit_time', 'ExitTime')`.
+
+**Failure 9: `test_markdown_includes_regime_plots`**
+
+1.  **Parse Failure:**
+    *   `AssertionError: Regime barplot not embedded in Markdown report.` in `tests/test_report_generation.py:770`.
+    *   The check `assert "regime_barplot.png" in text` failed.
+
+2.  **Understand Test Intent vs. Reality:**
+    *   **Intent:** Verify that regime analysis plots (barplot, boxplot) are generated and included in the Markdown file when relevant trade data is provided.
+    *   **Reality:** The test provides `stats['trades']` with 'PnL' and 'regime' keys.
+
+3.  **Analyze Code Under Test:**
+    *   The regime plotting logic exists (lines 657-683) and *should* execute based on the test data.
+    *   However, this test executes the same code path as Failures 3, 4, and 5, which crash at line 686 due to the `regime_series.values()` bug.
+    *   This crash occurs *after* the regime plots should have been generated and their Markdown lines added to the `md_lines` list, but *before* the final `f.write("\n".join(md_lines))` call (line 723).
+    *   Therefore, the report file (`md_path`) is likely incomplete or empty when the assertion is checked.
+
+4.  **Determine Root Cause:**
+    *   **Code Bug (Same as Failure 3):** The downstream crash at line 686 prevents the complete Markdown report from being written to disk, causing the assertion failure even though the plotting code might have run correctly.
+
+5.  **Evaluate Test Logic and Validity:**
+    *   The test is valid and would likely pass if the subsequent bug were fixed.
+
+6.  **Propose Solutions:**
+    *   Fix the root cause identified in Failure 3 (the `.values()` bug at line 686). This single fix should resolve Failures 3, 4, 5, 9, and 10.
+
+**Failure 10: `test_markdown_includes_strategy_rule_summary`**
+
+1.  **Parse Failure:**
+    *   `AssertionError: Strategy rule summary section missing.` in `tests/test_report_generation.py:831`.
+    *   The check `assert "Strategy Rules (Plain English)" in text` failed.
+
+2.  **Understand Test Intent vs. Reality:**
+    *   **Intent:** Verify that the strategy rules section is included in the report when `stats['strategy_rules']` is provided.
+    *   **Reality:** The test provides the `strategy_rules` list in `stats`.
+
+3.  **Analyze Code Under Test:**
+    *   The logic to add the strategy rules section exists in `report_generator.py` (lines 691-695).
+    *   This section comes *after* the code at line 686 where the crash identified in Failure 3 occurs.
+    *   The crash prevents this part of the code from executing and/or prevents the final report from being written correctly.
+
+4.  **Determine Root Cause:**
+    *   **Code Bug (Same as Failure 3):** The downstream crash at line 686 prevents the report from being fully generated and written, causing the assertion for this section to fail.
+
+5.  **Evaluate Test Logic and Validity:**
+    *   The test is valid.
+
+6.  **Propose Solutions:**
+    *   Fix the root cause identified in Failure 3 (the `.values()` bug at line 686). This should also resolve this failure.
+
+---
+
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
 
+- [x] Task 1: Serialization Error in backtest.export_backtest_results (2025-04-30)
+  - Fixed: Confirmed via strict TDD that export_backtest_results correctly serializes NumPy types to JSON using convert_numpy_types helper. Added explicit test (test_export_backtest_results_serializes_numpy_types) to tests/test_backtest_engine.py; test passes with no code change needed. No further action required.
 - [x] Task 12.1: Trade Statistics Breakdown (2025-04-28)
   - Implemented summary table showing average win, average loss, largest win, largest loss, profit factor, expectancy, and trade breakdown by regime (trending/ranging) in the Markdown report. All metrics are displayed in a clearly separated summary table and regime breakdown. Tests in tests/test_report_generation.py verify presence and correctness. TDD-compliant, minimal code.
 - [x] Task 12.2: Position Sizing & Risk Management Details (2025-04-28)
@@ -85,6 +207,8 @@ Okay, let's analyze these Pytest failures systematically.
 - [x] Design portfolio state structure (cash, holdings, transaction log, rationale log) (1h)
 - [x] Summarize rationale for report section (trade rationale aggregation and summary now included in report, TDD, minimal code, 2025-04-27)
 - [x] Standardized visual style and legends (all charts now use a consistent color palette, section headers use bold font, and legends are always present in both charts and captions. This ensures visual consistency and clarity throughout the report. Completed using TDD and minimal code, 2025-04-30)
+- [x] Added placeholder section for Analyst Notes and Suggestions in report template (TDD, minimal code, 2025-04-27)
+- [x] Implemented equity curve plotting and embedding in report (TDD, minimal code, 2025-04-27)
 - [x] Overlay SMA indicator with annotations for report (TDD, minimal code, 2025-04-29)
 - [x] Data Pipeline: Stock price fetcher, cleaning/validation, Parquet caching, and loading implemented with TDD.
 - [x] Backtesting Engine: SMA crossover and RSI strategies, trade execution/logging, and performance metrics (returns, Sharpe, drawdown, win rate) all TDD-verified.

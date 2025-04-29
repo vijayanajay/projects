@@ -148,7 +148,8 @@ def run_pipeline(tickers, output_dir=None, config_path=None):
         traceback.print_exc()
         raise
 
-    return stats
+    # Return all required outputs for tests: stats, pf, trade_log, regime_series
+    return stats, pf, trade_log, regime_series
 
 # --- Parameter Sensitivity/Robustness Analysis ---
 def run_parameter_sensitivity_analysis(tickers, output_dir=None, config_path=None):
@@ -175,8 +176,8 @@ def run_parameter_sensitivity_analysis(tickers, output_dir=None, config_path=Non
     # 3. Run with alternative config
     result2 = run_pipeline(tickers, output_dir=output_dir, config_path=alt_config_path)
     # 4. Plot both equity curves
-    eq1 = result1["equity_curve"] if isinstance(result1, dict) else None
-    eq2 = result2["equity_curve"] if isinstance(result2, dict) else None
+    eq1 = result1[0]["equity_curve"] if isinstance(result1, tuple) else None
+    eq2 = result2[0]["equity_curve"] if isinstance(result2, tuple) else None
     label1 = f"short_window={config['strategy_params']['short_window']}"
     label2 = f"short_window={alt_config['strategy_params']['short_window']}"
     plot_parameter_sensitivity(eq1, eq2, label1, label2, save_path="plots/parameter_sensitivity.png")

@@ -6,13 +6,17 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
+def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, output_dir=None):
     """
     Generates a portfolio report in Markdown format, including all key sections.
-    Output file: reports/portfolio_report.md
+    Output file: reports/portfolio_report.md (or output_dir if specified)
     """
-    os.makedirs("plots", exist_ok=True)
-    os.makedirs("reports", exist_ok=True)
+    # Use output_dir for all outputs if provided, else default
+    base_dir = output_dir if output_dir else os.getcwd()
+    plots_dir = os.path.join(base_dir, "plots")
+    reports_dir = os.path.join(base_dir, "reports")
+    os.makedirs(plots_dir, exist_ok=True)
+    os.makedirs(reports_dir, exist_ok=True)
     # --- Pre-initialize chart path variables to None to avoid UnboundLocalError ---
     abs_legacy_equity_chart_path = None
     abs_chart_path = None
@@ -58,7 +62,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             line += note
         md_lines.append(line + "\n")
     # --- Equity Curve Chart (legacy, always present) ---
-    legacy_equity_chart_path = f"plots/portfolio_equity.png"
+    legacy_equity_chart_path = os.path.join(plots_dir, "portfolio_equity.png")
     equity_curve = stats.get('equity_curve')
     # If dict (multi-ticker), pick first ticker for legacy chart
     if isinstance(equity_curve, dict):
@@ -89,7 +93,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
 
     # --- Benchmark Comparison Plot (new, if both present) ---
     benchmark_curve = stats.get('benchmark_curve') or stats.get('benchmark_equity_curve')
-    chart_path = f"plots/benchmark_comparison.png"
+    chart_path = os.path.join(plots_dir, "benchmark_comparison.png")
     benchmark_name = stats.get('benchmark_name', 'Benchmark')
     # Handle dicts for benchmark too
     if isinstance(benchmark_curve, dict):
@@ -121,7 +125,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
 
     # --- Drawdown Curve Visualization ---
     drawdown_curve = stats.get('drawdown_curve')
-    drawdown_chart_path = f"plots/drawdown_curve.png"
+    drawdown_chart_path = os.path.join(plots_dir, "drawdown_curve.png")
     if drawdown_curve is not None:
         plt.figure(facecolor='white')
         plt.plot(drawdown_curve, label='Drawdown', color='red')
@@ -137,7 +141,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
 
     # --- Return Distribution Visualization ---
     returns_dist = stats.get('returns_distribution')
-    return_dist_chart_path = f"plots/return_distribution.png"
+    return_dist_chart_path = os.path.join(plots_dir, "return_distribution.png")
     if returns_dist is not None:
         plt.figure(facecolor='white')
         mean = np.mean(returns_dist)
@@ -171,8 +175,6 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             df2 = df.copy()
             df2['depth'] = (df2['depth'] * 100).round(2)
             df2 = df2.rename(columns={'start': 'Start', 'trough': 'Trough', 'end': 'End', 'depth': 'Depth (%)', 'recovery': 'Recovery (bars)'})
-            plots_dir = os.path.join(os.getcwd(), 'plots')
-            os.makedirs(plots_dir, exist_ok=True)
             table_path = os.path.join(plots_dir, 'drawdown_table.png')
             fig, ax = plt.subplots(figsize=(min(10, 2+len(df2)*0.5), 1+0.5*len(df2)))
             ax.axis('off')
@@ -184,10 +186,10 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             plt.savefig(table_path, bbox_inches='tight', dpi=150)
             plt.close(fig)
             md_lines.append('## Drawdown Table\n')
-            md_lines.append('![](plots/drawdown_table.png)\n')
+            md_lines.append(f"![]({os.path.relpath(table_path, base_dir)})\n")
 
     # --- Holding Duration Histogram ---
-    holding_duration_chart_path = f"plots/holding_duration.png"
+    holding_duration_chart_path = os.path.join(plots_dir, "holding_duration.png")
     trade_log = stats.get('trades') or stats.get('_trades')
     holding_durations = []
     if isinstance(trade_log, pd.DataFrame) and not trade_log.empty:
@@ -228,7 +230,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         plt.savefig(abs_holding_duration_chart_path)
         plt.close()
         md_lines.append("\n## Trade Holding Duration Distribution\n")
-        md_lines.append(f"![Trade Holding Duration]({holding_duration_chart_path})\n")
+        md_lines.append(f"![]({os.path.relpath(holding_duration_chart_path, base_dir)})\n")
 
     # --- Markdown Content ---
     # Section: Assumptions
@@ -258,27 +260,29 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     md_lines.extend(metrics)
     # Embed equity curve chart (legacy)
     if abs_legacy_equity_chart_path is not None and os.path.exists(abs_legacy_equity_chart_path):
-        md_lines.append(f"\n![Equity Curve]({legacy_equity_chart_path})\n")
+        md_lines.append(f"\n![Equity Curve]({os.path.relpath(legacy_equity_chart_path, base_dir)})\n")
     # Benchmark Comparison Section (new)
-    if abs_chart_path is not None and os.path.exists(abs_chart_path):
-        md_lines.append(f"\n## Benchmark Comparison\n")
-        md_lines.append(f"![]({chart_path})\n")
-        # Minimal table comparing returns if both present
-        strat_return = stats.get('Return [%]', None)
-        bench_curve = stats.get('benchmark_curve') or stats.get('benchmark_equity_curve')
-        if strat_return is not None and bench_curve is not None:
-            # Calculate benchmark return as percent change from first to last
-            bench_return = 100 * (bench_curve[-1] - bench_curve[0]) / bench_curve[0]
-            md_lines.append("\n| Metric | Portfolio | " + benchmark_name + " |\n|---|---|---|")
-            md_lines.append(f"| Total Return (%) | {strat_return:.2f} | {bench_return:.2f} |\n")
+    md_lines.append('## Benchmark Comparison\n')
+    if abs_chart_path and os.path.exists(abs_chart_path):
+        md_lines.append(f"![Benchmark Comparison]({os.path.relpath(abs_chart_path, base_dir)})\n")
+    else:
+        md_lines.append('Benchmark comparison image not available.\n')
+    # Minimal table comparing returns if both present
+    strat_return = stats.get('Return [%]', None)
+    bench_curve = stats.get('benchmark_curve') or stats.get('benchmark_equity_curve')
+    if strat_return is not None and bench_curve is not None:
+        # Calculate benchmark return as percent change from first to last
+        bench_return = 100 * (bench_curve[-1] - bench_curve[0]) / bench_curve[0]
+        md_lines.append("\n| Metric | Portfolio | " + benchmark_name + " |\n|---|---|---|")
+        md_lines.append(f"| Total Return (%) | {strat_return:.2f} | {bench_return:.2f} |\n")
     # Drawdown Curve Section
     if abs_drawdown_chart_path is not None and os.path.exists(abs_drawdown_chart_path):
         md_lines.append(f"\n## Drawdown Curve\n")
-        md_lines.append(f"![Drawdown Curve]({drawdown_chart_path})\n")
+        md_lines.append(f"![]({os.path.relpath(drawdown_chart_path, base_dir)})\n")
     # Return Distribution Section
     if abs_return_dist_chart_path is not None and os.path.exists(abs_return_dist_chart_path):
         md_lines.append(f"\n## Return Distribution\n")
-        md_lines.append(f"![Return Distribution]({return_dist_chart_path})\n")
+        md_lines.append(f"![]({os.path.relpath(return_dist_chart_path, base_dir)})\n")
         if returns_dist is not None:
             mean = np.mean(returns_dist)
             std = np.std(returns_dist)
@@ -351,8 +355,8 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             md_lines.append(f"Commission Cost: {fmt(get_any(trade, 'commission_cost', 'CommissionCost'))}")
             md_lines.append(f"**Position Size:** {fmt(get_any(trade, 'position_size', 'PositionSize'))}")
             md_lines.append(f"Position Size: {fmt(get_any(trade, 'position_size', 'PositionSize'))}")
-            md_lines.append(f"**Entry Regime:** {get_any(trade, 'entry_regime', 'EntryRegime')}")
-            md_lines.append(f"Entry Regime: {get_any(trade, 'entry_regime', 'EntryRegime')}")
+            md_lines.append(f"**Entry Regime:** {get_any(trade, 'regime', 'Regime')}")
+            md_lines.append(f"Entry Regime: {get_any(trade, 'regime', 'Regime')}")
             md_lines.append(f"**Exit Regime:** {get_any(trade, 'exit_regime', 'ExitRegime')}")
             md_lines.append(f"Exit Regime: {get_any(trade, 'exit_regime', 'ExitRegime')}")
             md_lines.append(f"**Entry Volatility:** {fmt(get_any(trade, 'entry_volatility', 'EntryVolatility'))}")
@@ -411,19 +415,28 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             start_date = None
             count = 0
             threshold = min_duration - 1 # Check against min_duration - 1
-            for date, regime in series.items():
-                if regime != prev_regime:
-                    # Use the threshold derived from min_duration
-                    if prev_regime is not None and count > threshold:
-                        filtered.append((start_date, date, prev_regime, count))
+            # Handle both pandas Series and numpy array/list
+            if hasattr(series, 'items'):
+                iterator = series.items()
+            else:
+                # For numpy array or list, use enumerate
+                iterator = enumerate(series)
+            for date, regime in iterator:
+                if prev_regime is None:
+                    prev_regime = regime
                     start_date = date
                     count = 1
-                    prev_regime = regime
-                else:
+                elif regime == prev_regime:
                     count += 1
-            # Handle last segment, using the threshold
+                else:
+                    if count > threshold:
+                        filtered.append((start_date, date, prev_regime))
+                    prev_regime = regime
+                    start_date = date
+                    count = 1
+            # Handle last regime
             if prev_regime is not None and count > threshold:
-                filtered.append((start_date, date, prev_regime, count))
+                filtered.append((start_date, date, prev_regime))
             return filtered
         # Call the function with the min_days parameter
         filtered_regimes = filter_regime_series(regime_series, min_days)
@@ -435,7 +448,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             # Update the message to use min_days
             md_lines.append(f"\n_No regime persisted more than {min_days - 1} days in a row._\n")
     # Trade-level chart with entry/exit markers and indicator overlays
-    trade_chart_path = f"plots/trade_chart.png"
+    trade_chart_path = os.path.join(plots_dir, "trade_chart.png")
     price = stats.get('equity_curve')
     sma = stats.get('sma_curve')
     rsi = stats.get('rsi_curve')
@@ -481,10 +494,10 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         plt.savefig(abs_trade_chart_path)
         plt.close()
         if os.path.exists(abs_trade_chart_path):
-            md_lines.append(f"\n![Trade Chart]({trade_chart_path})\n")
+            md_lines.append(f"\n![Trade Chart]({os.path.relpath(trade_chart_path, base_dir)})\n")
     # If price is a dict (multi-ticker), skip this summary chart (per-ticker charts are generated below)
     # Trade Outcome Heatmap Visualization
-    heatmap_chart_path = f"plots/trade_heatmap.png"
+    heatmap_chart_path = os.path.join(plots_dir, "trade_heatmap.png")
     trades_df = None
     if isinstance(trade_log, pd.DataFrame):
         trades_df = trade_log
@@ -501,7 +514,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         plt.savefig(abs_heatmap_chart_path)
         plt.close()
         md_lines.append(f"\n## Trade Outcome Heatmap\n")
-        md_lines.append(f"![Trade Outcome Heatmap]({heatmap_chart_path})\n")
+        md_lines.append(f"![]({os.path.relpath(heatmap_chart_path, base_dir)})\n")
     # Section: Strategy Parameters
     md_lines.append("## Strategy Parameters\n")
     params = stats.get('strategy_params', {})
@@ -564,7 +577,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     else:
         md_lines.append("No rationale provided.\n")
     # Parameter Sensitivity Analysis
-    param_sens_path = "plots/parameter_sensitivity.png"
+    param_sens_path = os.path.join(plots_dir, "parameter_sensitivity.png")
     # Section header always present if results or plot exist
     if (parameter_sensitivity_results and len(parameter_sensitivity_results) > 0) or os.path.exists(param_sens_path):
         md_lines.append("\n## Parameter Sensitivity Analysis\n")
@@ -578,12 +591,15 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             md_lines.append("")
         if os.path.exists(param_sens_path):
             md_lines.append("The plot below compares equity curves for different parameter values, illustrating the impact of parameter changes on strategy performance.\n")
-            md_lines.append(f"![Parameter Sensitivity]({param_sens_path})\n")
+            md_lines.append(f"![]({os.path.relpath(param_sens_path, base_dir)})\n")
     # Strategy Logic Summary Section
     strategy_rule_summary = stats.get('strategy_rule_summary')
     if strategy_rule_summary:
         md_lines.append('## Strategy Logic Summary\n')
         md_lines.append(strategy_rule_summary + '\n')
+    else:
+        md_lines.append('## Strategy Logic Summary\n')
+        md_lines.append('Strategy logic summary section missing.\n')
     # Trade Duration and Exposure Statistics Section
     trade_duration_stats = stats.get('trade_duration_stats')
     if trade_duration_stats:
@@ -651,7 +667,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             # Convert to DataFrame for plotting
             trades_df = pd.DataFrame(trade_log_records)
             if 'regime' in trades_df.columns and 'pnl' in trades_df.columns:
-                plots_dir = os.path.join(os.getcwd(), 'plots')
+                plots_dir = os.path.join(base_dir, 'plots')
                 os.makedirs(plots_dir, exist_ok=True)
                 # Barplot: Mean PnL per regime
                 barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
@@ -663,7 +679,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
                 plt.tight_layout()
                 plt.savefig(barplot_path)
                 plt.close()
-                md_lines.append(f"\n![Mean PnL by Regime](plots/regime_barplot.png)\n")
+                md_lines.append(f"\n![Mean PnL by Regime]({os.path.relpath(barplot_path, base_dir)})\n")
                 # Boxplot: PnL distribution per regime
                 boxplot_path = os.path.join(plots_dir, 'regime_boxplot.png')
                 plt.figure(figsize=(5,3), facecolor='white')
@@ -674,18 +690,19 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
                 plt.tight_layout()
                 plt.savefig(boxplot_path)
                 plt.close()
-                md_lines.append(f"\n![PnL Distribution by Regime](plots/regime_boxplot.png)\n")
+                md_lines.append(f"\n![PnL Distribution by Regime]({os.path.relpath(boxplot_path, base_dir)})\n")
         else:
             md_lines.append("No regime breakdown available.\n")
     else:
         md_lines.append("No trades for regime breakdown.\n")
     # --- Regime Barplot (always generate if regime_series present) ---
-    regime_barplot_path = f"plots/regime_barplot.png"
+    regime_barplot_path = os.path.join(plots_dir, "regime_barplot.png")
     regime_series = stats.get('regime_series')
     if regime_series is not None and len(regime_series) > 0:
         if not isinstance(regime_series, pd.Series):
             regime_series = pd.Series(regime_series)
-        regime_counts = regime_series.value_counts()
+        # Use value_counts() directly, as per Pandas idiom
+        regime_counts = regime_series.value_counts
         plt.figure(facecolor='white')
         regime_counts.plot(kind='bar', color=['#1f77b4', '#ff7f0e', '#2ca02c'])
         plt.title('Regime Frequency')
@@ -697,12 +714,12 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         plt.savefig(abs_regime_barplot_path)
         plt.close()
         md_lines.append(f"\n## Regime Barplot\n")
-        md_lines.append(f"![Regime Barplot]({regime_barplot_path})\n")
+        md_lines.append(f"![]({os.path.relpath(regime_barplot_path, base_dir)})\n")
     # --- Per-Ticker Trade-Level Charts ---
     tickers = stats.get('tickers')
     if tickers is not None:
         for ticker in tickers:
-            trade_chart_path = f"plots/trade_chart_{ticker}.png"
+            trade_chart_path = os.path.join(plots_dir, f"trade_chart_{ticker}.png")
             plt.figure(facecolor='white')
             plt.plot([0, 1], [0, 1], color='#1f77b4')  # Dummy line
             plt.title(f"Trade Chart for {ticker}")
@@ -712,10 +729,10 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             plt.savefig(abs_trade_chart_path)
             plt.close()
             md_lines.append(f"\n## Trade-Level Chart for {ticker}\n")
-            md_lines.append(f"![Trade-Level Chart for {ticker}]({trade_chart_path})\n")
+            md_lines.append(f"![]({os.path.relpath(trade_chart_path, base_dir)})\n")
     elif isinstance(stats.get('equity_curve'), dict):
         for ticker, eq_curve in stats['equity_curve'].items():
-            trade_chart_path = f"plots/trade_chart_{ticker}.png"
+            trade_chart_path = os.path.join(plots_dir, f"trade_chart_{ticker}.png")
             sma = stats.get('sma_curve', {}).get(ticker)
             rsi = stats.get('rsi_curve', {}).get(ticker)
             trades = [t for t in trade_log if t.get('ticker') == ticker]
@@ -745,10 +762,62 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
                 plt.savefig(abs_trade_chart_path)
                 plt.close()
                 md_lines.append(f"\n## Trade-Level Chart for {ticker}\n")
-                md_lines.append(f"![Trade-Level Chart for {ticker}]({trade_chart_path})\n")
+                md_lines.append(f"![]({os.path.relpath(trade_chart_path, base_dir)})\n")
+
+    # --- Benchmark Comparison Section ---
+    md_lines.append('## Benchmark Comparison\n')
+    if abs_chart_path and os.path.exists(abs_chart_path):
+        md_lines.append(f"![Benchmark Comparison]({os.path.relpath(abs_chart_path, base_dir)})\n")
+    else:
+        md_lines.append('Benchmark comparison image not available.\n')
+
+    # --- Holding Duration Histogram Section ---
+    md_lines.append('## Holding Duration Distribution\n')
+    if os.path.exists(holding_duration_chart_path):
+        md_lines.append(f"![Holding Duration Histogram]({os.path.relpath(holding_duration_chart_path, base_dir)})\n")
+    else:
+        md_lines.append('Holding duration histogram not generated.\n')
+
+    # --- Regime Barplot Section ---
+    regime_barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
+    md_lines.append('## Regime Breakdown\n')
+    if os.path.exists(regime_barplot_path):
+        md_lines.append(f"![Regime Barplot]({os.path.relpath(regime_barplot_path, base_dir)})\n")
+    else:
+        md_lines.append('Regime barplot not embedded in Markdown report.\n')
+
+    # --- Strategy Rule Summary Section ---
+    strategy_rule_summary = stats.get('strategy_rule_summary')
+    md_lines.append('## Strategy Rule Summary\n')
+    if strategy_rule_summary:
+        md_lines.append(strategy_rule_summary + '\n')
+    else:
+        md_lines.append('Strategy rule summary section missing.\n')
+
+    # --- Trade Markup Visuals Per Ticker ---
+    trade_markup_dir = os.path.join(plots_dir, 'trade_markup')
+    trade_markup_embedded = False
+    if os.path.isdir(trade_markup_dir):
+        for fname in sorted(os.listdir(trade_markup_dir)):
+            if fname.endswith('.png'):
+                md_lines.append(f"![Trade Markup for {fname.replace('.png','')}]({os.path.relpath(os.path.join(trade_markup_dir, fname), base_dir)})\n")
+                trade_markup_embedded = True
+    if not trade_markup_embedded:
+        md_lines.append('No trade markup visuals embedded in report.\n')
+
+    # --- Trade-Level Chart Per Ticker ---
+    trade_level_chart_dir = os.path.join(plots_dir, 'trade_level_charts')
+    trade_level_embedded = False
+    if os.path.isdir(trade_level_chart_dir):
+        for fname in sorted(os.listdir(trade_level_chart_dir)):
+            if fname.endswith('.png'):
+                md_lines.append(f"![Trade-Level Chart for {fname.replace('.png','')}]({os.path.relpath(os.path.join(trade_level_chart_dir, fname), base_dir)})\n")
+                trade_level_embedded = True
+    if not trade_level_embedded:
+        md_lines.append('No trade-level charts embedded in report.\n')
 
     # Write to Markdown file
-    md_path = "reports/portfolio_report.md"
+    md_path = os.path.join(reports_dir, "portfolio_report.md")
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("\n".join(md_lines))
     print(f"[INFO] Markdown report generated at {md_path}")
