@@ -6,14 +6,31 @@
 - **Hours Pending:** 0
 - **% Complete (Time):** 100%
 
-## Completed Tasks (Summary)
-
-- Fixed bug in rsi_strategy_backtest to handle None for strategy_params (tech_analysis/backtest.py). Added TDD test to ensure ticker defaults to 'UNKNOWN'.
-- All previously pending tasks have been completed and summarized in the changelog below.
-
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-(No pending tasks. All tasks completed as of 2025-04-29.)
+Diagnosed Root Cause: Code Bug: generate_markdown_report in report_generator.py incorrectly attempts to call .values on a pandas Series/NumPy array when calculating regime_counts.
+Evidence/Reasoning: The traceback for test_pipeline_generates_markdown_report, test_pipeline_uses_config_params, and test_regime_table_filters_short_runs consistently shows TypeError: 'numpy.ndarray' object is not callable at report_generator.py:686. The problematic line pd.Series(list(regime_series.values())).value_counts() indicates .values (a property returning an array) is being treated as a callable function ().
+Suggested Action: Simplify the code at report_generator.py:686. Replace regime_counts = pd.Series(list(regime_series.values())).value_counts() with the direct pandas method regime_counts = regime_series.value_counts() assuming regime_series is consistently a pandas Series at this point. Add type validation or conversion if regime_series might not be a Series.
+
+Diagnosed Root Cause: Test Bug / Code Inconsistency: Column name case mismatch for the trade heatmap generation. The test test_markdown_includes_trade_heatmap provides _trades DataFrame columns 'Ticker', 'Regime', 'PnL', but the check in report_generator.py:470 expects lowercase 'ticker', 'regime', 'pnl'.
+Evidence/Reasoning: The test fails because the heatmap image file plots/trade_heatmap.png is not created. Code inspection reveals the condition all(col in trades_df.columns for col in ['ticker', 'regime', 'pnl']) fails due to case sensitivity, skipping the heatmap plotting logic.
+Suggested Action: Modify the test data setup in test_markdown_includes_trade_heatmap (in tests/test_report_generation.py) to use lowercase column names: 'ticker', 'regime', 'pnl'. This aligns the test data with the code's expectation.
+
+Diagnosed Root Cause: Code Bug: Missing implementation for generating per-ticker trade charts in report_generator.py when handling multi-ticker data.
+Evidence/Reasoning: The test test_markdown_includes_trade_level_chart_per_ticker fails because ticker-specific chart files (e.g., trade_chart_AAPL.png) are not generated. Code inspection shows the logic block intended for per-ticker charts (around line 705+) is either missing or incomplete, while the summary chart logic correctly skips generation for dictionary inputs.
+Suggested Action: Implement the per-ticker chart generation loop within the if isinstance(stats.get('equity_curve'), dict): block in report_generator.py. This loop should iterate through stats['equity_curve'].items(), extract data for each ticker, generate the plot, save it to f"plots/trade_chart_{ticker}.png", and add the corresponding Markdown embed tag to md_lines.
+
+Diagnosed Root Cause: Test Bug: Column name case mismatch for holding duration calculation. test_markdown_includes_holding_duration_distribution provides 'EntryTime'/'ExitTime', but report_generator.py expects 'entry_time'/'exit_time'.
+Evidence/Reasoning: The test fails because the holding duration plot (plots/holding_duration.png) is not created. Code inspection shows trade.get('entry_time') and trade.get('exit_time') return None due to case mismatch, preventing duration calculation and plot generation.
+Suggested Action: Modify the test data setup in test_markdown_includes_holding_duration_distribution (in tests/test_report_generation.py) to use lowercase column names: 'entry_time', 'exit_time'.
+
+Diagnosed Root Cause: Code Bug / Inconsistency: Column name case mismatch for regime plot generation. report_generator.py:662 checks for lowercase 'pnl', but input data uses 'PnL'.
+Evidence/Reasoning: The test test_markdown_includes_regime_plots fails because the assertion checking for regime_barplot.png in the report text fails. This indicates the plotting code was skipped because the condition if 'regime' in trades_df.columns and 'pnl' in trades_df.columns: evaluated to false due to the case mismatch ('PnL' vs 'pnl').
+Suggested Action: Standardize column name handling. Either ensure all inputs use lowercase 'pnl' or modify the check at report_generator.py:662 to be case-insensitive or accept both 'pnl' and 'PnL'. Example fix: if 'regime' in trades_df.columns and ('pnl' in trades_df.columns or 'PnL' in trades_df.columns):.
+
+Diagnosed Root Cause: Code Bug (Likely): The "Strategy Rules (Plain English)" section is not being added to the report by generate_markdown_report in the test_markdown_includes_strategy_rule_summary test case.
+Evidence/Reasoning: The test fails the assertion assert "Strategy Rules (Plain English)" in text. The code snippet (lines ~695-700) looks correct, implying the code block is either not reached due to an earlier issue triggered by the minimal test input, or the section is missing/commented out in the actual file being tested.
+Suggested Action: Verify that the code block adding the "Strategy Rules (Plain English)" section exists, is uncommented, and is correctly positioned within the generate_markdown_report function in report_generator.py. Debug the execution flow for this specific test to identify any preceding conditions or errors preventing this section from being generated. Ensure the section header exactly matches the assertion string.
 
 ## Completed Tasks (Portfolio-Level Backtest & Unified Report Refactor)
 

@@ -1,5 +1,19 @@
 import pandas as pd
 from tech_analysis.market_regimes import classify_market_regime
+import numpy as np
+
+# Helper to convert NumPy types to Python types recursively
+def convert_numpy_types(obj):
+    if isinstance(obj, dict):
+        return {k: convert_numpy_types(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(i) for i in obj]
+    elif isinstance(obj, np.generic):
+        return obj.item()
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
 
 def sma_crossover_backtest(data: pd.DataFrame, short_window: int, long_window: int):
     data = data.copy()
@@ -299,8 +313,10 @@ def export_backtest_results(trade_log, metrics, output_path):
     Export trade log and metrics to a JSON file for report generation.
     """
     import json
+    data = {'trade_log': trade_log, 'metrics': metrics}
+    data = convert_numpy_types(data)
     with open(output_path, 'w') as f:
-        json.dump({'trade_log': trade_log, 'metrics': metrics}, f)
+        json.dump(data, f)
 
 def portfolio_backtest(data_dict, initial_cash, position_size, strategy_params):
     """

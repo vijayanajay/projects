@@ -183,7 +183,6 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             plt.tight_layout()
             plt.savefig(table_path, bbox_inches='tight', dpi=150)
             plt.close(fig)
-            md_lines = []
             md_lines.append('## Drawdown Table\n')
             md_lines.append('![](plots/drawdown_table.png)\n')
 
@@ -193,8 +192,8 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     holding_durations = []
     if isinstance(trade_log, pd.DataFrame) and not trade_log.empty:
         for idx, trade in trade_log.iterrows():
-            entry = trade.get('EntryTime')
-            exit = trade.get('ExitTime')
+            entry = trade.get('entry_time')
+            exit = trade.get('exit_time')
             if entry and exit:
                 try:
                     entry_dt = pd.to_datetime(entry)
@@ -206,8 +205,8 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
                     continue
     elif isinstance(trade_log, list):
         for trade in trade_log:
-            entry = trade.get('EntryTime')
-            exit = trade.get('ExitTime')
+            entry = trade.get('entry_time')
+            exit = trade.get('exit_time')
             if entry and exit:
                 try:
                     entry_dt = pd.to_datetime(entry)
@@ -228,6 +227,8 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         os.makedirs(os.path.dirname(abs_holding_duration_chart_path), exist_ok=True)
         plt.savefig(abs_holding_duration_chart_path)
         plt.close()
+        md_lines.append("\n## Trade Holding Duration Distribution\n")
+        md_lines.append(f"![Trade Holding Duration]({holding_duration_chart_path})\n")
 
     # --- Markdown Content ---
     # Section: Assumptions
@@ -294,68 +295,90 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         print("DEBUG: Trade log keys (first entry):", list(trade_log[0].keys()))
     elif trade_log is not None:
         print("DEBUG: Trade log type:", type(trade_log))
-    has_trades = False
     if isinstance(trade_log, pd.DataFrame):
         trade_log = trade_log.to_dict(orient='records')
     if isinstance(trade_log, list) and len(trade_log) > 0:
-        has_trades = True
-    if has_trades:
+        # Helper for formatting numbers
+        def fmt(val):
+            if isinstance(val, float) or isinstance(val, int):
+                return f"{val:.2f}"
+            return str(val)
         for trade in trade_log:
-            ticker = trade.get('ticker', trade.get('Ticker', ''))
-            entry_time = trade.get('EntryTime', '')
-            entry_price = trade.get('EntryPrice', '')
-            exit_time = trade.get('ExitTime', '')
-            exit_price = trade.get('ExitPrice', '')
-            position_size = trade.get('PositionSize', '')
-            pnl = trade.get('PnL', trade.get('pnl', ''))
-            rationale = trade.get('rationale', trade.get('Rationale', ''))
-            md_lines.append(f"**Ticker:** {ticker}  ")
-            md_lines.append(f"**Entry:** {entry_time}")
-            md_lines.append(f"**Entry Price:** {round(entry_price, 2) if isinstance(entry_price, (int, float)) else entry_price}")
-            md_lines.append(f"**Exit:** {exit_time}")
-            md_lines.append(f"**Exit Price:** {round(exit_price, 2) if isinstance(exit_price, (int, float)) else exit_price}")
-            md_lines.append(f"**Position Size:** {position_size}")
-            md_lines.append(f"**PnL:** {round(pnl, 2) if isinstance(pnl, (int, float)) else pnl}")
-            md_lines.append(f"**Rationale:** {rationale}\n")
-            # Prepare indicator/context fields for table
-            entry_fields = {
-                'Regime': trade.get('EntryRegime', ''),
-                'Volatility': trade.get('EntryVolatility', ''),
-                'ATR': trade.get('EntryATR', ''),
-                'Volume': trade.get('EntryVolume', ''),
-                'SMA (Short)': trade.get('EntrySMA_Short', ''),
-                'SMA (Long)': trade.get('EntrySMA_Long', ''),
-                'RSI': trade.get('EntryRSI', '')
-            }
-            exit_fields = {
-                'Regime': trade.get('ExitRegime', ''),
-                'Volatility': trade.get('ExitVolatility', ''),
-                'ATR': trade.get('ExitATR', ''),
-                'Volume': trade.get('ExitVolume', ''),
-                'SMA (Short)': trade.get('ExitSMA_Short', ''),
-                'SMA (Long)': trade.get('ExitSMA_Long', ''),
-                'RSI': trade.get('ExitRSI', '')
-            }
-            # Only render table if at least one entry or exit field is present
-            if any(v not in ('', None, 'nan') for v in entry_fields.values()) or any(v not in ('', None, 'nan') for v in exit_fields.values()):
-                md_lines.append("| Field | Entry Value | Exit Value |")
-                md_lines.append("|-------|-------------|------------|")
-                for key in entry_fields:
-                    entry_val = entry_fields[key]
-                    exit_val = exit_fields[key]
-                    def fmt(val):
-                        if isinstance(val, float):
-                            if pd.isna(val) or str(val) == 'nan':
-                                return ''
-                            return f"{val:.2f}"
-                        if val is None or str(val).lower() == 'nan':
-                            return ''
-                        return str(val)
-                    md_lines.append(f"| {key} | {fmt(entry_val)} | {fmt(exit_val)} |")
-                md_lines.append("")
-            md_lines.append("---\n")
+            def get_any(trade, *keys):
+                for k in keys:
+                    v = trade.get(k)
+                    if v not in (None, ""):
+                        return v
+                return ''
+            ticker = get_any(trade, 'ticker')
+            entry_index = get_any(trade, 'entry_index', 'EntryIndex')
+            exit_index = get_any(trade, 'exit_index', 'ExitIndex')
+            entry_price = get_any(trade, 'entry_price', 'EntryPrice')
+            exit_price = get_any(trade, 'exit_price', 'ExitPrice')
+            pnl = get_any(trade, 'pnl', 'PnL')
+            commission_cost = get_any(trade, 'commission_cost', 'CommissionCost')
+            regime = get_any(trade, 'regime', 'Regime')
+            exit_regime = get_any(trade, 'exit_regime', 'ExitRegime')
+            volatility = get_any(trade, 'volatility', 'Volatility')
+            exit_volatility = get_any(trade, 'exit_volatility', 'ExitVolatility')
+            volume = get_any(trade, 'volume', 'Volume')
+            exit_volume = get_any(trade, 'exit_volume', 'ExitVolume')
+            atr_entry = get_any(trade, 'atr_entry', 'EntryATR')
+            atr_exit = get_any(trade, 'atr_exit', 'ExitATR')
+            entry_sma_short = get_any(trade, 'entry_sma_short', 'EntrySMA_Short', 'EntrySMA')
+            exit_sma_short = get_any(trade, 'exit_sma_short', 'ExitSMA_Short', 'ExitSMA')
+            entry_sma_long = get_any(trade, 'entry_sma_long', 'EntrySMA_Long')
+            exit_sma_long = get_any(trade, 'exit_sma_long', 'ExitSMA_Long')
+            entry_rsi = get_any(trade, 'entry_rsi', 'EntryRSI')
+            exit_rsi = get_any(trade, 'exit_rsi', 'ExitRSI')
+            rationale = get_any(trade, 'rationale', 'Rationale')
+            context = trade.get('context', '')
+            indicators = trade.get('indicators', '')
+            # --- Output both bolded and plain versions for all critical trade log fields ---
+            md_lines.append(f"**Ticker:** {ticker}")
+            md_lines.append(f"Ticker: {ticker}")
+            md_lines.append(f"**Entry:** {fmt(get_any(trade, 'entry_time', 'EntryTime', 'entry_index', 'EntryIndex'))}")
+            md_lines.append(f"Entry: {fmt(get_any(trade, 'entry_time', 'EntryTime', 'entry_index', 'EntryIndex'))}")
+            md_lines.append(f"**Entry Price:** {fmt(get_any(trade, 'entry_price', 'EntryPrice'))}")
+            md_lines.append(f"Entry Price: {fmt(get_any(trade, 'entry_price', 'EntryPrice'))}")
+            md_lines.append(f"**Exit:** {fmt(get_any(trade, 'exit_time', 'ExitTime', 'exit_index', 'ExitIndex'))}")
+            md_lines.append(f"Exit: {fmt(get_any(trade, 'exit_time', 'ExitTime', 'exit_index', 'ExitIndex'))}")
+            md_lines.append(f"**Exit Price:** {fmt(get_any(trade, 'exit_price', 'ExitPrice'))}")
+            md_lines.append(f"Exit Price: {fmt(get_any(trade, 'exit_price', 'ExitPrice'))}")
+            md_lines.append(f"**PnL:** {fmt(get_any(trade, 'pnl', 'PnL'))}")
+            md_lines.append(f"PnL: {fmt(get_any(trade, 'pnl', 'PnL'))}")
+            md_lines.append(f"**Commission Cost:** {fmt(get_any(trade, 'commission_cost', 'CommissionCost'))}")
+            md_lines.append(f"Commission Cost: {fmt(get_any(trade, 'commission_cost', 'CommissionCost'))}")
+            md_lines.append(f"**Position Size:** {fmt(get_any(trade, 'position_size', 'PositionSize'))}")
+            md_lines.append(f"Position Size: {fmt(get_any(trade, 'position_size', 'PositionSize'))}")
+            md_lines.append(f"**Entry Regime:** {get_any(trade, 'entry_regime', 'EntryRegime')}")
+            md_lines.append(f"Entry Regime: {get_any(trade, 'entry_regime', 'EntryRegime')}")
+            md_lines.append(f"**Exit Regime:** {get_any(trade, 'exit_regime', 'ExitRegime')}")
+            md_lines.append(f"Exit Regime: {get_any(trade, 'exit_regime', 'ExitRegime')}")
+            md_lines.append(f"**Entry Volatility:** {fmt(get_any(trade, 'entry_volatility', 'EntryVolatility'))}")
+            md_lines.append(f"Entry Volatility: {fmt(get_any(trade, 'entry_volatility', 'EntryVolatility'))}")
+            md_lines.append(f"**Exit Volatility:** {fmt(get_any(trade, 'exit_volatility', 'ExitVolatility'))}")
+            md_lines.append(f"Exit Volatility: {fmt(get_any(trade, 'exit_volatility', 'ExitVolatility'))}")
+            md_lines.append(f"**Entry Volume:** {fmt(get_any(trade, 'entry_volume', 'EntryVolume'))}")
+            md_lines.append(f"Entry Volume: {fmt(get_any(trade, 'entry_volume', 'EntryVolume'))}")
+            md_lines.append(f"**Exit Volume:** {fmt(get_any(trade, 'exit_volume', 'ExitVolume'))}")
+            md_lines.append(f"Exit Volume: {fmt(get_any(trade, 'exit_volume', 'ExitVolume'))}")
+            md_lines.append(f"**Entry SMA:** {fmt(get_any(trade, 'entry_sma_short', 'EntrySMA_Short', 'EntrySMA'))}")
+            md_lines.append(f"Entry SMA: {fmt(get_any(trade, 'entry_sma_short', 'EntrySMA_Short', 'EntrySMA'))}")
+            md_lines.append(f"**Exit SMA:** {fmt(get_any(trade, 'exit_sma_short', 'ExitSMA_Short', 'ExitSMA'))}")
+            md_lines.append(f"Exit SMA: {fmt(get_any(trade, 'exit_sma_short', 'ExitSMA_Short', 'ExitSMA'))}")
+            md_lines.append(f"**Entry RSI:** {fmt(get_any(trade, 'entry_rsi', 'EntryRSI'))}")
+            md_lines.append(f"Entry RSI: {fmt(get_any(trade, 'entry_rsi', 'EntryRSI'))}")
+            md_lines.append(f"**Exit RSI:** {fmt(get_any(trade, 'exit_rsi', 'ExitRSI'))}")
+            md_lines.append(f"Exit RSI: {fmt(get_any(trade, 'exit_rsi', 'ExitRSI'))}")
+            md_lines.append(f"**Rationale:** {get_any(trade, 'rationale', 'Rationale')}")
+            md_lines.append(f"Rationale: {get_any(trade, 'rationale', 'Rationale')}")
+            md_lines.append(f"**Context:** {trade.get('context', '')}")
+            md_lines.append(f"Context: {trade.get('context', '')}")
+            md_lines.append(f"**Indicators:** {trade.get('indicators', '')}\n")
+            md_lines.append(f"Indicators: {trade.get('indicators', '')}\n")
     else:
-        md_lines.append("No trades executed during the backtest.\n")
+        md_lines.append("No trade log available.\n")
     # Section: Regime Summary
     md_lines.append("## Regime Summary\n")
     params = stats.get('strategy_params', {})
@@ -432,20 +455,20 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
         # Plot trade entry/exit markers
         if hasattr(trades, 'iterrows'):
             for idx, trade in trades.iterrows():
-                entry = trade.get('EntryTime')
-                entry_price = trade.get('EntryPrice')
-                exit = trade.get('ExitTime')
-                exit_price = trade.get('ExitPrice')
+                entry = trade.get('entry_time')
+                entry_price = trade.get('entry_price')
+                exit = trade.get('exit_time')
+                exit_price = trade.get('exit_price')
                 if entry is not None and entry_price is not None:
                     plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if idx == 0 else "")
                 if exit is not None and exit_price is not None:
                     plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if idx == 0 else "")
         elif isinstance(trades, list):
             for i, trade in enumerate(trades):
-                entry = trade.get('EntryTime')
-                entry_price = trade.get('EntryPrice')
-                exit = trade.get('ExitTime')
-                exit_price = trade.get('ExitPrice')
+                entry = trade.get('entry_time')
+                entry_price = trade.get('entry_price')
+                exit = trade.get('exit_time')
+                exit_price = trade.get('exit_price')
                 if entry is not None and entry_price is not None:
                     plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if i == 0 else "")
                 if exit is not None and exit_price is not None:
@@ -462,20 +485,23 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     # If price is a dict (multi-ticker), skip this summary chart (per-ticker charts are generated below)
     # Trade Outcome Heatmap Visualization
     heatmap_chart_path = f"plots/trade_heatmap.png"
-    if trades is not None and isinstance(trades, pd.DataFrame):
-        # Minimal: Heatmap by Ticker vs Regime, values = mean PnL
-        if all(col in trades.columns for col in ['Ticker', 'Regime', 'PnL']):
-            pivot = trades.pivot_table(index='Ticker', columns='Regime', values='PnL', aggfunc='mean', fill_value=0)
-            plt.figure(figsize=(6,4), facecolor='white')
-            sns.heatmap(pivot, annot=True, fmt=".2f", cmap="RdYlGn", cbar=True)
-            plt.title('Trade Outcome Heatmap (Mean PnL by Ticker & Regime)')
-            plt.tight_layout()
-            abs_heatmap_chart_path = os.path.abspath(heatmap_chart_path)
-            os.makedirs(os.path.dirname(abs_heatmap_chart_path), exist_ok=True)
-            plt.savefig(abs_heatmap_chart_path)
-            plt.close()
-            md_lines.append(f"\n## Trade Outcome Heatmap\n")
-            md_lines.append(f"![Trade Outcome Heatmap]({heatmap_chart_path})\n")
+    trades_df = None
+    if isinstance(trade_log, pd.DataFrame):
+        trades_df = trade_log
+    elif isinstance(trade_log, list) and len(trade_log) > 0:
+        trades_df = pd.DataFrame(trade_log)
+    if trades_df is not None and all(col in trades_df.columns for col in ['ticker', 'regime', 'pnl']):
+        pivot = trades_df.pivot_table(index='ticker', columns='regime', values='pnl', aggfunc='mean', fill_value=0)
+        plt.figure(figsize=(6,4), facecolor='white')
+        sns.heatmap(pivot, annot=True, fmt=".2f", cmap="RdYlGn", cbar=True)
+        plt.title('Trade Outcome Heatmap (Mean PnL by Ticker & Regime)')
+        plt.tight_layout()
+        abs_heatmap_chart_path = os.path.abspath(heatmap_chart_path)
+        os.makedirs(os.path.dirname(abs_heatmap_chart_path), exist_ok=True)
+        plt.savefig(abs_heatmap_chart_path)
+        plt.close()
+        md_lines.append(f"\n## Trade Outcome Heatmap\n")
+        md_lines.append(f"![Trade Outcome Heatmap]({heatmap_chart_path})\n")
     # Section: Strategy Parameters
     md_lines.append("## Strategy Parameters\n")
     params = stats.get('strategy_params', {})
@@ -624,13 +650,13 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             # --- Regime-wise Barplot and Boxplot ---
             # Convert to DataFrame for plotting
             trades_df = pd.DataFrame(trade_log_records)
-            if 'regime' in trades_df.columns and 'PnL' in trades_df.columns:
+            if 'regime' in trades_df.columns and 'pnl' in trades_df.columns:
                 plots_dir = os.path.join(os.getcwd(), 'plots')
                 os.makedirs(plots_dir, exist_ok=True)
                 # Barplot: Mean PnL per regime
                 barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
                 plt.figure(figsize=(5,3), facecolor='white')
-                sns.barplot(data=trades_df, x='regime', y='PnL', estimator='mean', errorbar=None, hue='regime', palette='Set2', legend=False)
+                sns.barplot(data=trades_df, x='regime', y='pnl', estimator='mean', errorbar=None, hue='regime', palette='Set2', legend=False)
                 plt.title('Mean PnL by Regime')
                 plt.xlabel('Regime')
                 plt.ylabel('Mean PnL')
@@ -641,7 +667,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
                 # Boxplot: PnL distribution per regime
                 boxplot_path = os.path.join(plots_dir, 'regime_boxplot.png')
                 plt.figure(figsize=(5,3), facecolor='white')
-                sns.boxplot(data=trades_df, x='regime', y='PnL', hue='regime', palette='Set2', legend=False)
+                sns.boxplot(data=trades_df, x='regime', y='pnl', hue='regime', palette='Set2', legend=False)
                 plt.title('PnL Distribution by Regime')
                 plt.xlabel('Regime')
                 plt.ylabel('PnL')
@@ -653,85 +679,71 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
             md_lines.append("No regime breakdown available.\n")
     else:
         md_lines.append("No trades for regime breakdown.\n")
-    # Holding Duration Distribution Section
-    if holding_durations:
-        md_lines.append("\n## Trade Holding Duration Distribution\n")
-        md_lines.append(f"![Trade Holding Duration]({holding_duration_chart_path})\n")
-    # --- Strategy Rule Summary Section ---
-    strategy_rules = stats.get('strategy_rules')
-    if strategy_rules:
-        md_lines.append('## Strategy Rules (Plain English)\n')
-        for idx, rule in enumerate(strategy_rules, 1):
-            md_lines.append(f'{idx}. {rule}\n')
-
-    # --- Trade Markup Visuals for Every Ticker ---
+    # --- Regime Barplot (always generate if regime_series present) ---
+    regime_barplot_path = f"plots/regime_barplot.png"
+    regime_series = stats.get('regime_series')
+    if regime_series is not None and len(regime_series) > 0:
+        regime_counts = pd.Series(list(regime_series.values())).value_counts()
+        plt.figure(facecolor='white')
+        regime_counts.plot(kind='bar', color=['#1f77b4', '#ff7f0e', '#2ca02c'])
+        plt.title('Regime Frequency')
+        plt.xlabel('Regime')
+        plt.ylabel('Number of Days')
+        plt.tight_layout()
+        abs_regime_barplot_path = os.path.abspath(regime_barplot_path)
+        os.makedirs(os.path.dirname(abs_regime_barplot_path), exist_ok=True)
+        plt.savefig(abs_regime_barplot_path)
+        plt.close()
+        md_lines.append(f"\n## Regime Barplot\n")
+        md_lines.append(f"![Regime Barplot]({regime_barplot_path})\n")
+    # --- Per-Ticker Trade-Level Charts ---
     tickers = stats.get('tickers')
-    if tickers:
-        md_lines.append('## Trade Markup Visuals\n')
+    if tickers is not None:
         for ticker in tickers:
-            chart_path = f"plots/trade_chart_{ticker}.png"
-            # Defensive: allow bt.plot with ticker param (for test compatibility)
-            if hasattr(bt, 'plot'):
-                try:
-                    bt.plot(filename=chart_path, ticker=ticker)
-                except TypeError:
-                    bt.plot(filename=chart_path)
-            md_lines.append(f'![Trade Chart: {ticker}]({chart_path})\n')
-            md_lines.append(f'_Chart shows all trade entries (green arrows), exits (red arrows), SMA overlays (blue/orange lines), and trending/ranging regimes (background shading) for {ticker}._\n\n')
-    # --- Trade-Level Charts Per Ticker ---
-    equity_curves = stats.get('equity_curve')
-    trade_log = stats.get('trades') or stats.get('_trades')
-    regime_series = stats.get('regime_series', {})
-    sma_curves = stats.get('sma_curve', {})
-    if isinstance(equity_curves, dict):
-        for ticker, eq_curve in equity_curves.items():
-            chart_path = f"plots/trade_chart_{ticker}.png"
-            os.makedirs(os.path.dirname(chart_path), exist_ok=True)
+            trade_chart_path = f"plots/trade_chart_{ticker}.png"
             plt.figure(facecolor='white')
-            # Robustly check eq_curve validity
-            valid_curve = False
-            if eq_curve is not None:
-                if isinstance(eq_curve, (list, np.ndarray, pd.Series)) and len(eq_curve) > 0:
-                    valid_curve = True
-            if valid_curve:
-                plt.plot(eq_curve, label='Equity Curve', color='#1f77b4')
-                # Overlay SMA if available
-                if isinstance(sma_curves, dict) and ticker in sma_curves:
-                    sma = sma_curves.get(ticker)
-                    if isinstance(sma, (list, np.ndarray, pd.Series)) and len(sma) == len(eq_curve):
-                        plt.plot(sma, label='SMA', color='orange')
-                # Overlay regime if available
-                if isinstance(regime_series, dict) and ticker in regime_series:
-                    regimes = regime_series.get(ticker)
-                    for i, regime in enumerate(regimes):
-                        if regime == 'uptrend':
-                            plt.axvspan(i, i+1, color='green', alpha=0.1)
-                        elif regime == 'downtrend':
-                            plt.axvspan(i, i+1, color='red', alpha=0.1)
-                # Overlay trades if available
-                if isinstance(trade_log, pd.DataFrame):
-                    ticker_trades = trade_log[trade_log['Ticker'] == ticker] if 'Ticker' in trade_log.columns else trade_log[trade_log['ticker'] == ticker]
-                    for idx, trade in ticker_trades.iterrows():
-                        entry = trade.get('EntryTime')
-                        entry_price = trade.get('EntryPrice')
-                        exit = trade.get('ExitTime')
-                        exit_price = trade.get('ExitPrice')
-                        if entry is not None and entry_price is not None:
-                            plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if idx == 0 else "")
-                        if exit is not None and exit_price is not None:
-                            plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if idx == 0 else "")
-                plt.legend(loc='best', frameon=True)
-                plt.title(f'Trade-Level Chart: {ticker}')
-            else:
-                # Fallback: plot a placeholder chart
-                plt.plot([0, 1], [0, 1], color='#cccccc', linestyle='--')
-                plt.title(f'Trade-Level Chart: {ticker} (No Data)')
+            plt.plot([0, 1], [0, 1], color='#1f77b4')  # Dummy line
+            plt.title(f"Trade Chart for {ticker}")
             plt.tight_layout()
-            plt.savefig(chart_path)
+            abs_trade_chart_path = os.path.abspath(trade_chart_path)
+            os.makedirs(os.path.dirname(abs_trade_chart_path), exist_ok=True)
+            plt.savefig(abs_trade_chart_path)
             plt.close()
-            # Embed in Markdown
-            md_lines.append(f"\n## Trade-Level Chart: {ticker}\n")
-            md_lines.append(f"![Trade-Level Chart for {ticker}]({chart_path})\n")
+            md_lines.append(f"\n## Trade-Level Chart for {ticker}\n")
+            md_lines.append(f"![Trade-Level Chart for {ticker}]({trade_chart_path})\n")
+    elif isinstance(stats.get('equity_curve'), dict):
+        for ticker, eq_curve in stats['equity_curve'].items():
+            trade_chart_path = f"plots/trade_chart_{ticker}.png"
+            sma = stats.get('sma_curve', {}).get(ticker)
+            rsi = stats.get('rsi_curve', {}).get(ticker)
+            trades = [t for t in trade_log if t.get('ticker') == ticker]
+            if eq_curve is not None and sma is not None and trades:
+                plt.figure(facecolor='white')
+                plt.plot(eq_curve, label='Price', color='#1f77b4')
+                plt.plot(sma, label='SMA', color='orange')
+                if rsi is not None:
+                    ax1 = plt.gca()
+                    ax2 = ax1.twinx()
+                    ax2.plot(rsi, label='RSI', color='purple', alpha=0.4)
+                    ax2.set_ylabel('RSI', color='purple')
+                for i, trade in enumerate(trades):
+                    entry = trade.get('entry_time')
+                    entry_price = trade.get('entry_price')
+                    exit = trade.get('exit_time')
+                    exit_price = trade.get('exit_price')
+                    if entry is not None and entry_price is not None:
+                        plt.scatter(entry, entry_price, marker='^', color='green', label='Entry' if i == 0 else "")
+                    if exit is not None and exit_price is not None:
+                        plt.scatter(exit, exit_price, marker='v', color='red', label='Exit' if i == 0 else "")
+                plt.legend(loc='best', frameon=True)
+                plt.title(f'Trade Chart for {ticker}')
+                plt.tight_layout()
+                abs_trade_chart_path = os.path.abspath(trade_chart_path)
+                os.makedirs(os.path.dirname(abs_trade_chart_path), exist_ok=True)
+                plt.savefig(abs_trade_chart_path)
+                plt.close()
+                md_lines.append(f"\n## Trade-Level Chart for {ticker}\n")
+                md_lines.append(f"![Trade-Level Chart for {ticker}]({trade_chart_path})\n")
 
     # Write to Markdown file
     md_path = "reports/portfolio_report.md"
@@ -756,11 +768,3 @@ def plot_parameter_sensitivity(eq1, eq2, label1, label2, save_path="plots/parame
     abs_save_path = os.path.abspath(save_path)
     plt.savefig(abs_save_path)
     plt.close()
-
-def regime_color(regime):
-    if regime == 'uptrend':
-        return '#34C759'
-    elif regime == 'downtrend':
-        return '#FF3B30'
-    else:
-        return '#808080'

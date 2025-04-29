@@ -651,9 +651,10 @@ def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
         'strategy_params': {'position_size': 1, 'initial_cash': 1}
     }
     class DummyBT:
-        def plot(self, filename=None):
+        def plot(self, filename=None, ticker=None):
             plt.figure()
             plt.plot([0, 1], [0, 1])
+            plt.title(f"{ticker}")
             plt.savefig(filename)
             plt.close()
         _commission = 0.001
@@ -673,7 +674,8 @@ def test_markdown_includes_trade_level_chart_per_ticker(tmp_path):
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
     for ticker in ['AAPL', 'MSFT']:
-        assert f"trade_chart_{ticker}.png" in text, f"Trade-level chart for {ticker} not embedded in Markdown report."
+        assert f"plots/trade_chart_{ticker}.png" in text, f"Chart for {ticker} not embedded in report."
+        assert f"Chart shows all trade entries" in text or f"{ticker}" in text, "Caption for trade markup chart missing or incomplete."
 
 def test_markdown_includes_drawdown_table(tmp_path):
     """
@@ -870,3 +872,128 @@ def test_markdown_includes_trade_markup_visuals_per_ticker(tmp_path):
             text = f.read()
         assert f"plots/trade_chart_{ticker}.png" in text, f"Chart for {ticker} not embedded in report."
         assert f"Chart shows all trade entries" in text or f"{ticker}" in text, "Caption for trade markup chart missing or incomplete."
+
+def test_trade_log_includes_context_and_indicators(tmp_path):
+    import pandas as pd
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        '_trades': pd.DataFrame([
+            {
+                'EntryTime': '2025-04-01',
+                'EntryPrice': 100,
+                'ExitTime': '2025-04-10',
+                'ExitPrice': 110,
+                'PnL': 10.0,
+                'PositionSize': 50,
+                'Rationale': 'Buy: SMA cross',
+                'EntryRegime': 'trending',
+                'ExitRegime': 'ranging',
+                'EntryVolatility': 1.2,
+                'ExitVolatility': 1.5,
+                'EntryVolume': 100000,
+                'ExitVolume': 120000,
+                'EntrySMA': 101.5,
+                'ExitSMA': 108.2,
+                'EntryRSI': 65.0,
+                'ExitRSI': 72.0,
+            }
+        ]),
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    class DummyBT:
+        def plot(self, filename=None):
+            plt.figure()
+            plt.plot([0, 1], [0, 1])
+            plt.savefig(filename)
+            plt.close()
+        _commission = 0.001
+        @property
+        def strategy(self):
+            class DummyStrategy:
+                parameters = {'n1': 50, 'n2': 200}
+            return DummyStrategy()
+    bt = DummyBT()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Entry Regime: trending" in text, "Trade log missing entry regime."
+    assert "Exit Regime: ranging" in text, "Trade log missing exit regime."
+    assert "Entry Volatility: 1.2" in text, "Trade log missing entry volatility."
+    assert "Exit Volatility: 1.5" in text, "Trade log missing exit volatility."
+    assert "Entry Volume: 100000" in text, "Trade log missing entry volume."
+    assert "Exit Volume: 120000" in text, "Trade log missing exit volume."
+    assert "Entry SMA: 101.5" in text, "Trade log missing entry SMA."
+    assert "Exit SMA: 108.2" in text, "Trade log missing exit SMA."
+    assert "Entry RSI: 65.0" in text, "Trade log missing entry RSI."
+    assert "Exit RSI: 72.0" in text, "Trade log missing exit RSI."
+
+def test_markdown_includes_trade_duration_and_exposure(tmp_path):
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'trade_duration_stats': {
+            'avg_duration': 5.2,
+            'median_duration': 4.0,
+            'max_duration': 12.0,
+            'avg_exposure': 0.83
+        },
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Trade Duration and Exposure Statistics" in text, "Trade duration/exposure section missing."
+    assert "Average Duration: 5.2 days" in text, "Average duration missing."
+    assert "Median Duration: 4.0 days" in text, "Median duration missing."
+    assert "Max Duration: 12.0 days" in text, "Max duration missing."
+    assert "Average Portfolio Exposure: 83.0%" in text, "Portfolio exposure missing."
+
+def test_markdown_includes_slippage_commission_sensitivity(tmp_path):
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'slippage_commission_sensitivity': [
+            {'slippage': 0.0, 'commission': 0.002, 'sharpe': 1.0, 'return': 10.0, 'drawdown': 4.0},
+            {'slippage': 0.001, 'commission': 0.004, 'sharpe': 0.8, 'return': 7.5, 'drawdown': 6.0}
+        ],
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Slippage/Commission Sensitivity Analysis" in text, "Slippage/commission sensitivity section missing."
+    assert "0.0" in text and "0.002" in text, "Slippage/commission values missing."
+    assert "Sharpe" in text and "Return" in text and "Drawdown" in text, "Metric headers missing."
+
+def test_markdown_includes_per_period_benchmark_comparison(tmp_path):
+    stats = {
+        'Return [%]': 10.0,
+        'Sharpe Ratio': 1.0,
+        'Max. Drawdown [%]': -4.0,
+        'per_period_benchmark': [
+            {'period': '2024', 'strategy_return': 12.0, 'benchmark_return': 10.0},
+            {'period': '2025', 'strategy_return': 8.0, 'benchmark_return': 11.0}
+        ],
+        'strategy_params': {'position_size': 1, 'initial_cash': 1}
+    }
+    bt = dummy_bt()
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Per-Period Benchmark Comparison" in text, "Per-period benchmark section missing."
+    assert "2024" in text and "2025" in text, "Period labels missing."
+    assert "Strategy Return" in text and "Benchmark Return" in text, "Return headers missing."
