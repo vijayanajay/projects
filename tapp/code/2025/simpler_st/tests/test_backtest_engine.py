@@ -4,6 +4,12 @@ import pytest
 
 # Assume the SMA crossover backtest logic will be in tech_analysis/backtest.py
 from tech_analysis import backtest
+from tech_analysis.utils import (
+    calculate_performance_metrics,
+    correlate_performance_with_regimes,
+    extract_drawdown_periods,
+    calculate_indicator_summary_stats
+)
 
 def test_sma_crossover_basic():
     # Minimal price data for clear crossover
@@ -133,7 +139,7 @@ def test_performance_metrics_calculation():
         {'entry_index': 2, 'exit_index': 4, 'entry_price': 120, 'exit_price': 130, 'pnl': 10},  # win
         {'entry_index': 4, 'exit_index': 5, 'entry_price': 130, 'exit_price': 120, 'pnl': -10}, # loss
     ]
-    metrics = backtest.calculate_performance_metrics(equity_curve, trade_log)
+    metrics = calculate_performance_metrics(equity_curve, trade_log)
     # Check all required keys exist under 'strategy'
     strat_metrics = metrics['strategy']
     for key in ['total_return', 'sharpe_ratio', 'max_drawdown', 'win_rate']:
@@ -159,7 +165,7 @@ def test_export_backtest_results_for_report(tmp_path):
     strategy_params = {'context_window': 10} # Add dummy params for the test
     trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close']], short_window, long_window, strategy_params)
     equity_curve = [row['exit_price'] if 'exit_price' in row else 0 for row in trade_log]
-    metrics = backtest.calculate_performance_metrics(equity_curve, trade_log)
+    metrics = calculate_performance_metrics(equity_curve, trade_log)
     output_file = tmp_path / "backtest_export.json"
     # This should raise if export_backtest_results is not implemented
     backtest.export_backtest_results(trade_log, metrics, str(output_file))
@@ -185,7 +191,7 @@ def test_correlate_performance_with_regimes():
         {'entry_index': 4, 'exit_index': 5, 'entry_price': 121, 'exit_price': 118, 'pnl': -3, 'regime': 'volatile'},
     ]
     # This function should return e.g. {'trending': {'mean_pnl': 10, 'count': 2}, ...}
-    result = backtest.correlate_performance_with_regimes(trade_log)
+    result = correlate_performance_with_regimes(trade_log)
     assert 'trending' in result
     assert 'ranging' in result
     assert 'volatile' in result
@@ -344,7 +350,7 @@ def test_benchmark_comparison():
         {'entry_index': 4, 'exit_index': 5, 'entry_price': 130, 'exit_price': 120, 'pnl': -10},
     ]
     # Call the updated metrics function
-    metrics = backtest.calculate_performance_metrics(strategy_curve, trade_log, benchmark_equity_curve=benchmark_curve)
+    metrics = calculate_performance_metrics(strategy_curve, trade_log, benchmark_equity_curve=benchmark_curve)
     # Check that both strategy and benchmark metrics are present
     assert 'strategy' in metrics
     assert 'benchmark' in metrics

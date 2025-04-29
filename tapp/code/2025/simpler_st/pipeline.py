@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
 from tech_analysis.data.fetcher import fetch_stock_data, clean_and_validate_data
-from tech_analysis.backtest import portfolio_backtest, calculate_performance_metrics, correlate_performance_with_regimes
+from tech_analysis.backtest import portfolio_backtest
+from tech_analysis.utils import calculate_performance_metrics, correlate_performance_with_regimes
 from report_generator import generate_markdown_report
 import json
 from tech_analysis.market_regimes import detect_market_regime_series

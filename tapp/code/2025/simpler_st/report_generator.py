@@ -169,7 +169,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
         first_ticker = next(iter(equity_curve)) if equity_curve else None
         equity_curve_for_drawdown = equity_curve.get(first_ticker) if first_ticker else None
     if equity_curve_for_drawdown is not None:
-        from tech_analysis.backtest import extract_drawdown_periods
+        from tech_analysis.utils import extract_drawdown_periods
         periods = extract_drawdown_periods(equity_curve_for_drawdown)
         if periods:
             df = pd.DataFrame(periods)
@@ -649,7 +649,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
         md_lines.append("No trade statistics available.\n")
     # Regime Breakdown
     md_lines.append("\n### Regime Breakdown\n")
-    from tech_analysis.backtest import correlate_performance_with_regimes
+    from tech_analysis.utils import correlate_performance_with_regimes
     if isinstance(trade_log, pd.DataFrame):
         has_trades = not trade_log.empty
     else:

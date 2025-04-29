@@ -1,5 +1,6 @@
 import pytest
-from tech_analysis.backtest import apply_transaction_costs, sma_crossover_backtest_with_log, rsi_strategy_backtest
+from tech_analysis.utils import apply_transaction_costs
+from tech_analysis.backtest import sma_crossover_backtest_with_log, rsi_strategy_backtest
 import pandas as pd
 
 def test_apply_transaction_costs_basic():

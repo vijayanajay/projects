@@ -1,7 +1,7 @@
 import pandas as pd
 from tech_analysis.market_regimes import classify_market_regime
 import numpy as np
-from tech_analysis.utils import calculate_atr
+from tech_analysis.utils import calculate_atr, apply_transaction_costs
 
 # Helper to convert NumPy types to Python types recursively
 def convert_numpy_types(obj):

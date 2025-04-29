@@ -9,6 +9,12 @@ import matplotlib.pyplot as plt
 
 # Import the generate_markdown_report function from the new report_generator.py
 from report_generator import generate_markdown_report
+from tech_analysis.utils import (
+    calculate_performance_metrics,
+    correlate_performance_with_regimes,
+    extract_drawdown_periods,
+    calculate_indicator_summary_stats
+)
 
 def dummy_bt():
     class DummyBT:
@@ -510,7 +516,7 @@ def test_markdown_includes_trade_statistics_breakdown(tmp_path):
         {'PnL': -150, 'regime': 'volatile'},
     ]
     equity_curve = [1000, 1100, 1050, 1250, 1220, 1520, 1370]
-    from tech_analysis.backtest import calculate_performance_metrics
+    from tech_analysis.utils import calculate_performance_metrics
     stats = {
         'equity_curve': equity_curve,
         'trades': trades,
@@ -689,7 +695,7 @@ def test_markdown_includes_drawdown_table(tmp_path):
     """
     # Construct a dummy equity curve with two drawdown periods
     equity_curve = [1000, 950, 900, 950, 1000, 900, 850, 900, 1000]
-    from tech_analysis.backtest import calculate_performance_metrics
+    from tech_analysis.utils import calculate_performance_metrics
     stats = {
         'equity_curve': equity_curve,
         'strategy_params': {'position_size': 1, 'initial_cash': 1},
@@ -1062,3 +1068,36 @@ def test_regime_breakdown_with_series(tmp_path):
         text = f.read()
     assert "Regime Breakdown" in text, "Regime breakdown section not found."
     assert "trending" in text and "ranging" in text and "volatile" in text and "calm" in text, "Not all regimes present in breakdown."
+
+def test_report_does_not_show_zero_or_unknown_for_nontrivial_stats(tmp_path):
+    """
+    The report should not display 'Strategy Return: 0.00%', 'Sharpe: 0.00', 'Max Drawdown: 0.00%',
+    'Regime Summary: Unknown: 100%', or 'Rationale Summary: No rationale provided' if the stats dict
+    contains valid, nonzero values and summaries. This test exposes the bug described in Task #3.
+    """
+    stats = {
+        'Return [%]': 15.7,
+        'Sharpe Ratio': 1.45,
+        'Max. Drawdown [%]': -8.2,
+        'regime_summary': 'Trending: 70%, Ranging: 20%, Volatile: 10%',
+        'rationale_summary': 'Buy on crossover; Sell on crossunder',
+        'strategy_params': {'position_size': 1, 'initial_cash': 1},
+        '_trades': [
+            {'side': 'buy', 'price': 100, 'size': 1, 'date': '2025-01-01', 'rationale': 'SMA cross'},
+            {'side': 'sell', 'price': 110, 'size': 1, 'date': '2025-01-10', 'rationale': 'Profit target'}
+        ],
+        'equity_curve': [10000, 10100, 10200, 10400, 11570],
+    }
+    from report_generator import generate_markdown_report
+    bt = dummy_bt()  # Provided earlier in this file
+    os.chdir(tmp_path)
+    generate_markdown_report(stats, bt, output_dir=tmp_path)
+    md_path = tmp_path / "reports/portfolio_report.md"
+    assert md_path.exists(), "Markdown report not generated."
+    with open(md_path, encoding="utf-8") as f:
+        text = f.read()
+    assert "Strategy Return: 0.00%" not in text, "Incorrect zero return shown."
+    assert "Sharpe: 0.00" not in text, "Incorrect zero Sharpe shown."
+    assert "Max Drawdown: 0.00%" not in text, "Incorrect zero drawdown shown."
+    assert "Regime Summary: Unknown: 100%" not in text, "Incorrect regime summary shown."
+    assert "Rationale Summary: No rationale provided" not in text, "Incorrect rationale summary shown."
