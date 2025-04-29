@@ -683,7 +683,9 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None):
     regime_barplot_path = f"plots/regime_barplot.png"
     regime_series = stats.get('regime_series')
     if regime_series is not None and len(regime_series) > 0:
-        regime_counts = pd.Series(list(regime_series.values())).value_counts()
+        if not isinstance(regime_series, pd.Series):
+            regime_series = pd.Series(regime_series)
+        regime_counts = regime_series.value_counts()
         plt.figure(facecolor='white')
         regime_counts.plot(kind='bar', color=['#1f77b4', '#ff7f0e', '#2ca02c'])
         plt.title('Regime Frequency')
