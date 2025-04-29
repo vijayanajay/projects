@@ -1,9 +1,9 @@
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import os
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, output_dir=None):
@@ -264,10 +264,7 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
         md_lines.append(f"\n![Equity Curve]({os.path.relpath(legacy_equity_chart_path, base_dir)})\n")
     # Benchmark Comparison Section (new)
     md_lines.append('## Benchmark Comparison\n')
-    if abs_chart_path and os.path.exists(abs_chart_path):
-        md_lines.append(f"![Benchmark Comparison]({os.path.relpath(abs_chart_path, base_dir)})\n")
-    else:
-        md_lines.append('Benchmark comparison image not available.\n')
+    md_lines.append('![](plots/benchmark_comparison.png)\n')
     # Minimal table comparing returns if both present
     strat_return = stats.get('Return [%]', None)
     bench_curve = stats.get('benchmark_curve') or stats.get('benchmark_equity_curve')
@@ -594,13 +591,20 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
             md_lines.append("The plot below compares equity curves for different parameter values, illustrating the impact of parameter changes on strategy performance.\n")
             md_lines.append(f"![]({os.path.relpath(param_sens_path, base_dir)})\n")
     # Strategy Logic Summary Section
-    strategy_rule_summary = stats.get('strategy_rule_summary')
-    if strategy_rule_summary:
-        md_lines.append('## Strategy Logic Summary\n')
-        md_lines.append(strategy_rule_summary + '\n')
+    strategy_rules = stats.get('strategy_rules')
+    if strategy_rules and isinstance(strategy_rules, list):
+        md_lines.append('## Strategy Rules (Plain English)\n')
+        for rule in strategy_rules:
+            md_lines.append(f"- {rule}")
+        md_lines.append('')
     else:
-        md_lines.append('## Strategy Logic Summary\n')
-        md_lines.append('Strategy logic summary section missing.\n')
+        strategy_rule_summary = stats.get('strategy_rule_summary')
+        if strategy_rule_summary:
+            md_lines.append('## Strategy Rule Summary\n')
+            md_lines.append(strategy_rule_summary + '\n')
+        else:
+            md_lines.append('## Strategy Rule Summary\n')
+            md_lines.append('Strategy rule summary section missing.\n')
     # Trade Duration and Exposure Statistics Section
     trade_duration_stats = stats.get('trade_duration_stats')
     if trade_duration_stats:
@@ -697,7 +701,8 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
     else:
         md_lines.append("No trades for regime breakdown.\n")
     # --- Regime Barplot (always generate if regime_series present) ---
-    regime_barplot_path = os.path.join(plots_dir, "regime_barplot.png")
+    regime_barplot_path = os.path.join('plots', 'regime_barplot.png')
+    abs_regime_barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
     regime_series = stats.get('regime_series')
     if regime_series is not None and len(regime_series) > 0:
         if not isinstance(regime_series, pd.Series):
@@ -710,13 +715,45 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
         plt.xlabel('Regime')
         plt.ylabel('Number of Days')
         plt.tight_layout()
-        abs_regime_barplot_path = os.path.abspath(regime_barplot_path)
-        os.makedirs(os.path.dirname(abs_regime_barplot_path), exist_ok=True)
-        plt.savefig(abs_regime_barplot_path)
-        plt.close()
-        md_lines.append(f"\n## Regime Barplot\n")
-        md_lines.append(f"![]({os.path.relpath(regime_barplot_path, base_dir)})\n")
-    # --- Per-Ticker Trade-Level Charts ---
+        if not os.path.exists(abs_regime_barplot_path):
+            plt.figure(figsize=(6, 3))
+            plt.text(0.5, 0.5, 'No regime data', ha='center', va='center')
+            plt.axis('off')
+            plt.savefig(abs_regime_barplot_path)
+            plt.close()
+        md_lines.append(f"\n## Regime Breakdown\n")
+        md_lines.append(f"![]({regime_barplot_path})\n")
+        # Always generate and embed regime boxplot
+        regime_boxplot_path = os.path.join(plots_dir, 'regime_boxplot.png')
+        if os.path.exists(abs_regime_barplot_path):
+            # Use same data as for barplot; fallback to placeholder if needed
+            trades = stats.get('trades')
+            if trades and isinstance(trades, list) and len(trades) > 0:
+                trades_df = pd.DataFrame(trades)
+                if 'regime' in trades_df.columns and ('PnL' in trades_df.columns or 'pnl' in trades_df.columns):
+                    ycol = 'PnL' if 'PnL' in trades_df.columns else 'pnl'
+                    plt.figure(figsize=(5,3), facecolor='white')
+                    sns.boxplot(data=trades_df, x='regime', y=ycol, hue='regime', palette='Set2', legend=False)
+                    plt.title('PnL Distribution by Regime')
+                    plt.xlabel('Regime')
+                    plt.ylabel('PnL')
+                    plt.tight_layout()
+                    plt.savefig(regime_boxplot_path)
+                    plt.close()
+                else:
+                    plt.figure(figsize=(6, 3))
+                    plt.text(0.5, 0.5, 'No regime PnL data', ha='center', va='center')
+                    plt.axis('off')
+                    plt.savefig(regime_boxplot_path)
+                    plt.close()
+            else:
+                plt.figure(figsize=(6, 3))
+                plt.text(0.5, 0.5, 'No regime PnL data', ha='center', va='center')
+                plt.axis('off')
+                plt.savefig(regime_boxplot_path)
+                plt.close()
+        md_lines.append(f"![](plots/regime_boxplot.png)\n")
+    # Per-Ticker Trade-Level Charts
     tickers = stats.get('tickers')
     if tickers is not None:
         for ticker in tickers:
@@ -777,35 +814,47 @@ def generate_markdown_report(stats, bt, parameter_sensitivity_results=None, outp
         rel_path = rel_path.replace('\\','/')
         return f"![]({rel_path})"
 
-    # Benchmark Comparison Section
-    md_lines.append('## Benchmark Comparison\n')
-    if abs_chart_path and os.path.exists(abs_chart_path):
-        md_lines.append(f"{embed_image(abs_chart_path)}\n")
-    else:
-        md_lines.append('Benchmark comparison image not embedded in Markdown report.\n')
-
     # Holding Duration Histogram Section
-    md_lines.append('## Holding Duration Distribution\n')
-    if abs_holding_duration_chart_path and os.path.exists(abs_holding_duration_chart_path):
-        md_lines.append(f"{embed_image(abs_holding_duration_chart_path)}\n")
-    else:
-        md_lines.append('Holding duration histogram not generated.\n')
+    holding_img_path = os.path.join('plots', 'holding_duration.png')
+    abs_holding_img_path = os.path.join(plots_dir, 'holding_duration.png')
+    if not os.path.exists(abs_holding_img_path):
+        plt.figure(figsize=(6, 3))
+        plt.text(0.5, 0.5, 'No holding duration data', ha='center', va='center')
+        plt.axis('off')
+        plt.savefig(abs_holding_img_path)
+        plt.close()
+    md_lines.append('## Trade Holding Duration Distribution\n')
+    md_lines.append(f"{embed_image(abs_holding_img_path)}\n")
 
     # Regime Barplot Section
-    regime_barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
+    regime_barplot_path = os.path.join('plots', 'regime_barplot.png')
+    abs_regime_barplot_path = os.path.join(plots_dir, 'regime_barplot.png')
+    if not os.path.exists(abs_regime_barplot_path):
+        plt.figure(figsize=(6, 3))
+        plt.text(0.5, 0.5, 'No regime data', ha='center', va='center')
+        plt.axis('off')
+        plt.savefig(abs_regime_barplot_path)
+        plt.close()
     md_lines.append('## Regime Breakdown\n')
-    if os.path.exists(regime_barplot_path):
-        md_lines.append(f"{embed_image(regime_barplot_path)}\n")
-    else:
-        md_lines.append('Regime barplot not embedded in Markdown report.\n')
+    md_lines.append(f"{embed_image(abs_regime_barplot_path)}\n")
+    if os.path.exists(os.path.join(plots_dir, 'regime_boxplot.png')):
+        md_lines.append(f"![](plots/regime_boxplot.png)\n")
 
     # Strategy Rule Summary Section
-    md_lines.append('## Strategy Rule Summary\n')
-    strategy_rule_summary = stats.get('strategy_rule_summary')
-    if strategy_rule_summary:
-        md_lines.append(strategy_rule_summary + '\n')
+    strategy_rules = stats.get('strategy_rules')
+    if strategy_rules and isinstance(strategy_rules, list):
+        md_lines.append('## Strategy Rules (Plain English)\n')
+        for rule in strategy_rules:
+            md_lines.append(f"- {rule}")
+        md_lines.append('')
     else:
-        md_lines.append('Strategy rule summary section missing.\n')
+        strategy_rule_summary = stats.get('strategy_rule_summary')
+        if strategy_rule_summary:
+            md_lines.append('## Strategy Rule Summary\n')
+            md_lines.append(strategy_rule_summary + '\n')
+        else:
+            md_lines.append('## Strategy Rule Summary\n')
+            md_lines.append('Strategy rule summary section missing.\n')
 
     # Trade Markup Visuals Per Ticker
     trade_markup_dir = os.path.join(plots_dir, 'trade_markup')
