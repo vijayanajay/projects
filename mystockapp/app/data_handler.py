@@ -122,8 +122,8 @@ def handle_missing_data(data):
     """
     # Check if there are any NaN values first (optional, but good practice)
     if data.isnull().values.any():
-        # Apply forward fill
-        filled_data = data.fillna(method='ffill')
+        # Apply forward fill (use modern pandas API)
+        filled_data = data.ffill()
         
         # Optional: Check if any NaNs remain (e.g., at the beginning)
         if filled_data.isnull().values.any():
