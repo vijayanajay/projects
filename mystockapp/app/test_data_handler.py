@@ -1,6 +1,8 @@
+print("MODULE LEVEL: test_data_handler.py loaded by pytest")
+
 import pytest
 import pandas as pd
-from data_handler import fetch_ohlcv_data, detect_missing_data
+from data_handler import fetch_ohlcv_data, detect_missing_data, handle_missing_data, resample_ohlcv
 
 def test_ohlcv_structure():
     # Test with verified parameters that return consistent data
@@ -14,11 +16,39 @@ def test_ohlcv_structure():
     # Verify DateTimeIndex
     assert isinstance(df.index, pd.DatetimeIndex)
     
+def test_resampling_validation():
+    """Test that resampled data maintains correct structure and values."""
+    # Create sample data with proper OHLCV structure
+    sample_data = pd.DataFrame({
+        'Open': [100, 101, 102],
+        'High': [105, 106, 107],
+        'Low': [95, 96, 97],
+        'Close': [102, 103, 104],
+        'Volume': [1000, 1500, 2000]
+    }, index=pd.date_range('2023-01-01', periods=3, freq='D'))
+    
+    # Apply resampling
+    resampled = resample_ohlcv(sample_data, 'W')
+    print ("resampled:", resampled)
+    
+    # Verify structure
+    assert isinstance(resampled.index, pd.DatetimeIndex)
+    assert all(col in resampled.columns for col in ['Open', 'High', 'Low', 'Close', 'Volume'])
+    
+    # Verify values match OHLCV aggregation rules
+    assert resampled.iloc[0]['Open'] == 100    # First value
+    assert resampled.iloc[0]['High'] == 105    # Only first day (2023-01-01) in first weekly bin; pandas resample('W') aligns bins to week ending Sunday
+    assert resampled.iloc[0]['Low'] == 95      # Min value
+    assert resampled.iloc[0]['Close'] == 102   # Last value of the first day in the bin
+    assert resampled.iloc[0]['Volume'] == 1000 # Only 2023-01-01 in first bin
+    # Second bin: 2023-01-02 and 2023-01-03
+    assert resampled.iloc[1]['Volume'] == 3500 # 1500 + 2000
+    
+    # Verify time series compression
+    assert len(resampled) < len(sample_data)
     # Verify no missing columns
-    assert len(df.columns) == 5
+    assert len(resampled.columns) == 5
 
-if __name__ == "__main__":
-    test_ohlcv_structure()
 def test_data_fetching_error_handling():
     # Test with invalid ticker symbol
     with pytest.raises(ValueError) as exc_info:
@@ -52,6 +82,7 @@ def test_detect_missing_data_passes_with_no_gaps():
         assert result is True
     except ValueError:
         pytest.fail("detect_missing_data raised unexpected ValueError")
+
 import numpy as np # Add numpy import for NaN
 
 def test_detect_missing_data_nan_values():
@@ -62,7 +93,6 @@ def test_detect_missing_data_nan_values():
 
     with pytest.raises(ValueError, match="Missing data detected"):
         detect_missing_data(data)
-from data_handler import handle_missing_data # Import the function to be tested
 
 def test_handle_missing_data_forward_fill():
     """Test that handle_missing_data correctly forward-fills NaN values."""
@@ -84,3 +114,25 @@ def test_handle_missing_data_forward_fill():
 
     # Assert the filled data matches the expected data
     pd.testing.assert_frame_equal(filled_data, expected_data)
+
+def test_resample_data_validation():
+    """Test that resample_data maintains OHLC structure and index type."""
+    # Create a sample daily DataFrame
+    dates = pd.date_range(start="2023-01-01", periods=10, freq='D')
+    data = pd.DataFrame({
+        'Open': [100 + i for i in range(10)],
+        'High': [105 + i for i in range(10)],
+        'Low': [95 + i for i in range(10)],
+        'Close': [102 + i for i in range(10)],
+        'Volume': [1000 + i*100 for i in range(10)]
+    }, index=dates)
+    
+    # Resample to weekly
+    resampled = resample_ohlcv(data, rule='W')
+    
+    # Check if the resampled data has the correct frequency
+    assert isinstance(resampled.index, pd.DatetimeIndex)
+    # Check that the resampled data has the correct columns
+    assert all(col in resampled.columns for col in ['Open', 'High', 'Low', 'Close', 'Volume'])
+    # Check that the resampled data has fewer rows (weekly vs daily)
+    assert len(resampled) < len(data)

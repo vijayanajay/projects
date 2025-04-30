@@ -136,3 +136,31 @@ def handle_missing_data(data):
     else:
         # No NaNs found, return original data
         return data
+def resample_ohlcv(data, rule='W'):
+    """
+    Resamples OHLCV data to a lower frequency.
+    
+    Args:
+        data (pd.DataFrame): DataFrame with DateTimeIndex and OHLCV columns.
+        rule (str): Resampling frequency (e.g., 'W' for weekly, 'M' for monthly).
+    
+    Returns:
+        pd.DataFrame: Resampled data with appropriate OHLCV aggregations.
+    """
+    # Define aggregation methods for each column
+    agg_methods = {
+        'Open': 'first',
+        'High': 'max',
+        'Low': 'min',
+        'Close': 'last',
+        'Volume': 'sum'
+    }
+    
+    # Resample and aggregate
+    resampled = data.resample(rule).agg(agg_methods)
+    
+    # Ensure the index is a DateTimeIndex
+    if not isinstance(resampled.index, pd.DatetimeIndex):
+        resampled.index = pd.to_datetime(resampled.index)
+    
+    return resampled

@@ -160,3 +160,4 @@ cython_debug/
 .DS_Store
 Thumbs.db
 .aider*
+/tapp/code/2025/simpler_st/.trae

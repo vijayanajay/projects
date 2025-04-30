@@ -30,12 +30,16 @@ project_root/
 **Purpose:**
 Loads and validates configuration parameters from an INI file for the application.
 
+**Key Details (Updated):**
+- Validates required parameters directly in `[DEFAULT]` using Python's `configparser` semantics (no longer checks for `[DEFAULT]` as a section).
+- Raises clear errors if any required parameter is missing or invalid.
+
 **Functions:**
 - `load_config(config_path='config.ini')`
   - Loads configuration from the specified INI file.
   - Validates required parameters and types.
   - Returns a dictionary of configuration values.
-  - Raises `ValueError` if any required section or parameter is missing or invalid.
+  - Raises `ValueError` if any required parameter is missing or invalid.
 
 ---
 
@@ -43,17 +47,23 @@ Loads and validates configuration parameters from an INI file for the applicatio
 **Purpose:**
 Handles data fetching and validation for OHLCV (Open, High, Low, Close, Volume) stock data.
 
+**Key Details (Updated):**
+- Uses `data.ffill()` for forward-filling missing values (replaces deprecated `fillna(method='ffill')`).
+- All handling of missing data is robust and future-proof with respect to pandas updates.
+
 **Functions:**
 - `fetch_ohlcv_data(tickers, start_date, end_date)`
   - Fetches OHLCV data for one or more tickers using yfinance.
   - Ensures required columns and correct formatting.
   - Handles both single and multiple ticker cases.
   - Raises `ValueError` if data is missing or invalid.
-
 - `detect_missing_data(data)`
   - Checks for gaps in a datetime-indexed DataFrame.
   - Returns `True` if no gaps are found.
   - Raises `ValueError` if missing dates are detected.
+- `handle_missing_data(data)`
+  - Fills missing values using forward-fill (`ffill()`).
+  - Optionally checks for remaining NaNs and can be extended for other strategies.
 
 ---
 
@@ -64,20 +74,15 @@ Defines the `StrategyOptimizer` class for optimizing trading strategy parameters
 **Classes and Methods:**
 - `StrategyOptimizer(config)`
   - Initializes with configuration and loads OHLCV data.
-
 - `calculate_moving_average(prices, window)`
   - Calculates a simple moving average over a specified window.
-
 - `generate_signals(short_ma, long_ma)`
   - Generates trading signals based on moving average crossover logic (buy/sell).
-
 - `calculate_position_size(portfolio_value, volatility)`
   - Calculates position size based on portfolio value and volatility.
-
 - `backtest_strategy(signals)`
   - Runs a backtest using generated signals.
   - Computes total, annualized return, volatility, and Sharpe ratio.
-
 - `optimize_parameters()`
   - Performs walk-forward optimization to find the best moving average parameters.
   - Returns best parameters and associated performance metrics.
@@ -88,11 +93,16 @@ Defines the `StrategyOptimizer` class for optimizing trading strategy parameters
 **Purpose:**
 Unit tests for configuration loading and validation logic.
 
+**Key Details (Updated):**
+- Tests now check for missing parameters (not `[DEFAULT]` section) as per updated loader logic.
+- Includes debug print of temporary config file for easier troubleshooting.
+
 **Functions:**
 - `test_valid_config()`
   - Tests loading a valid configuration and type correctness.
+  - Prints config file contents for debug.
 - `test_missing_required_section()`
-  - Tests error handling for missing `[DEFAULT]` section.
+  - Tests error handling for missing `[DEFAULT]` section (now expects missing parameter error).
 - `test_missing_required_parameter()`
   - Tests error handling for missing required parameters.
 
@@ -113,6 +123,8 @@ Unit tests for data fetching and validation functions.
   - Tests that missing dates are detected in time series data.
 - `test_detect_missing_data_passes_with_no_gaps()`
   - Tests that no error is raised when data has no missing dates.
+- `test_handle_missing_data_forward_fill()`
+  - Verifies forward-fill logic using `ffill()` for missing values.
 
 ---
 
@@ -151,3 +163,4 @@ Standard Python virtual environment directories and files.
 # Notes
 - All code and tests are located in the `app/` directory.
 - The project uses TDD principles and includes robust error handling and validation throughout.
+- All configuration and data handling logic is now robust, future-proof, and aligned with upstream library best practices.
