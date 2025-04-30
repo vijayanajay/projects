@@ -8,9 +8,6 @@
 
 ## Pending Tasks (Report Gaps Identified by Technical Trader Review) - TODO
 
-7.  **Issue:** Inefficient/Duplicated Indicator Calculation. RSI calculation logic is duplicated within `tech_analysis/backtest.py::sma_crossover_backtest_with_log`. ATR calculation falls back to using standard deviation if high/low columns are missing, which isn't a standard or necessarily meaningful fallback for ATR.
-    **Suggested Action:** Refactor indicator calculations. Ideally, calculate all required indicators (SMA, RSI, ATR, etc.) once per ticker DataFrame *before* passing the data to the backtesting simulation loop. Pass the DataFrame with pre-calculated indicators. Re-evaluate the ATR fallback logic; perhaps raise an error or use a different volatility measure if required columns are missing.
-
 8.  **Issue:** Potential unused code. The `tech_analysis/backtest.py` file contains `sma_crossover_backtest` (the version without detailed logging) and `rsi_strategy_backtest`. Given the pipeline focuses on `sma_crossover_backtest_with_log` via `portfolio_backtest`, these other functions might be unused legacy code.
     **Suggested Action:** Verify if `sma_crossover_backtest` and `rsi_strategy_backtest` are still required. If not, remove them to simplify the codebase. If they serve a different purpose (e.g., unit testing, alternative strategy runs), ensure they are covered by tests or clearly documented.
 
@@ -162,7 +159,5 @@
   - Updated report_generator.py to include a Parameter Sensitivity Analysis section in the report, following Kalish Nadh's visualization philosophy.
   - Added TDD test in tests/test_report_generation.py to verify the presence of the sensitivity plot and section in the report. All tests pass.
   - Minimal code added, no change to method responsibilities. summary.md updated only for new/changed file roles if needed.
-- [x] Task 5: Remove redundant output in Trade Log section. Ensured only one format for trade log entries in the Markdown report. Test verifies no duplicate field output. (2025-04-29)
-  - Updated report_generator.py and tests/test_report_generation.py. Confirmed via TDD that only the intended format is rendered. Improved clarity and reduced report bloat.
-- [x] Task 6: Fix off-by-one error in regime filtering. Modified filter_regime_series in report_generator.py to use count >= min_duration and added a boundary test. (2025-04-30)
-  - Updated filtering logic and test. Confirmed via TDD that regimes of exactly min_duration days are included in the summary table.
+
+---

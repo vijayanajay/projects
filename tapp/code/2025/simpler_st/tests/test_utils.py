@@ -38,12 +38,12 @@ def test_calculate_performance_metrics_basic():
     ]
     metrics = calculate_performance_metrics(equity_curve, trade_log)
     assert isinstance(metrics, dict)
-    # Should contain keys for return, Sharpe, and drawdown
-    assert any('Return' in k for k in metrics)
-    assert any('Sharpe' in k for k in metrics)
-    assert any('Drawdown' in k for k in metrics)
-    # Return should be positive
-    assert metrics['Return [%]'] > 0
+    # Should contain 'strategy' key with subfields for return, Sharpe, and drawdown
+    assert 'strategy' in metrics
+    strat = metrics['strategy']
+    assert 'total_return' in strat
+    assert 'sharpe_ratio' in strat
+    assert 'max_drawdown' in strat
 
 def test_correlate_performance_with_regimes_basic():
     trade_log = [

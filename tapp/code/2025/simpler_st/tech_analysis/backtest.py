@@ -118,11 +118,12 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
                 'exit_price': exit_price,
                 'entry_regime': entry_regime,
                 'exit_regime': exit_regime,
+                'regime': entry_regime,
                 'entry_volatility': entry_volatility,
                 'exit_volatility': exit_volatility,
-                'entry_volume': entry_volume,
+                'volume_entry': entry_volume,
                 'exit_volume': exit_volume,
-                'entry_atr': entry_atr,
+                'atr_entry': entry_atr,
                 'exit_atr': exit_atr,
                 'entry_sma_short': entry_sma_short,
                 'entry_sma_long': entry_sma_long,
@@ -131,7 +132,10 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
                 'exit_sma_long': exit_sma_long,
                 'exit_rsi': exit_rsi,
                 'pnl': net_pnl,
-                'commission_cost': commission_cost
+                'commission_cost': commission_cost,
+                'rationale': f"Buy: short SMA crossed above long SMA at index {entry_index}, Sell at index {exit_index}",
+                'volatility': entry_volatility,
+                'volume': entry_volume
             })
             position = None
             entry_index = None
@@ -143,7 +147,12 @@ def sma_crossover_backtest_with_log(data: pd.DataFrame, short_window: int, long_
             entry_sma_short = None
             entry_sma_long = None
             entry_rsi = None
-    return {'trade_log': trade_log, 'trades': trades}
+    return trades, trade_log
+
+# Wrapper for compatibility with tests expecting a dict
+def sma_crossover_backtest_with_log_dict(*args, **kwargs):
+    trades, trade_log = sma_crossover_backtest_with_log(*args, **kwargs)
+    return {'trades': trades, 'trade_log': trade_log}
 
 def rsi_strategy_backtest(data: pd.DataFrame, period: int, overbought: float, oversold: float, strategy_params: dict = None):
     data = data.copy()

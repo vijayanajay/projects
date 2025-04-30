@@ -209,16 +209,18 @@ def test_regime_table_filters_short_runs(tmp_path):
     summary_start = text.find("## Regime Summary")
     assert summary_start != -1, "Regime Summary section not found in report."
     summary_text = text[summary_start:summary_start+1000]  # Extend window for robustness
-    # Look for a Markdown table row with 'Trending' and the expected duration
-    found_row = False
+    # Look for Markdown table rows for the expected regimes and durations
+    found_ranging = False
+    found_calm = False
     table_lines = []
     for line in summary_text.splitlines():
         if "|" in line:
             table_lines.append(line)
-            if "Trending" in line and "5" in line:
-                found_row = True
-                break
-    if not found_row:
+            if "ranging" in line and "4" in line:
+                found_ranging = True
+            if "calm" in line and "5" in line:
+                found_calm = True
+    if not (found_ranging and found_calm):
         print("\n--- Regime Summary Table Lines ---")
         for l in table_lines:
             print(l)
@@ -226,7 +228,8 @@ def test_regime_table_filters_short_runs(tmp_path):
         print("\n--- Full Regime Summary Section ---")
         print(summary_text)
         print("--- End Full Regime Summary Section ---\n")
-    assert found_row, "Regime of exactly min_duration days not included as a table row in summary."
+    assert found_ranging, "Regime of exactly min_duration days (ranging, 4) not included as a table row in summary."
+    assert found_calm, "Regime of exactly min_duration days (calm, 5) not included as a table row in summary."
     # Table should include only ranging (4 days) and calm (5 days), not trending (2) or volatile (3)
     assert "ranging" in text and "calm" in text, "Expected regimes not found in table."
     assert "trending" not in text, "Short trending regime should not be in table."

@@ -28,7 +28,9 @@ def test_sma_crossover_backtest_with_log_costs():
     # Simple price series with one crossover
     data = pd.DataFrame({
         'close': [100, 102, 104, 106, 104, 102, 100, 98, 96, 94, 96, 98, 100, 102, 104, 106],
-        'volume': [1000]*16
+        'volume': [1000]*16,
+        'high': [101, 103, 105, 107, 105, 103, 101, 99, 97, 95, 97, 99, 101, 103, 105, 107],
+        'low': [99, 101, 103, 105, 103, 101, 99, 97, 95, 93, 95, 97, 99, 101, 103, 105]
     })
     short_window = 2
     long_window = 3

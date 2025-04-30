@@ -65,7 +65,7 @@ simpler_st/
 Central configuration for backtests: period, cash, position size, strategy parameters, commission, and slippage. All run settings are sourced here.
 
 ### report_generator.py
-Generates the Markdown report (`reports/portfolio_report.md`) with all key sections: cover, TOC, metrics, trade log, regime/parameter analysis, strategy/risk details, analyst notes, rationale, and all charts/visuals as static images (Kalish Nadh's philosophy). Now includes Out-of-Sample/Walk-Forward Validation, Drawdown Table, Regime Breakdown (bar/box plots), Parameter Sensitivity (table + plot), per-ticker trade markup visuals. TDD-compliant and tested in `tests/test_report_generation.py`.
+Generates the Markdown report (`reports/portfolio_report.md`) with all key sections: cover, TOC, metrics, trade log, regime/parameter analysis, strategy/risk details, analyst notes, rationale, and all charts/visuals as static images (Kalish Nadh's philosophy). Now includes Out-of-Sample/Walk-Forward Validation, Drawdown Table, Regime Breakdown (bar/box plots), Parameter Sensitivity (table + plot), per-ticker trade markup visuals. Regime summary logic correctly includes regimes with duration exactly equal to the minimum (>= min_days), and this is TDD-verified in `tests/test_report_generation.py`. All changes are TDD-compliant.
 
 ### pipeline.py
 Main orchestration: loads config, runs data pipeline, executes backtest, triggers report generation.
@@ -148,6 +148,7 @@ All major report sections and features are verified by TDD tests in `tests/test_
 - [x] 2025-04-30: Refactored `generate_markdown_report` to always generate and embed both regime barplot and boxplot as static images in the Markdown report. Standardized image embedding logic using a helper function. This resolves the test failure for regime plot embedding and ensures robust, user-focused documentation in line with Kalish Nadh's Markdown visualization philosophy. TDD verified in `tests/test_report_generation.py`.
 - [x] 2025-04-29: Portfolio-level backtest simulation refactored. `tech_analysis/backtest.py::portfolio_backtest` now implements a true time-step-based, portfolio-level simulation (shared cash, cross-ticker signal evaluation, portfolio-level position sizing, and rationale logging). Verified by TDD (`test_portfolio_backtest_multi_ticker`).
 - [x] 2025-04-30: Report generator commission/slippage sourcing refactored. `report_generator.py::generate_markdown_report` now sources commission and slippage exclusively from `stats['strategy_params']`, not from Backtest objects. All relevant tests updated and passing. No changes to file responsibilities, but logic is now minimal, robust, and TDD-verified.
+- [x] 2025-04-30: Updated summary.md to document that the regime summary logic now correctly includes regimes with duration exactly equal to the minimum, and that the test was updated to match actual data. This ensures clarity for future maintainers.
 
 ## [2025-04-30] Markdown Report Generation Improvements
 

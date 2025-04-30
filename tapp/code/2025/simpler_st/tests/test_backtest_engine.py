@@ -14,7 +14,9 @@ from tech_analysis.utils import (
 def test_sma_crossover_basic():
     # Minimal price data for clear crossover
     data = pd.DataFrame({
-        'close': [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]
+        'close': [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1],
+        'high': [2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2],
+        'low': [0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]
     })
     short_window = 3
     long_window = 5
@@ -40,7 +42,9 @@ def test_sma_crossover_basic():
 def test_rsi_strategy_basic():
     # Minimal price data to simulate RSI overbought/oversold
     data = pd.DataFrame({
-        'close': [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5]
+        'close': [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5],
+        'high': [2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 3, 4, 5, 6],
+        'low': [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4]
     })
     period = 5
     overbought = 70
@@ -61,7 +65,11 @@ def test_rsi_strategy_handles_none_strategy_params():
     Ensure rsi_strategy_backtest does not raise AttributeError when strategy_params is None
     and sets ticker to 'UNKNOWN'.
     """
-    data = pd.DataFrame({'close': [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5]})
+    data = pd.DataFrame({
+        'close': [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5],
+        'high': [2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 3, 4, 5, 6],
+        'low': [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4]
+    })
     period = 5
     overbought = 70
     oversold = 30
@@ -82,13 +90,15 @@ def test_trade_execution_and_log():
     """
     data = pd.DataFrame({
         'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13],
-        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130]
+        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130],
+        'high': [11, 12, 13, 14, 13, 12, 11, 10, 11, 12, 13, 14],
+        'low': [9, 10, 11, 12, 11, 10, 9, 8, 9, 10, 11, 12]
     })
     short_window = 2
     long_window = 3
     strategy_params = {'context_window': 10} # Add dummy params for the test
     # This should generate at least one buy and one sell
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window, strategy_params)
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)
     # trade_log should be a list of dicts with keys: 'entry_index', 'exit_index', 'entry_price', 'exit_price', 'pnl', 'regime', 'volatility', 'volume'
     assert isinstance(trade_log, list)
     assert len(trade_log) > 0
@@ -158,12 +168,14 @@ def test_export_backtest_results_for_report(tmp_path):
     Test exporting backtest results (trade log and metrics) to a JSON file for report generation.
     """
     data = pd.DataFrame({
-        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13]
+        'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13],
+        'high': [11, 12, 13, 14, 13, 12, 11, 10, 11, 12, 13, 14],
+        'low': [9, 10, 11, 12, 11, 10, 9, 8, 9, 10, 11, 12]
     })
     short_window = 2
     long_window = 3
     strategy_params = {'context_window': 10} # Add dummy params for the test
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close']], short_window, long_window, strategy_params)
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)
     equity_curve = [row['exit_price'] if 'exit_price' in row else 0 for row in trade_log]
     metrics = calculate_performance_metrics(equity_curve, trade_log)
     output_file = tmp_path / "backtest_export.json"
@@ -208,12 +220,14 @@ def test_trade_log_includes_rationale():
     """
     data = pd.DataFrame({
         'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13],
-        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130]
+        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130],
+        'high': [11, 12, 13, 14, 13, 12, 11, 10, 11, 12, 13, 14],
+        'low': [9, 10, 11, 12, 11, 10, 9, 8, 9, 10, 11, 12]
     })
     short_window = 2
     long_window = 3
     strategy_params = {'context_window': 10} # Add dummy params for the test
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window, strategy_params)
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)
     assert isinstance(trade_log, list)
     assert len(trade_log) > 0
     for log in trade_log:
@@ -266,8 +280,18 @@ def test_portfolio_backtest_multi_ticker():
     from tech_analysis.portfolio import PortfolioState
     # Simulate two tickers with simple price data
     data = {
-        'AAA': pd.DataFrame({'close': [10, 12, 14, 11, 15, 20], 'volume': [100, 120, 110, 130, 140, 150]}),
-        'BBB': pd.DataFrame({'close': [20, 18, 16, 14, 12, 10], 'volume': [200, 180, 170, 160, 150, 140]})
+        'AAA': pd.DataFrame({
+            'close': [10, 12, 14, 11, 15, 20],
+            'volume': [100, 120, 110, 130, 140, 150],
+            'high': [11, 13, 15, 12, 16, 21],
+            'low': [9, 11, 13, 10, 14, 19]
+        }),
+        'BBB': pd.DataFrame({
+            'close': [20, 18, 16, 14, 12, 10],
+            'volume': [200, 180, 170, 160, 150, 140],
+            'high': [21, 19, 17, 15, 13, 11],
+            'low': [19, 17, 15, 13, 11, 9]
+        })
     }
     initial_cash = 1000
     position_size = 100  # Max cash per buy
@@ -369,12 +393,14 @@ def test_summary_stats_include_atr_and_volume():
     """
     data = pd.DataFrame({
         'close': [10, 11, 12, 13, 12, 11, 10, 9, 10, 11, 12, 13],
-        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130]
+        'volume': [100, 110, 120, 130, 120, 110, 100, 90, 100, 110, 120, 130],
+        'high': [11, 12, 13, 14, 13, 12, 11, 10, 11, 12, 13, 14],
+        'low': [9, 10, 11, 12, 11, 10, 9, 8, 9, 10, 11, 12]
     })
     short_window = 2
     long_window = 3
     strategy_params = {'context_window': 10}
-    trades, trade_log = backtest.sma_crossover_backtest_with_log(data[['close', 'volume']], short_window, long_window, strategy_params)
+    trades, trade_log = backtest.sma_crossover_backtest_with_log(data, short_window, long_window, strategy_params)
     # Assume a new function is added to calculate summary stats for ATR/volume
     from tech_analysis import backtest as bt
     stats = bt.calculate_indicator_summary_stats(trade_log)
@@ -429,7 +455,7 @@ def test_calculate_atr_requires_high_low():
 
 def test_sma_crossover_does_not_recalculate_indicators():
     import pandas as pd
-    from tech_analysis.backtest import sma_crossover_backtest_with_log
+    from tech_analysis.backtest import sma_crossover_backtest_with_log_dict
     # Precompute indicators
     df = pd.DataFrame({
         'close': [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1],
@@ -442,8 +468,10 @@ def test_sma_crossover_does_not_recalculate_indicators():
     df['atr'] = 42.0  # Sentinel value
     df['rsi'] = 99.0  # Sentinel value
     strategy_params = {'commission': 0.0, 'slippage': 0.0}
-    result = sma_crossover_backtest_with_log(df, 3, 5, strategy_params)
+    result = sma_crossover_backtest_with_log_dict(df, 3, 5, strategy_params)
     # Check that the sentinel values are preserved in the trade log
     for trade in result['trade_log']:
-        assert trade.get('entry_rsi', 99.0) == 99.0
-        assert trade.get('entry_atr', 42.0) == 42.0
+        assert trade['atr_entry'] == 42.0
+        assert trade['entry_sma_short'] == trade['entry_sma_short']  # Should match precomputed
+        assert trade['entry_sma_long'] == trade['entry_sma_long']
+        assert trade['entry_rsi'] == 99.0

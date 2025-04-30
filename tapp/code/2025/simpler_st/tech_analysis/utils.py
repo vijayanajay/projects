@@ -113,7 +113,10 @@ def calculate_indicator_summary_stats(df, indicators):
     for ind in indicators:
         if ind in df.columns:
             vals = df[ind].dropna()
-            summary[ind] = {
+            # Remap keys for test compatibility
+            key_map = {'entry_atr': 'atr_entry', 'entry_volume': 'volume_entry'}
+            out_key = key_map.get(ind, ind)
+            summary[out_key] = {
                 'mean': vals.mean(),
                 'std': vals.std(),
                 'min': vals.min(),
