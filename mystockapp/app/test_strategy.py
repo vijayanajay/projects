@@ -435,3 +435,33 @@ def test_unified_signal_function():
     expected = pd.Series([0, 1, 0, -1, 0], index=idx)
     result = generate_signals_unified(short, long)
     pd.testing.assert_series_equal(result, expected)
+
+def test_generate_trades_signal_and_max_holding_days():
+    """Test Backtester._generate_trades uses new signal convention and enforces max_holding_days exit."""
+    import pandas as pd
+    from strategy import Backtester
+    # Simulate 6 days of prices
+    prices = pd.Series([100, 102, 104, 106, 108, 110], index=pd.date_range('2023-01-01', periods=6))
+    # New signal convention: 1=entry, -1=exit, 0=hold
+    # Enter on day 1, hold, exit on day 4, should open a trade from day 1 to day 4
+    signals = pd.Series([1, 0, 0, -1, 0, 0], index=prices.index)
+    config = {
+        'data': {'symbol': 'TEST', 'timeframe': '1d', 'lookback_period': 6},
+        'strategy': {'max_holding_days': 2, 'risk_ratio': 1.0, 'short_sma': 1, 'long_sma': 2}
+    }
+    bt = Backtester(prices, signals, config)
+    trades = bt._generate_trades()
+    # Should open on day 1, close on day 3 due to max_holding_days=2 (entry day + 2 = exit on 3rd day)
+    assert len(trades) == 1, f"Expected 1 trade, got {len(trades)}"
+    trade = trades[0]
+    assert trade['entry_date'] == prices.index[0], f"Expected entry on {prices.index[0]}, got {trade['entry_date']}"
+    assert trade['exit_date'] == prices.index[2], f"Expected exit on {prices.index[2]}, got {trade['exit_date']}"
+    # Now test exit by signal: entry on day 1, exit on day 4 (max_holding_days large)
+    config['strategy']['max_holding_days'] = 10
+    signals2 = pd.Series([1, 0, 0, -1, 0, 0], index=prices.index)
+    bt2 = Backtester(prices, signals2, config)
+    trades2 = bt2._generate_trades()
+    assert len(trades2) == 1
+    trade2 = trades2[0]
+    assert trade2['entry_date'] == prices.index[0]
+    assert trade2['exit_date'] == prices.index[3], f"Expected exit on {prices.index[3]}, got {trade2['exit_date']}"

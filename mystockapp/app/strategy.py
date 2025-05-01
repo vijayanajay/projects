@@ -202,7 +202,7 @@ class Backtester:
     
     def _generate_trades(self):
         """
-        Generate trade history based on signals, applying slippage, commissions, and position sizing.
+        Generate trade history based on signals (1=entry, -1=exit, 0=hold), applying max_holding_days exit.
         Returns:
             list: List of trade dictionaries
         """
@@ -211,36 +211,40 @@ class Backtester:
         entry_price = 0
         entry_date = None
         position_size = 0
-        # Get config values or defaults
         slippage_pct = self.config.get('slippage_pct', 0.0)
         commission_pct = self.config.get('commission_pct', 0.0)
         risk_ratio = self.config['strategy'].get('risk_ratio', 1.0)
-        for date, price in self.prices.items():
+        max_holding_days = self.config['strategy'].get('max_holding_days', None)
+        holding_days = 0
+        for i, (date, price) in enumerate(self.prices.items()):
             signal = self.signals.loc[date]
             if signal == 1 and not in_position:
-                # Buy signal: apply slippage and commission to entry
                 entry_price = price * (1 + slippage_pct) * (1 + commission_pct)
                 entry_date = date
                 position_size = risk_ratio
                 in_position = True
-            elif signal == 0 and in_position:
-                # Sell signal: apply slippage and commission to exit
-                exit_price = price * (1 - slippage_pct) * (1 - commission_pct)
-                exit_date = date
-                abs_profit = (exit_price - entry_price) * position_size
-                pct_profit = (exit_price - entry_price) / entry_price
-                trade = {
-                    'symbol': self.config['data']['symbol'],
-                    'entry_date': entry_date,
-                    'exit_date': exit_date,
-                    'entry_price': entry_price,
-                    'exit_price': exit_price,
-                    'position_size': position_size,
-                    'profit': abs_profit,
-                    'return_pct': pct_profit
-                }
-                trades.append(trade)
-                in_position = False
+                holding_days = 0
+            elif in_position:
+                holding_days += 1
+                exit_due_to_signal = signal == -1
+                exit_due_to_max = max_holding_days is not None and holding_days >= max_holding_days
+                if exit_due_to_signal or exit_due_to_max:
+                    exit_price = price * (1 - slippage_pct) * (1 - commission_pct)
+                    exit_date = date
+                    abs_profit = (exit_price - entry_price) * position_size
+                    pct_profit = (exit_price - entry_price) / entry_price
+                    trade = {
+                        'symbol': self.config['data']['symbol'],
+                        'entry_date': entry_date,
+                        'exit_date': exit_date,
+                        'entry_price': entry_price,
+                        'exit_price': exit_price,
+                        'position_size': position_size,
+                        'profit': abs_profit,
+                        'return_pct': pct_profit
+                    }
+                    trades.append(trade)
+                    in_position = False
         # Close any open position at the end of the data period
         if in_position:
             exit_price = self.prices.iloc[-1] * (1 - slippage_pct) * (1 - commission_pct)
