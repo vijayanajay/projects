@@ -1,7 +1,14 @@
 import pytest
 import pandas as pd
 import numpy as np
-from indicator_calculator import calculate_rsi, calculate_adx, calculate_macd, calculate_bollinger_bands
+from indicator_calculator import calculate_volume_ma, calculate_rsi, calculate_adx, calculate_macd, calculate_bollinger_bands
+
+def test_calculate_volume_ma():
+    data = pd.Series([1, 2, 3, 4, 5])
+    result = calculate_volume_ma(data, period=3)
+    # The rolling mean for period=3: [1, 1.5, 2, 3, 4]
+    expected = pd.Series([1, 1.5, 2, 3, 4])
+    pd.testing.assert_series_equal(result.round(4), expected.round(4))
 
 def test_calculate_rsi():
     data = pd.Series([45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60])

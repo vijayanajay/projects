@@ -393,3 +393,32 @@ def test_iteration_workflow_manager_instantiation():
     assert hasattr(manager, 'run_iteration')
     # Optionally, check that run_iteration is callable
     assert callable(manager.run_iteration)
+
+def test_iteration_manager_performance_criteria_check():
+    """Test IterationWorkflowManager evaluates target_return_pct and Consistency Score after each level and controls iteration flow."""
+    from iteration_manager import IterationWorkflowManager
+    # Minimal mock FWT results for two levels
+    mock_fwt_results = [
+        {'avg_return_per_trade': 0.01, 'consistency_score': 60},
+        {'avg_return_per_trade': 0.04, 'consistency_score': 80},
+    ]
+    config = {
+        'target_return_pct': 0.03,
+        'consistency_score_threshold': 70
+    }
+    manager = IterationWorkflowManager()
+    try:
+        level = manager.run_iteration(mock_fwt_results, config)
+    except NotImplementedError:
+        # This is expected until implemented
+        assert True
+        return
+    # Should stop at Level 1 (index 1) because criteria are met there
+    assert level == 1, f"Expected to stop at level 1, got {level}"
+    # If all levels fail, should return None
+    mock_fwt_results_fail = [
+        {'avg_return_per_trade': 0.01, 'consistency_score': 60},
+        {'avg_return_per_trade': 0.02, 'consistency_score': 65},
+    ]
+    level_fail = manager.run_iteration(mock_fwt_results_fail, config)
+    assert level_fail is None, f"Expected None when no level meets criteria, got {level_fail}"

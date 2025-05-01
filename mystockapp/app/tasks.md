@@ -2,8 +2,8 @@
 ## Project Statistics
 
 - **Total Estimated Time:** 25h
-- **Tasks Completed:** 4/20 (20%)
-- **Time Spent:** 76.8h () | **Time Remaining:** 19h (80%)
+- **Tasks Completed:** 5/20 (25%)
+- **Time Spent:** 77.8h () | **Time Remaining:** 18h (90%)
 
 ## Atomic Tasks (1-2h each)
 
@@ -30,11 +30,6 @@
    - Est. Time: 2h
    - Depends: pandas/numpy, data handler
    - Status: done
-
-5. **Unit Tests for New Indicators**
-   - What: Write tests for Volume MA, RSI, ADX, MACD, BB.
-   - Est. Time: 1h
-   - Depends: Indicator functions
 
 6. **Refactor Signal Generation Logic**
    - What: Create a single, consistent signal function (entry=1, exit=-1, hold=0) per PRD.
@@ -155,3 +150,4 @@
 - LOGGING-001A: Test must verify log contains required trade metadata
 - LOGGING-001B: Must write structured logs in CSV format
 - LOGGING-002A: Test must verify log contains required performance metrics
+- INDICATOR-001A: Unit tests for Volume MA, RSI, ADX, MACD, BB
