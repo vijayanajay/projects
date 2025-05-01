@@ -83,3 +83,18 @@ def test_strategy_optimization():
     # Should still find best parameters even with negative returns
     assert 'best_params' in negative_results
     assert negative_results['best_score'] <= 0  # Negative returns
+
+def test_parameter_range_validation_fails_on_invalid_values():
+    """Test that StrategyOptimizer raises ValueError for invalid parameter ranges (zero/negative values)."""
+    prices = pd.Series([100, 101, 102], index=pd.date_range('2023-01-01', periods=3))
+    config_template = {
+        'data': {'symbol': 'AAPL', 'timeframe': '1d', 'lookback_period': 10},
+        'strategy': {'short_sma': 2, 'long_sma': 3, 'risk_ratio': 0.1}
+    }
+    # Invalid: zero and negative values in parameter ranges
+    invalid_param_ranges = {
+        'strategy.short_sma': [0, -1, 2],
+        'strategy.long_sma': [3, 4]
+    }
+    with pytest.raises(ValueError):
+        StrategyOptimizer(prices, config_template, invalid_param_ranges)
