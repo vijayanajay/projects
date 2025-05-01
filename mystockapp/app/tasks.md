@@ -2,8 +2,8 @@
 ## Project Statistics
 
 - **Total Estimated Time:** 25h
-- **Tasks Completed:** 0/20 (0%)
-- **Time Spent:** 71.8h () | **Time Remaining:** 25h (100%)
+- **Tasks Completed:** 1/20 (5%)
+- **Time Spent:** 73.8h () | **Time Remaining:** 23h (92%)
 
 ## Atomic Tasks (1-2h each)
 
@@ -11,6 +11,7 @@
    - What: Create core logic to manage Level 0-4 iteration as per PRD (FR-F06-F09).
    - Est. Time: 2h
    - Depends: config loader, base strategy, backtester
+   - Status: done
 
 2. **Integrate Performance Criteria Checks**
    - What: Add logic to evaluate `target_return_pct` and Consistency Score after each level, controlling iteration flow.
@@ -108,6 +109,7 @@
     - Depends: all modules
 
 ## Completed Tasks
+- IMPLEMENT-001A: Iteration Workflow Manager core logic
 - CONFIG-001A: Config file load test
 - CONFIG-001B: Minimal config loader
 - CONFIG-002A: Config key validation tests

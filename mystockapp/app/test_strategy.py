@@ -352,3 +352,10 @@ def test_performance_summary_logging():
     # Check that all required metrics are present in the log line (CSV or string)
     for key, value in performance_metrics.items():
         assert str(value) in log_line, f"Missing {key} in log output"
+
+def test_iteration_workflow_manager_instantiation():
+    from iteration_manager import IterationWorkflowManager
+    manager = IterationWorkflowManager()
+    assert hasattr(manager, 'run_iteration')
+    # Optionally, check that run_iteration is callable
+    assert callable(manager.run_iteration)
