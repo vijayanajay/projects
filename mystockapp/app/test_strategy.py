@@ -335,3 +335,20 @@ def test_trade_event_logging_schema():
     # Check that all required fields are present in the log line (CSV or string)
     for field in ['timestamp', 'symbol', 'price', 'quantity', 'side']:
         assert str(trade_event[field]) in log_line, f"Missing {field} in log output"
+
+def test_performance_summary_logging():
+    """Test that performance summary logger outputs all required performance metrics."""
+    performance_metrics = {
+        'sharpe_ratio': 1.5,
+        'max_drawdown': -0.12,
+        'win_rate': 0.65,
+        'avg_return_per_trade': 0.03,
+        'profit_factor': 1.8,
+        'trades': 40
+    }
+    # Assume a function log_performance_summary exists (to be implemented)
+    from logger import log_performance_summary
+    log_line = log_performance_summary(performance_metrics)
+    # Check that all required metrics are present in the log line (CSV or string)
+    for key, value in performance_metrics.items():
+        assert str(value) in log_line, f"Missing {key} in log output"
