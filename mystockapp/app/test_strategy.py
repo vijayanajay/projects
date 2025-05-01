@@ -318,3 +318,20 @@ def test_level1_parameter_tuning_iteration():
     assert 'win_rate' in agg
     assert isinstance(agg['avg_return_per_trade'], float)
     assert isinstance(agg['win_rate'], float)
+
+def test_trade_event_logging_schema():
+    """Test that trade event logger outputs required trade metadata fields."""
+    # Minimal mock trade event
+    trade_event = {
+        'timestamp': '2023-01-01T10:00:00Z',
+        'symbol': 'AAPL',
+        'price': 150.0,
+        'quantity': 10,
+        'side': 'buy'
+    }
+    # Assume a function log_trade_event exists (to be implemented)
+    from logger import log_trade_event
+    log_line = log_trade_event(trade_event)
+    # Check that all required fields are present in the log line (CSV or string)
+    for field in ['timestamp', 'symbol', 'price', 'quantity', 'side']:
+        assert str(trade_event[field]) in log_line, f"Missing {field} in log output"
