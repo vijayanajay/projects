@@ -259,3 +259,54 @@ def test_level0_iteration_framework_executes_cycle():
     # Should use the initial_ma_short/long as starting point
     assert result['best_params']['short_ma'] == config['initial_ma_short']
     assert result['best_params']['long_ma'] == config['initial_ma_long']
+
+def test_level1_parameter_tuning_iteration():
+    """Test Level 1 (Parameter Tuning) iteration: must optimize parameters across walk-forward periods."""
+    import pandas as pd
+    import numpy as np
+    from strategy import StrategyOptimizer
+    from backtester import generate_walk_forward_periods
+
+    # Simulate price data (100 days)
+    dates = pd.date_range('2023-01-01', periods=100, freq='D')
+    prices = pd.Series(np.linspace(100, 200, 100), index=dates)
+
+    # Config template for optimization
+    config_template = {
+        'data': {'symbol': 'TEST', 'timeframe': '1d', 'lookback_period': 30},
+        'strategy': {'short_sma': 3, 'long_sma': 5, 'risk_ratio': 0.05}
+    }
+    param_ranges = {
+        'strategy.short_sma': [2, 3],
+        'strategy.long_sma': [5, 6]
+    }
+
+    # Generate walk-forward periods (2 periods for simplicity)
+    periods = generate_walk_forward_periods(dates, train_years=1, test_months=1)
+    assert len(periods) > 0
+
+    # For each period, optimize parameters on train, evaluate on test
+    all_period_results = []
+    for train_idx, test_idx in periods[:2]:  # Only test first 2 periods for speed
+        train_prices = prices[train_idx]
+        test_prices = prices[test_idx]
+        optimizer = StrategyOptimizer(train_prices, config_template, param_ranges)
+        result = optimizer.optimize()
+        # Use best params on test set
+        best_params = result['best_params']
+        # Minimal signals: just use short_sma < long_sma for all
+        from strategy import calculate_sma, generate_crossover_signals, Backtester
+        short = calculate_sma(test_prices, best_params['strategy']['short_sma'])
+        long = calculate_sma(test_prices, best_params['strategy']['long_sma'])
+        signals = generate_crossover_signals(short, long)
+        bt = Backtester(test_prices, signals, best_params)
+        metrics = bt.run()
+        all_period_results.append(metrics)
+
+    # Aggregate metrics (e.g., average return, win rate)
+    from strategy import aggregate_metrics
+    agg = aggregate_metrics(all_period_results)
+    assert 'avg_return_per_trade' in agg
+    assert 'win_rate' in agg
+    assert isinstance(agg['avg_return_per_trade'], float)
+    assert isinstance(agg['win_rate'], float)
