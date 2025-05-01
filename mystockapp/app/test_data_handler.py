@@ -136,3 +136,37 @@ def test_resample_data_validation():
     assert all(col in resampled.columns for col in ['Open', 'High', 'Low', 'Close', 'Volume'])
     # Check that the resampled data has fewer rows (weekly vs daily)
     assert len(resampled) < len(data)
+
+def test_resample_ohlcv_3day():
+    """Test that resample_ohlcv correctly resamples to 3-day bars and maintains OHLC consistency."""
+    dates = pd.date_range(start="2023-01-01", periods=9, freq='D')
+    data = pd.DataFrame({
+        'Open': [10, 20, 30, 40, 50, 60, 70, 80, 90],
+        'High': [15, 25, 35, 45, 55, 65, 75, 85, 95],
+        'Low':  [5, 15, 25, 35, 45, 55, 65, 75, 85],
+        'Close':[12, 22, 32, 42, 52, 62, 72, 82, 92],
+        'Volume':[100, 200, 300, 400, 500, 600, 700, 800, 900]
+    }, index=dates)
+
+    resampled = resample_ohlcv(data, rule='3D')
+
+    # There should be 3 rows (each 3 days)
+    assert len(resampled) == 3
+    # Check OHLC consistency for first bar (2023-01-01 to 2023-01-03)
+    assert resampled.iloc[0]['Open'] == 10
+    assert resampled.iloc[0]['High'] == 35
+    assert resampled.iloc[0]['Low'] == 5
+    assert resampled.iloc[0]['Close'] == 32
+    assert resampled.iloc[0]['Volume'] == 100 + 200 + 300
+    # Check OHLC consistency for second bar (2023-01-04 to 2023-01-06)
+    assert resampled.iloc[1]['Open'] == 40
+    assert resampled.iloc[1]['High'] == 65
+    assert resampled.iloc[1]['Low'] == 35
+    assert resampled.iloc[1]['Close'] == 62
+    assert resampled.iloc[1]['Volume'] == 400 + 500 + 600
+    # Check OHLC consistency for third bar (2023-01-07 to 2023-01-09)
+    assert resampled.iloc[2]['Open'] == 70
+    assert resampled.iloc[2]['High'] == 95
+    assert resampled.iloc[2]['Low'] == 65
+    assert resampled.iloc[2]['Close'] == 92
+    assert resampled.iloc[2]['Volume'] == 700 + 800 + 900
