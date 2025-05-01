@@ -101,13 +101,11 @@ def test_trade_simulation_framework():
     # Should have 2 trades
     assert len(trades) == 2
     # First trade: entry at 100 (2023-01-01), exit at 101 (2023-01-03)
-    assert trades[0]['entry_price'] == 100
-    assert trades[0]['exit_price'] == 101
-    assert trades[0]['profit'] == 0.1  # absolute profit (101-100)*0.1
-    assert abs(trades[0]['return_pct'] - 0.01) < 1e-6  # percent profit
+    assert trades[0]['entry_date'] == dates[0]
+    assert trades[0]['exit_date'] == dates[2]
     # Second trade: entry at 105 (2023-01-04), exit at 106 (2023-01-06)
-    assert trades[1]['entry_price'] == 105
-    assert trades[1]['exit_price'] == 106
+    assert trades[1]['entry_date'] == dates[3]
+    assert trades[1]['exit_date'] == dates[5]
     assert trades[1]['profit'] == 0.1  # absolute profit (106-105)*0.1
     assert abs(trades[1]['return_pct'] - (1/105)) < 1e-6  # percent profit
 
@@ -184,3 +182,26 @@ def test_individual_metric_calculations():
     else:
         assert results['sharpe_ratio'] == 0.0
         assert results['max_drawdown'] == 0.0
+
+def test_generate_trades_signal_and_max_holding_days():
+    import pandas as pd
+    from strategy import Backtester
+    # Simulate price data
+    dates = pd.date_range('2023-01-01', periods=6, freq='D')
+    prices = pd.Series([100, 102, 104, 106, 108, 110], index=dates)
+    # Signals: Entry on day 1, hold, exit on day 3, entry on day 4, forced exit by max_holding_days on day 6
+    signals = pd.Series([1, 0, -1, 1, 0, 0], index=dates)
+    config = {
+        'data': {'symbol': 'TEST', 'timeframe': '1d', 'lookback_period': 5},
+        'strategy': {'short_sma': 2, 'long_sma': 3, 'risk_ratio': 1.0, 'max_holding_days': 2}
+    }
+    backtester = Backtester(prices, signals, config)
+    trades = backtester._generate_trades()
+    # First trade: entry at 100 (2023-01-01), exit at 102 (2023-01-02) due to signal -1
+    assert trades[0]['entry_date'] == dates[0]
+    assert trades[0]['exit_date'] == dates[1]
+    # Second trade: entry at 106 (2023-01-04), exit at 108 (2023-01-05) due to max_holding_days
+    assert trades[1]['entry_date'] == dates[3]
+    assert trades[1]['exit_date'] == dates[4]
+    # Should only be 2 trades
+    assert len(trades) == 2

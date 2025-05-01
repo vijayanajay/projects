@@ -203,6 +203,7 @@ class Backtester:
     def _generate_trades(self):
         """
         Generate trade history based on signals (1=entry, -1=exit, 0=hold), applying max_holding_days exit.
+        Also supports legacy convention (1=entry, 1=hold, 0=exit/hold).
         Returns:
             list: List of trade dictionaries
         """
@@ -216,35 +217,47 @@ class Backtester:
         risk_ratio = self.config['strategy'].get('risk_ratio', 1.0)
         max_holding_days = self.config['strategy'].get('max_holding_days', None)
         holding_days = 0
+        prev_signal = 0
         for i, (date, price) in enumerate(self.prices.items()):
             signal = self.signals.loc[date]
-            if signal == 1 and not in_position:
+            # Support both new and legacy conventions
+            entry = (signal == 1 and not in_position)
+            exit_ = False
+            if in_position:
+                holding_days += 1
+                # New convention: exit on -1
+                if signal == -1:
+                    exit_ = True
+                # Legacy: exit when signal drops from 1 to 0
+                elif prev_signal == 1 and signal == 0:
+                    exit_ = True
+                # Max holding days
+                elif max_holding_days is not None and holding_days >= max_holding_days:
+                    exit_ = True
+            if entry:
                 entry_price = price * (1 + slippage_pct) * (1 + commission_pct)
                 entry_date = date
                 position_size = risk_ratio
                 in_position = True
                 holding_days = 0
-            elif in_position:
-                holding_days += 1
-                exit_due_to_signal = signal == -1
-                exit_due_to_max = max_holding_days is not None and holding_days >= max_holding_days
-                if exit_due_to_signal or exit_due_to_max:
-                    exit_price = price * (1 - slippage_pct) * (1 - commission_pct)
-                    exit_date = date
-                    abs_profit = (exit_price - entry_price) * position_size
-                    pct_profit = (exit_price - entry_price) / entry_price
-                    trade = {
-                        'symbol': self.config['data']['symbol'],
-                        'entry_date': entry_date,
-                        'exit_date': exit_date,
-                        'entry_price': entry_price,
-                        'exit_price': exit_price,
-                        'position_size': position_size,
-                        'profit': abs_profit,
-                        'return_pct': pct_profit
-                    }
-                    trades.append(trade)
-                    in_position = False
+            elif exit_:
+                exit_price = price * (1 - slippage_pct) * (1 - commission_pct)
+                exit_date = date
+                abs_profit = (exit_price - entry_price) * position_size
+                pct_profit = (exit_price - entry_price) / entry_price
+                trade = {
+                    'symbol': self.config['data']['symbol'],
+                    'entry_date': entry_date,
+                    'exit_date': exit_date,
+                    'entry_price': entry_price,
+                    'exit_price': exit_price,
+                    'position_size': position_size,
+                    'profit': abs_profit,
+                    'return_pct': pct_profit
+                }
+                trades.append(trade)
+                in_position = False
+            prev_signal = signal
         # Close any open position at the end of the data period
         if in_position:
             exit_price = self.prices.iloc[-1] * (1 - slippage_pct) * (1 - commission_pct)
