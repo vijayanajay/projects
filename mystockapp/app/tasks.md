@@ -2,47 +2,12 @@
 ## Project Statistics
 
 - **Total Estimated Time:** 65h
-- **Tasks Completed:** 29/39 (74.4%)
-- **Time Spent:** 52.2h (80.3%) | **Time Remaining:** 12.8h (19.7%)
+- **Tasks Completed:** 30/39 (76.9%)
+- **Time Spent:** 53.2h (81.8%) | **Time Remaining:** 11.8h (18.2%)
 
 ## Tasks
 
-### Performance Metrics Calculation
-
-**Task ID:** METRICS-001B  
-**Task Description:** Implement core performance metrics calculator.  
-**Estimated Time:** 3h  
-**Complexity:** Medium  
-**Dependencies:** METRICS-001A  
-**Status:** Done  
-**Pass/Fail Criteria:** Must handle edge cases (zero trades, negative returns)
-
-
-**Task ID:** METRICS-002B  
-**Task Description:** Implement Consistency Score calculator.  
-**Estimated Time:** 2h  
-**Complexity:** Medium  
-**Dependencies:** METRICS-002A  
-**Status:** Done  
-**Pass/Fail Criteria:** Must produce score between 0-100 with clear interpretation
-
-**Task ID:** METRICS-003A  
-**Task Description:** Write validation tests for metric aggregation.  
-**Estimated Time:** 1h  
-**Complexity:** Medium  
-**Dependencies:** METRICS-002B  
-**Status:** Done  
-**Pass/Fail Criteria:** Test must catch inconsistencies in multi-period metrics
-
 ### Iterative Logic
-
-**Task ID:** ITERATION-001A  
-**Task Description:** Write tests for Level 0 strategy initialization.  
-**Estimated Time:** 1h  
-**Complexity:** Low  
-**Dependencies:** STRATEGY-001B, METRICS-001B  
-**Status:** To Do  
-**Pass/Fail Criteria:** Test must verify strategy parameter setup
 
 **Task ID:** ITERATION-001B  
 **Task Description:** Implement Level 0 (Base MA) iteration framework.  
@@ -153,3 +118,8 @@
 - FWT-003A: Test must catch inconsistencies between in-sample and out-of-sample performance
 - METRICS-001A: Test must validate Sharpe ratio, max drawdown, and win rate
 - METRICS-002A: Consistency Score test
+- ITERATION-001A: Write tests for Level 0 strategy initialization
+- METRICS-001B: Must handle edge cases (zero trades, negative returns)
+- METRICS-002B: Must produce score between 0-100 with clear interpretation
+- METRICS-003A: Test must catch inconsistencies in multi-period metrics
+- ITERATION-001A: Test must verify strategy parameter setup

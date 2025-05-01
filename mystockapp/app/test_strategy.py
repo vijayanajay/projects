@@ -192,3 +192,38 @@ def test_metric_aggregation_consistency():
     import pytest
     with pytest.raises(KeyError):
         aggregate_metrics(bad_metrics)
+
+def test_level0_strategy_initialization():
+    """Test Level 0 strategy initialization: config structure and parameter setup."""
+    from strategy import validate_configuration
+    # Minimal valid Level 0 config (Base MA Crossover)
+    config = {
+        'data': {
+            'symbol': 'AAPL',
+            'timeframe': '1d',
+            'lookback_period': 30
+        },
+        'strategy': {
+            'short_sma': 9,
+            'long_sma': 21,
+            'risk_ratio': 0.05
+        }
+    }
+    # Should not raise
+    validate_configuration(config)
+    # Missing key should fail
+    bad_config = {
+        'data': {
+            'symbol': 'AAPL',
+            'timeframe': '1d',
+            # 'lookback_period' missing
+        },
+        'strategy': {
+            'short_sma': 9,
+            'long_sma': 21,
+            'risk_ratio': 0.05
+        }
+    }
+    import pytest
+    with pytest.raises(ValueError):
+        validate_configuration(bad_config)
