@@ -2,8 +2,8 @@
 ## Project Statistics
 
 - **Total Estimated Time:** 25h
-- **Tasks Completed:** 2/20 (10%)
-- **Time Spent:** 74.8h () | **Time Remaining:** 22h (88%)
+- **Tasks Completed:** 4/20 (20%)
+- **Time Spent:** 76.8h () | **Time Remaining:** 19h (80%)
 
 ## Atomic Tasks (1-2h each)
 
@@ -17,7 +17,7 @@
    - What: Add logic to evaluate `target_return_pct` and Consistency Score after each level, controlling iteration flow.
    - Est. Time: 1h
    - Depends: Iteration manager, performance metrics
-   - Status: pending
+   - Status: done
 
 3. **Implement Volume MA Calculation**
    - What: Add function for Volume MA in `indicator_calculator.py`.
@@ -29,6 +29,7 @@
    - What: Add functions for RSI, ADX, MACD, Bollinger Bands in `indicator_calculator.py`.
    - Est. Time: 2h
    - Depends: pandas/numpy, data handler
+   - Status: done
 
 5. **Unit Tests for New Indicators**
    - What: Write tests for Volume MA, RSI, ADX, MACD, BB.
