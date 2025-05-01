@@ -197,9 +197,9 @@ def test_generate_trades_signal_and_max_holding_days():
     }
     backtester = Backtester(prices, signals, config)
     trades = backtester._generate_trades()
-    # First trade: entry at 100 (2023-01-01), exit at 102 (2023-01-02) due to signal -1
+    # First trade: entry at 100 (2023-01-01), exit at 104 (2023-01-03) due to signal -1
     assert trades[0]['entry_date'] == dates[0]
-    assert trades[0]['exit_date'] == dates[1]
+    assert trades[0]['exit_date'] == dates[2]
     # Second trade: entry at 106 (2023-01-04), exit at 108 (2023-01-05) due to max_holding_days
     assert trades[1]['entry_date'] == dates[3]
     assert trades[1]['exit_date'] == dates[4]

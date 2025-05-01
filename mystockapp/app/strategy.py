@@ -216,31 +216,47 @@ class Backtester:
         commission_pct = self.config.get('commission_pct', 0.0)
         risk_ratio = self.config['strategy'].get('risk_ratio', 1.0)
         max_holding_days = self.config['strategy'].get('max_holding_days', None)
-        holding_days = 0
-        prev_signal = 0
+        entry_idx = None
+        use_legacy_exit = not (-1 in self.signals.values)
         for i, (date, price) in enumerate(self.prices.items()):
             signal = self.signals.loc[date]
-            # Support both new and legacy conventions
+            print(f"i={i}, date={date}, signal={signal}, in_position={in_position}, entry_idx={entry_idx}")
             entry = (signal == 1 and not in_position)
-            exit_ = False
-            if in_position:
-                holding_days += 1
-                # New convention: exit on -1
-                if signal == -1:
-                    exit_ = True
-                # Legacy: exit when signal drops from 1 to 0
-                elif prev_signal == 1 and signal == 0:
-                    exit_ = True
-                # Max holding days
-                elif max_holding_days is not None and holding_days >= max_holding_days:
-                    exit_ = True
             if entry:
+                print(f"  ENTRY at i={i}, date={date}")
                 entry_price = price * (1 + slippage_pct) * (1 + commission_pct)
                 entry_date = date
                 position_size = risk_ratio
                 in_position = True
-                holding_days = 0
-            elif exit_:
+                entry_idx = i
+                prev_signal = signal
+                continue  # Skip exit check on entry day
+            exit_ = False
+            exit_reason = None
+            exit_idx = None
+            if in_position:
+                print(f"  [DEBUG] Checking exits: i={i}, entry_idx={entry_idx}, signal={signal}, in_position={in_position}")
+                if use_legacy_exit:
+                    if prev_signal == 1 and signal == 0:
+                        print(f"  EXIT by signal drop at i={i}, date={date}")
+                        exit_ = True
+                        exit_reason = 'signal'
+                        exit_idx = i
+                else:
+                    if i > entry_idx and signal == -1:
+                        print(f"  [DEBUG] EXIT by signal -1 at i={i}, date={date}")
+                        exit_ = True
+                        exit_reason = 'signal'
+                        exit_idx = i
+                    # Only check max_holding_days if not already exiting by signal
+                    if max_holding_days is not None and not exit_ and i == entry_idx + max_holding_days - 1:
+                        print(f"  [DEBUG] max_holding_days condition met at i={i}, entry_idx={entry_idx}, i-entry_idx={i-entry_idx}, max_holding_days={max_holding_days}")
+                        print(f"  EXIT by max_holding_days at i={i}, date={date}")
+                        exit_ = True
+                        exit_reason = 'max_holding_days'
+                        exit_idx = i
+            if exit_:
+                print(f"  EXIT TRADE at i={i}, date={date}, reason={exit_reason}")
                 exit_price = price * (1 - slippage_pct) * (1 - commission_pct)
                 exit_date = date
                 abs_profit = (exit_price - entry_price) * position_size
@@ -257,6 +273,7 @@ class Backtester:
                 }
                 trades.append(trade)
                 in_position = False
+                entry_idx = None
             prev_signal = signal
         # Close any open position at the end of the data period
         if in_position:
