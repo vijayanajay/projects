@@ -56,38 +56,19 @@ class StrategyOptimizer:
         }
     
     def optimize_parameters(self) -> Dict:
-        """Optimize strategy parameters using walk-forward analysis"""
-        # Initialize best parameters and performance
-        best_params = {
-            'short_ma': self.config['initial_ma_short'],
-            'long_ma': self.config['initial_ma_long']
-        }
-        best_performance = {'sharpe_ratio': float('-inf')}
-        
-        # Perform walk-forward analysis
-        for short_window in range(5, 20):
-            for long_window in range(short_window + 5, 50):
-                # Calculate moving averages
-                short_ma = self.calculate_moving_average(self.ohlcv_data['Close'], short_window)
-                long_ma = self.calculate_moving_average(self.ohlcv_data['Close'], long_window)
-                
-                # Generate signals
-                signals = self.generate_signals(short_ma, long_ma)
-                
-                # Backtest strategy
-                performance = self.backtest_strategy(signals)
-                
-                # Update best parameters if performance improves
-                if performance['sharpe_ratio'] > best_performance['sharpe_ratio']:
-                    best_performance = performance
-                    best_params = {
-                        'short_ma': short_window,
-                        'long_ma': long_window
-                    }
-        
+        """Level 0: Run strategy iteration only for initial_ma_short and initial_ma_long from config."""
+        short_window = self.config['initial_ma_short']
+        long_window = self.config['initial_ma_long']
+        short_ma = self.calculate_moving_average(self.ohlcv_data['Close'], short_window)
+        long_ma = self.calculate_moving_average(self.ohlcv_data['Close'], long_window)
+        signals = self.generate_signals(short_ma, long_ma)
+        performance = self.backtest_strategy(signals)
         return {
-            'best_params': best_params,
-            'best_performance': best_performance
+            'best_params': {
+                'short_ma': short_window,
+                'long_ma': long_window
+            },
+            'best_performance': performance
         }
 
 if __name__ == "__main__":

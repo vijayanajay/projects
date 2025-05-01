@@ -227,3 +227,35 @@ def test_level0_strategy_initialization():
     import pytest
     with pytest.raises(ValueError):
         validate_configuration(bad_config)
+
+def test_level0_iteration_framework_executes_cycle():
+    """Test that the Level 0 iteration framework executes a full strategy iteration cycle (Base MA)."""
+    import pandas as pd
+    from strategy_optimizer import StrategyOptimizer
+    # Minimal config for Level 0
+    config = {
+        'ticker': 'AAPL',
+        'start_date': '2023-01-01',
+        'end_date': '2023-01-10',
+        'initial_ma_short': 2,
+        'initial_ma_long': 3,
+        'transaction_cost_pct': 0.0
+    }
+    # Simulate price data
+    dates = pd.date_range('2023-01-01', periods=10)
+    prices = pd.Series([100, 101, 102, 103, 104, 105, 106, 107, 108, 109], index=dates)
+    # Patch fetch_ohlcv_data to return our prices as a DataFrame
+    import strategy_optimizer
+    def mock_fetch_ohlcv_data(ticker, start, end):
+        return pd.DataFrame({'Close': prices})
+    strategy_optimizer.fetch_ohlcv_data = mock_fetch_ohlcv_data
+    # Run Level 0 iteration (should not raise and should return best params/performance)
+    optimizer = StrategyOptimizer(config)
+    result = optimizer.optimize_parameters()
+    assert 'best_params' in result
+    assert 'best_performance' in result
+    assert isinstance(result['best_params'], dict)
+    assert isinstance(result['best_performance'], dict)
+    # Should use the initial_ma_short/long as starting point
+    assert result['best_params']['short_ma'] == config['initial_ma_short']
+    assert result['best_params']['long_ma'] == config['initial_ma_long']
