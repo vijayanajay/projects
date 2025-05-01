@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from strategy import calculate_ema  # To be implemented
+from indicator_calculator import calculate_volume_ma  # To be implemented
 
 def test_ema_calculation():
     """Test EMA calculation against known benchmarks and edge cases."""
@@ -37,6 +38,39 @@ def test_ema_calculation():
     nan_data = pd.Series([1.0, np.nan, 3.0, 4.0])
     result_nan = calculate_ema(nan_data, period=2)
     assert np.isnan(result_nan.iloc[1])  # EMA should be NaN where input is NaN
+    assert not np.isnan(result_nan.iloc[0])
+    assert not np.isnan(result_nan.iloc[2])
+    assert not np.isnan(result_nan.iloc[3])
+
+def test_volume_ma_calculation():
+    """Test Volume MA calculation against known values and edge cases."""
+    # Test case 1: Simple case with known values
+    data = pd.Series([100, 200, 300, 400, 500])
+    expected_ma_3 = pd.Series([100.0, 150.0, 200.0, 300.0, 400.0])  # 3-period MA
+    result = calculate_volume_ma(data, period=3)
+    np.testing.assert_array_almost_equal(result.values, expected_ma_3.values, decimal=4)
+
+    # Test case 2: All values the same
+    constant_data = pd.Series([50, 50, 50, 50, 50])
+    expected_constant_ma = pd.Series([50.0, 50.0, 50.0, 50.0, 50.0])
+    result_constant = calculate_volume_ma(constant_data, period=2)
+    np.testing.assert_array_almost_equal(result_constant.values, expected_constant_ma.values, decimal=4)
+
+    # Test case 3: Single value
+    single_data = pd.Series([10])
+    expected_single = pd.Series([10.0])
+    result_single = calculate_volume_ma(single_data, period=2)
+    np.testing.assert_array_almost_equal(result_single.values, expected_single.values, decimal=4)
+
+    # Test case 4: Empty series
+    empty_data = pd.Series([], dtype=float)
+    result_empty = calculate_volume_ma(empty_data, period=2)
+    assert result_empty.empty
+
+    # Test case 5: Series with NaN values
+    nan_data = pd.Series([100.0, np.nan, 300.0, 400.0])
+    result_nan = calculate_volume_ma(nan_data, period=2)
+    assert np.isnan(result_nan.iloc[1])  # MA should be NaN where input is NaN
     assert not np.isnan(result_nan.iloc[0])
     assert not np.isnan(result_nan.iloc[2])
     assert not np.isnan(result_nan.iloc[3])
