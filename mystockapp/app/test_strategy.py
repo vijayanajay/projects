@@ -267,9 +267,9 @@ def test_level1_parameter_tuning_iteration():
     from strategy import StrategyOptimizer
     from backtester import generate_walk_forward_periods
 
-    # Simulate price data (100 days)
-    dates = pd.date_range('2023-01-01', periods=100, freq='D')
-    prices = pd.Series(np.linspace(100, 200, 100), index=dates)
+    # Simulate price data (400 days to allow for 1-year train + 1-month test)
+    dates = pd.date_range('2023-01-01', periods=400, freq='D')
+    prices = pd.Series(np.linspace(100, 200, 400), index=dates)
 
     # Config template for optimization
     config_template = {
@@ -301,7 +301,9 @@ def test_level1_parameter_tuning_iteration():
         signals = generate_crossover_signals(short, long)
         bt = Backtester(test_prices, signals, best_params)
         metrics = bt.run()
-        all_period_results.append(metrics)
+        # Only keep numeric metrics for aggregation
+        numeric_metrics = {k: v for k, v in metrics.items() if isinstance(v, (int, float, np.floating))}
+        all_period_results.append(numeric_metrics)
 
     # Aggregate metrics (e.g., average return, win rate)
     from strategy import aggregate_metrics
