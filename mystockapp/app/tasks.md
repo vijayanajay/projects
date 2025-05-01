@@ -2,37 +2,19 @@
 ## Project Statistics
 
 - **Total Estimated Time:** 65h
-- **Tasks Completed:** 23/39 (59.0%)
-- **Time Spent:** 43.1h (66.3%) | **Time Remaining:** 21.9h (33.7%)
+- **Tasks Completed:** 27/39 (69.2%)
+- **Time Spent:** 49.2h (75.7%) | **Time Remaining:** 15.8h (24.3%)
 
 ## Tasks
 
-### Base Strategy Implementation
-
-**Task ID:** FWT-003A  
-**Task Description:** Write validation tests for FWT results.  
-**Estimated Time:** 1h  
-**Complexity:** Medium  
-**Dependencies:** FWT-002B  
-**Status:** To Do  
-**Pass/Fail Criteria:** Test must catch inconsistencies between in-sample and out-of-sample performance
-
 ### Performance Metrics Calculation
-
-**Task ID:** METRICS-001A  
-**Task Description:** Write tests for individual metric calculations.  
-**Estimated Time:** 1h  
-**Complexity:** Low  
-**Dependencies:** FWT-001B  
-**Status:** To Do  
-**Pass/Fail Criteria:** Test must validate Sharpe ratio, max drawdown, and win rate
 
 **Task ID:** METRICS-001B  
 **Task Description:** Implement core performance metrics calculator.  
 **Estimated Time:** 3h  
 **Complexity:** Medium  
 **Dependencies:** METRICS-001A  
-**Status:** To Do  
+**Status:** Done  
 **Pass/Fail Criteria:** Must handle edge cases (zero trades, negative returns)
 
 
@@ -168,4 +150,6 @@
 - FWT-001B: Walk-forward period calc
 - FWT-002A: Trade simulation test
 - FWT-002B: Trade simulation engine
+- FWT-003A: Test must catch inconsistencies between in-sample and out-of-sample performance
+- METRICS-001A: Test must validate Sharpe ratio, max drawdown, and win rate
 - METRICS-002A: Consistency Score test

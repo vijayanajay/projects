@@ -191,7 +191,11 @@ class Backtester:
             'trades': self.trades,
             'cumulative_returns': self._calculate_cumulative_returns(),
             'sharpe_ratio': self._calculate_sharpe_ratio(),
-            'max_drawdown': self._calculate_max_drawdown()
+            'max_drawdown': self._calculate_max_drawdown(),
+            'avg_return_per_trade': self._calculate_avg_return_per_trade(),
+            'win_rate': self._calculate_win_rate(),
+            'avg_holding_period': self._calculate_avg_holding_period(),
+            'profit_factor': self._calculate_profit_factor(),
         }
         
         return results
@@ -318,6 +322,32 @@ class Backtester:
         max_drawdown = drawdowns.min()
         
         return max_drawdown
+
+    def _calculate_avg_return_per_trade(self):
+        if not self.trades:
+            return 0.0
+        return float(np.mean([t['return_pct'] for t in self.trades]))
+
+    def _calculate_win_rate(self):
+        if not self.trades:
+            return 0.0
+        wins = [t for t in self.trades if t['profit'] > 0]
+        return float(len(wins)) / len(self.trades) if self.trades else 0.0
+
+    def _calculate_avg_holding_period(self):
+        if not self.trades:
+            return 0.0
+        periods = [(t['exit_date'] - t['entry_date']).days for t in self.trades]
+        return float(np.mean(periods)) if periods else 0.0
+
+    def _calculate_profit_factor(self):
+        if not self.trades:
+            return 0.0
+        gross_profit = sum(t['profit'] for t in self.trades if t['profit'] > 0)
+        gross_loss = -sum(t['profit'] for t in self.trades if t['profit'] < 0)
+        if gross_loss == 0:
+            return float('inf') if gross_profit > 0 else 0.0
+        return float(gross_profit) / gross_loss
 
 class StrategyOptimizer:
     """

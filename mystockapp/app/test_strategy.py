@@ -132,3 +132,41 @@ def test_consistency_score_components():
     ]
     score = calculate_consistency_score(all_pass, target_return, max_drawdown)
     assert score == 100, f"Expected 100, got {score}"
+
+def test_core_performance_metrics_calculator():
+    """Test Backtester returns all required core metrics and handles edge cases (zero trades, negative returns)."""
+    from strategy import Backtester
+    import numpy as np
+    # Case 1: Normal trades
+    prices = pd.Series([100, 110, 105, 120, 115], index=pd.date_range('2023-01-01', periods=5))
+    signals = pd.Series([1, 0, 1, 0, 0], index=prices.index)
+    config = {
+        'data': {'symbol': 'TEST', 'timeframe': '1d', 'lookback_period': 5},
+        'strategy': {'short_sma': 1, 'long_sma': 2, 'risk_ratio': 1.0}
+    }
+    bt = Backtester(prices, signals, config)
+    results = bt.run()
+    # Required metrics
+    for key in ['avg_return_per_trade', 'win_rate', 'avg_holding_period', 'profit_factor', 'max_drawdown']:
+        assert key in results, f"Missing metric: {key}"
+    # Types
+    assert isinstance(results['avg_return_per_trade'], float)
+    assert isinstance(results['win_rate'], float)
+    assert isinstance(results['avg_holding_period'], float)
+    assert isinstance(results['profit_factor'], float)
+    assert isinstance(results['max_drawdown'], float)
+    # Edge case: zero trades
+    no_signal = pd.Series([0, 0, 0, 0, 0], index=prices.index)
+    bt2 = Backtester(prices, no_signal, config)
+    results2 = bt2.run()
+    assert results2['avg_return_per_trade'] == 0.0
+    assert results2['win_rate'] == 0.0
+    assert results2['avg_holding_period'] == 0.0
+    assert results2['profit_factor'] == 0.0
+    # Edge case: negative returns
+    prices_neg = pd.Series([100, 90, 80, 70, 60], index=pd.date_range('2023-01-01', periods=5))
+    signals_neg = pd.Series([1, 0, 1, 0, 0], index=prices_neg.index)
+    bt3 = Backtester(prices_neg, signals_neg, config)
+    results3 = bt3.run()
+    assert results3['avg_return_per_trade'] < 0
+    assert results3['profit_factor'] <= 0

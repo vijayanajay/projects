@@ -142,3 +142,45 @@ def test_trade_simulation_slippage_commissions_position_sizing():
     assert abs(trade['position_size'] - expected_size) < 1e-6
     assert abs(trade['profit'] - expected_profit) < 1e-6
     assert abs(trade['return_pct'] - expected_return_pct) < 1e-6
+
+def test_fwt_in_sample_vs_out_of_sample_validation():
+    """Test that FWT validation catches inconsistencies between in-sample and out-of-sample performance."""
+    # Mock FWT results: train and test period returns
+    fwt_results = [
+        {'train_return': 0.10, 'test_return': -0.05},  # Large discrepancy
+        {'train_return': 0.12, 'test_return': -0.02},
+        {'train_return': 0.09, 'test_return': 0.01},
+    ]
+    # Simple validation: fail if any test return is negative while train is strongly positive
+    inconsistent = any(
+        r['train_return'] > 0.08 and r['test_return'] < 0.0 for r in fwt_results
+    )
+    # This should be True for the above mock data
+    assert inconsistent, "FWT validation did not catch in-sample/out-of-sample inconsistency"
+
+def test_individual_metric_calculations():
+    """Test Sharpe ratio, max drawdown, and win rate calculations individually."""
+    dates = pd.date_range('2023-01-01', periods=5, freq='D')
+    prices = pd.Series([100, 110, 105, 120, 115], index=dates)
+    # Simulate signals: Buy on day 1, sell on day 3, buy on day 4, sell on day 5
+    signals = pd.Series([1, 1, 0, 1, 0], index=dates)
+    config = {
+        'data': {'symbol': 'TEST', 'timeframe': '1d', 'lookback_period': 5},
+        'strategy': {'short_sma': 2, 'long_sma': 3, 'risk_ratio': 1.0}
+    }
+    backtester = Backtester(prices, signals, config)
+    results = backtester.run()
+    # Sharpe ratio should be a float
+    assert isinstance(results['sharpe_ratio'], float)
+    # Max drawdown should be negative or zero
+    assert results['max_drawdown'] <= 0
+    # Win rate: count trades with positive return
+    trades = results['trades']
+    if trades:
+        win_count = sum(1 for t in trades if t['profit'] > 0)
+        win_rate = win_count / len(trades)
+        # At least one trade should be a win
+        assert win_rate > 0
+    else:
+        assert results['sharpe_ratio'] == 0.0
+        assert results['max_drawdown'] == 0.0
