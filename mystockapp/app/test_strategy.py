@@ -170,3 +170,25 @@ def test_core_performance_metrics_calculator():
     results3 = bt3.run()
     assert results3['avg_return_per_trade'] < 0
     assert results3['profit_factor'] <= 0
+
+def test_metric_aggregation_consistency():
+    """Test that aggregation of metrics across multiple periods is consistent and catches inconsistencies."""
+    # Simulate per-period metrics (e.g., from walk-forward test)
+    period_metrics = [
+        {'avg_return_per_trade': 0.05, 'win_rate': 0.6, 'avg_holding_period': 10, 'profit_factor': 1.5, 'max_drawdown': -0.02},
+        {'avg_return_per_trade': 0.03, 'win_rate': 0.5, 'avg_holding_period': 12, 'profit_factor': 1.2, 'max_drawdown': -0.03},
+        {'avg_return_per_trade': 0.07, 'win_rate': 0.7, 'avg_holding_period': 9,  'profit_factor': 2.0, 'max_drawdown': -0.01},
+    ]
+    # Aggregate metrics (mean for all except max_drawdown, which should be min)
+    from strategy import aggregate_metrics
+    agg = aggregate_metrics(period_metrics)
+    assert abs(agg['avg_return_per_trade'] - (0.05+0.03+0.07)/3) < 1e-8
+    assert abs(agg['win_rate'] - (0.6+0.5+0.7)/3) < 1e-8
+    assert abs(agg['avg_holding_period'] - (10+12+9)/3) < 1e-8
+    assert abs(agg['profit_factor'] - (1.5+1.2+2.0)/3) < 1e-8
+    assert agg['max_drawdown'] == min(-0.02, -0.03, -0.01)
+    # Inconsistency: missing key in one period
+    bad_metrics = period_metrics + [{'avg_return_per_trade': 0.04}]
+    import pytest
+    with pytest.raises(KeyError):
+        aggregate_metrics(bad_metrics)

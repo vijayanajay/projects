@@ -531,3 +531,19 @@ def calculate_consistency_score(trade_period_metrics, target_return, max_drawdow
         if period['return'] >= target_return and period['drawdown'] >= max_drawdown:
             count += 1
     return int(100 * count / len(trade_period_metrics))
+
+def aggregate_metrics(period_metrics):
+    if not period_metrics:
+        return {}
+    keys = period_metrics[0].keys()
+    for m in period_metrics:
+        for k in keys:
+            if k not in m:
+                raise KeyError(f"Missing key: {k}")
+    result = {}
+    for k in keys:
+        if k == 'max_drawdown':
+            result[k] = min(m[k] for m in period_metrics)
+        else:
+            result[k] = sum(m[k] for m in period_metrics) / len(period_metrics)
+    return result
