@@ -547,3 +547,18 @@ def aggregate_metrics(period_metrics):
         else:
             result[k] = sum(m[k] for m in period_metrics) / len(period_metrics)
     return result
+
+def generate_signals_unified(short_ma, long_ma):
+    """Unified signal: 1 for entry, -1 for exit, 0 for hold."""
+    if not (isinstance(short_ma, pd.Series) and isinstance(long_ma, pd.Series)):
+        raise ValueError("Both inputs must be pandas Series")
+    if not short_ma.index.equals(long_ma.index):
+        raise ValueError("Input series must have the same index")
+    prev_short = short_ma.shift(1, fill_value=short_ma.iloc[0])
+    prev_long = long_ma.shift(1, fill_value=long_ma.iloc[0])
+    entry = (short_ma > long_ma) & (prev_short <= prev_long)
+    exit = (short_ma < long_ma) & (prev_short >= prev_long)
+    signals = pd.Series(0, index=short_ma.index)
+    signals[entry] = 1
+    signals[exit] = -1
+    return signals

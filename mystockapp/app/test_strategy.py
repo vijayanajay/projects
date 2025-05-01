@@ -422,3 +422,16 @@ def test_iteration_manager_performance_criteria_check():
     ]
     level_fail = manager.run_iteration(mock_fwt_results_fail, config)
     assert level_fail is None, f"Expected None when no level meets criteria, got {level_fail}"
+
+def test_unified_signal_function():
+    """Test unified signal function returns 1 for entry, -1 for exit, 0 for hold."""
+    from strategy import generate_signals_unified
+    # Simulate a simple crossover: short > long (entry), short < long (exit), equal (hold)
+    import pandas as pd
+    idx = pd.date_range('2023-01-01', periods=5)
+    short = pd.Series([1, 2, 3, 2, 1], index=idx)
+    long = pd.Series([1, 1, 2, 3, 3], index=idx)
+    # Expected: [0, 1, 0, -1, 0] (entry at idx[1], exit at idx[3])
+    expected = pd.Series([0, 1, 0, -1, 0], index=idx)
+    result = generate_signals_unified(short, long)
+    pd.testing.assert_series_equal(result, expected)
