@@ -192,6 +192,12 @@ def test_metric_aggregation_consistency():
     import pytest
     with pytest.raises(KeyError):
         aggregate_metrics(bad_metrics)
+    # Edge case: non-numeric value in metrics should raise TypeError
+    non_numeric_metrics = period_metrics.copy()
+    non_numeric_metrics[0] = dict(non_numeric_metrics[0])
+    non_numeric_metrics[0]['win_rate'] = 'not_a_number'
+    with pytest.raises(TypeError):
+        aggregate_metrics(non_numeric_metrics)
 
 def test_level0_strategy_initialization():
     """Test Level 0 strategy initialization: config structure and parameter setup."""
