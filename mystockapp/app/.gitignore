@@ -1,29 +1,39 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-dev-debug.log
+# IDE-specific files
+.vscode/
+.idea/
+*.code-workspace
+.aider*
+/aider.conf.yaml
 
-# Dependency directories
-node_modules/
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
 
-# Environment variables
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+venv
+
+# Virtual environments
+venv/
+env/
+ENV/
 .env
 
-# Editor directories and files
-.idea
-.vscode
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Project-specific folders
+/logs/
+/reports/
+/data/cache/
+/state/
+.env
 
-# OS specific
+# OS-specific files
 .DS_Store
-
-# Task files
-tasks.json
-tasks/ 
+Thumbs.db
