@@ -1,3 +1,9 @@
+**DEPRECATED - THIS DOCUMENTATION IS OUT OF DATE**
+
+**PLEASE REFER TO README.md IN THE PROJECT ROOT FOR CURRENT DOCUMENTATION.**
+
+This file does not reflect the current state of the codebase, particularly the backtesting framework and other recent additions. It has been preserved for historical reference only.
+
 # Codebase Overview
 
 This codebase implements a simple application for fetching historical stock data and generating technical indicators. The primary goal is to provide a tool that can download OHLCV (Open, High, Low, Close, Volume) data for a specified stock (specifically Reliance Industries in the current configuration) and enrich it with various technical analysis features.

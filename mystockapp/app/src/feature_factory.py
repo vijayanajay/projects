@@ -42,7 +42,12 @@ class FeatureFactory:
     }
 
     def __init__(
-        self, ohlcv_data, feature_families=None, params=None, use_float32=True
+        self,
+        ohlcv_data,
+        feature_families=None,
+        params=None,
+        indicator_params=None,
+        use_float32=True,
     ):
         """
         Initialize the FeatureFactory.
@@ -52,7 +57,9 @@ class FeatureFactory:
                 Required columns: ['Open', 'High', 'Low', 'Close', 'Volume']
             feature_families (list): List of feature families to generate
                 If None, generates all available feature families
-            params (dict): Custom parameters for feature generation
+            params (dict): Custom parameters for feature generation (deprecated, use indicator_params)
+                If None, uses default parameters
+            indicator_params (dict): Custom parameters for feature generation
                 If None, uses default parameters
             use_float32 (bool): Whether to use float32 data type for features
         """
@@ -89,8 +96,18 @@ class FeatureFactory:
 
         # Set parameters
         self.params = self.DEFAULT_PARAMS.copy()
-        if params:
+
+        # Handle both params (deprecated) and indicator_params for backward compatibility
+        if indicator_params:
             # Update default params with custom params
+            for family, family_params in indicator_params.items():
+                if family in self.params:
+                    self.params[family].update(family_params)
+        elif params:
+            # Backward compatibility
+            logger.warning(
+                "The 'params' argument is deprecated. Use 'indicator_params' instead."
+            )
             for family, family_params in params.items():
                 if family in self.params:
                     self.params[family].update(family_params)
@@ -102,9 +119,15 @@ class FeatureFactory:
         for col in ["Open", "High", "Low", "Close"]:
             self.ohlcv[col] = self.ohlcv[col].astype(self.dtype)
 
-    def generate_features(self):
+    def generate_features(self, drop_na=True, drop_na_threshold=None):
         """
         Generate all specified feature families.
+
+        Args:
+            drop_na (bool): Whether to drop rows with NaN values. Default is True for safer downstream processing.
+            drop_na_threshold (float or int): If provided, drops rows where more than this
+                   fraction (if < 1) or number (if >= 1) of columns are NaN.
+                   If None, any row with a NaN is dropped when drop_na is True.
 
         Returns:
             pd.DataFrame: DataFrame with original data and generated features
@@ -112,6 +135,66 @@ class FeatureFactory:
         logger.info(
             f"Generating features for families: {self.feature_families}"
         )
+        if self.ohlcv.empty:
+            raise ValueError(
+                "Input DataFrame is empty. Cannot generate features from empty data."
+            )
+        min_rows_needed = 1  # Base case
+        lookback_requirements = {
+            "sma": lambda p: max(p.get("windows", [0])),
+            "ema": lambda p: max(p.get("windows", [0])),
+            "rsi": lambda p: max(p.get("windows", [0])),
+            "macd": lambda p: max(
+                max(p.get("fast", [0])), max(p.get("slow", [0]))
+            ),
+            "bollinger_bands": lambda p: max(p.get("window", [0])),
+            "atr": lambda p: max(p.get("windows", [0])),
+            "volume": lambda p: max(p.get("windows", [0])),
+        }
+        mfi_window = 0
+        if "volume" in self.feature_families and "mfi_14" in self.params.get(
+            "volume", {}
+        ).get("windows", []):
+            mfi_window = 14
+        max_lookback = 0
+        for family in self.feature_families:
+            if family in lookback_requirements:
+                family_params = self.params.get(family, {})
+                max_lookback = max(
+                    max_lookback, lookback_requirements[family](family_params)
+                )
+        if "volume" in self.feature_families:
+            max_lookback = max(max_lookback, mfi_window)
+        min_rows_needed = max_lookback + 1
+        if len(self.ohlcv) < min_rows_needed:
+            raise ValueError(
+                f"Input DataFrame has {len(self.ohlcv)} rows, but at least {min_rows_needed} rows are needed for the selected feature calculations (max lookback: {max_lookback})."
+            )
+
+        # Check for NaN values in critical OHLCV columns before generating features
+        # Calculating indicators on NaN data will result in NaNs or incorrect values.
+        # We warn here and rely on the final drop_na step to remove affected rows.
+        ohlcv_nan_counts = (
+            self.ohlcv[["Open", "High", "Low", "Close", "Volume"]].isna().sum()
+        )
+        ohlcv_with_nans = ohlcv_nan_counts[ohlcv_nan_counts > 0]
+        if not ohlcv_with_nans.empty:
+            logger.warning(
+                f"Input OHLCV data contains NaN values in critical columns before feature generation:\n{ohlcv_with_nans.to_string()}"
+            )
+            logger.warning(
+                "Technical indicators will be calculated on this data, potentially resulting in NaN features. "
+                "Rows with resulting NaNs will be dropped if drop_na is True."
+            )
+
+        # Verify that we have enough data for calculations
+        min_rows_needed = max(
+            self.params["sma"]["windows"] + self.params["ema"]["windows"]
+        )
+        if len(self.ohlcv) < min_rows_needed:
+            raise ValueError(
+                f"Input DataFrame has {len(self.ohlcv)} rows, but at least {min_rows_needed} rows are needed for feature calculations."
+            )
 
         # Create a copy of the original DataFrame to add features to
         df = self.ohlcv.copy()
@@ -135,11 +218,60 @@ class FeatureFactory:
             elif family == "volume":
                 df = self._add_volume_features(df)
 
-        # Drop NaN values resulting from feature calculations
-        df = df.dropna()
-        logger.info(
-            f"Generated {len(df.columns) - 5} features, {len(df)} rows remaining after dropping NaNs"
-        )
+        # Handle NaN values based on the drop_na parameter
+        original_row_count = len(df)
+        nan_count_by_column = df.isna().sum()
+        non_zero_nan_columns = nan_count_by_column[nan_count_by_column > 0]
+
+        if drop_na:
+            actual_threshold = drop_na_threshold
+
+            if actual_threshold is None:
+                default_threshold_fraction = 0.75
+                thresh = int(default_threshold_fraction * len(df.columns))
+                df = df.dropna(thresh=thresh)
+                logger.info(
+                    f"Dropped rows with more than {(1.0 - default_threshold_fraction) * 100:.1f}% of columns having NaN values (default threshold)"
+                )
+            elif actual_threshold < 1:
+                thresh = int((1.0 - actual_threshold) * len(df.columns))
+                df = df.dropna(thresh=thresh)
+                logger.info(
+                    f"Dropped rows with more than {actual_threshold * 100:.1f}% of columns having NaN values (user-specified fraction)"
+                )
+            else:
+                thresh = len(df.columns) - actual_threshold
+                if thresh < 0:
+                    logger.warning(
+                        f"Drop NA threshold ({actual_threshold}) is greater than total columns ({len(df.columns)}). No rows will be dropped based on this threshold."
+                    )
+                    thresh = 0
+                df = df.dropna(thresh=thresh)
+                logger.info(
+                    f"Dropped rows with more than {actual_threshold} columns having NaN values (user-specified count)"
+                )
+
+            rows_dropped = original_row_count - len(df)
+            rows_dropped_percentage = (
+                (rows_dropped / original_row_count) * 100
+                if original_row_count > 0
+                else 0
+            )
+            logger.info(
+                f"Dropped {rows_dropped} rows ({rows_dropped_percentage:.2f}% of original data) due to NaN values"
+            )
+            if rows_dropped_percentage > 25:
+                logger.warning(
+                    f"More than 25% of rows were dropped due to NaN values. Consider using a different NaN handling strategy or investigating data quality issues."
+                )
+            if len(df) == 0:
+                logger.error(
+                    "All rows were dropped due to NaN values! The result is an empty DataFrame. Set drop_na=False or increase drop_na_threshold."
+                )
+        else:
+            logger.warning(
+                "NaN values in the DataFrame were not dropped (drop_na=False). This may cause issues with downstream processing, especially in backtesting."
+            )
 
         return df
 
@@ -185,15 +317,51 @@ class FeatureFactory:
             gain = delta.where(delta > 0, 0).astype(self.dtype)
             loss = -delta.where(delta < 0, 0).astype(self.dtype)
 
-            # Calculate average gain and loss over the window
+            # Calculate average gain and loss using Wilder's smoothing
+            # First values are simple averages
             avg_gain = gain.rolling(window=window).mean()
             avg_loss = loss.rolling(window=window).mean()
 
-            # Calculate relative strength
-            rs = avg_gain / avg_loss
+            # Get the first valid (non-NaN) values as seed values
+            first_valid_idx = window
+            if len(avg_gain.dropna()) > 0 and len(avg_loss.dropna()) > 0:
+                seed_avg_gain = avg_gain.iloc[first_valid_idx]
+                seed_avg_loss = avg_loss.iloc[first_valid_idx]
 
-            # Calculate RSI
-            df[f"rsi_{window}"] = (100 - (100 / (1 + rs))).astype(self.dtype)
+                # Create series for Wilder's smoothing
+                rsi_gain = pd.Series(index=df.index, dtype=self.dtype)
+                rsi_loss = pd.Series(index=df.index, dtype=self.dtype)
+
+                # Set seed values
+                rsi_gain.iloc[first_valid_idx] = np.float32(seed_avg_gain)
+                rsi_loss.iloc[first_valid_idx] = np.float32(seed_avg_loss)
+
+                # Calculate the EMA of the gain and loss
+                for i in range(window, len(df)):
+                    rsi_gain.iloc[i] = np.float32(
+                        (rsi_gain.iloc[i - 1] * (window - 1) + gain.iloc[i])
+                        / window
+                    )
+                    rsi_loss.iloc[i] = np.float32(
+                        (rsi_loss.iloc[i - 1] * (window - 1) + loss.iloc[i])
+                        / window
+                    )
+
+                # Calculate RS and RSI using Wilder's smoothed values
+                rs = rsi_gain / rsi_loss
+                rsi = 100 - (100 / (1 + rs))
+
+                df[f"rsi_{window}"] = rsi.astype(self.dtype)
+            else:
+                # Fallback to original method if we don't have enough data
+                logger.warning(
+                    f"Not enough data to calculate RSI with window={window} using Wilder's method. Falling back to simple method."
+                )
+                rs = avg_gain / avg_loss
+                df[f"rsi_{window}"] = (100 - (100 / (1 + rs))).astype(
+                    self.dtype
+                )
+
         return df
 
     def _add_macd_features(self, df):

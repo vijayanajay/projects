@@ -1,3 +1,9 @@
+**DEPRECATED - THIS DOCUMENTATION IS OUT OF DATE**
+
+**PLEASE REFER TO README.md IN THE PROJECT ROOT FOR CURRENT DOCUMENTATION.**
+
+This file does not reflect the current state of the main.py script, particularly the backtesting functionality, split dates, transaction costs, and other significant additions. It has been preserved for historical reference only.
+
 # File: D:/Code/projects/mystockapp/app/main.py
 
 This script serves as the main entry point for the stock analysis application. It provides a command-line interface for users to specify data fetching parameters and feature generation options, orchestrates the data download and feature calculation processes, and handles saving the results and optionally generating plots.

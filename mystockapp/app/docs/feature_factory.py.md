@@ -1,46 +1,96 @@
-# File: D:/Code/projects/mystockapp/app/feature_factory.py
+# Feature Factory Documentation
 
-This module defines the `FeatureFactory` class, which is responsible for generating a variety of technical indicators from OHLCV (Open, High, Low, Close, Volume) stock data. It is designed to be configurable, allowing users to specify which types of features to generate and with which parameters. The implementation leverages pandas and numpy for vectorized calculations to ensure performance.
+This file provides specific documentation for the `feature_factory.py` module, which is responsible for generating a variety of technical indicators from OHLCV (Open, High, Low, Close, Volume) stock data.
 
-## Main Components:
+## Overview
 
-1.  **`FeatureFactory` Class:**
-    *   **Purpose:** The central class that encapsulates the logic for generating technical features.
-    *   **`DEFAULT_PARAMS` Class Attribute:** A dictionary holding default parameter sets for each supported feature family (SMA, EMA, RSI, MACD, Bollinger Bands, ATR, Volume). These defaults specify the windows or other parameters to use if custom parameters are not provided.
-    *   **`__init__(self, ohlcv_data, feature_families=None, params=None, use_float32=True)` Method:**
-        *   **Purpose:** Initializes the factory with the input OHLCV data and configuration.
-        *   **Inputs:**
-            *   `ohlcv_data` (pd.DataFrame): The input data containing 'Open', 'High', 'Low', 'Close', and 'Volume' columns.
-            *   `feature_families` (list, optional): A list of strings specifying which feature families to generate (e.g., `['sma', 'rsi']`). If `None`, all supported families are included.
-            *   `params` (dict, optional): A dictionary to override or extend the `DEFAULT_PARAMS`.
-            *   `use_float32` (bool): If `True`, generated features are cast to `float32` to save memory; otherwise, `float64` is used. Defaults to `True`.
-        *   **Logic:**
-            *   Stores a copy of the input `ohlcv_data`.
-            *   Validates that the required OHLCV columns are present.
-            *   Sets the list of feature families to generate, validating against the known supported families.
-            *   Merges the provided `params` with the `DEFAULT_PARAMS`.
-            *   Sets the target data type (`self.dtype`) based on `use_float32`.
-            *   Converts the 'Open', 'High', 'Low', and 'Close' columns of the internal data copy to the specified `self.dtype`.
-    *   **`generate_features(self)` Method:**
-        *   **Purpose:** Executes the feature generation pipeline based on the configuration set during initialization.
-        *   **Logic:**
-            *   Creates a copy of the internal OHLCV DataFrame to add features to.
-            *   Iterates through the list of `self.feature_families`.
-            *   For each family, it calls the corresponding private helper method (e.g., `_add_sma_features` for 'sma').
-            *   After adding all specified features, it drops any rows that contain `NaN` values, which typically occur at the beginning of the DataFrame due to the lookback periods required for indicator calculations.
-            *   Logs the number of features generated and the number of rows remaining after dropping NaNs.
-        *   **Output:** Returns the pandas DataFrame containing the original OHLCV data plus the newly generated technical feature columns.
+The `FeatureFactory` class is designed to be configurable, allowing users to specify which types of features to generate and with which parameters. The implementation leverages pandas and numpy for vectorized calculations to ensure performance.
 
-2.  **Private Helper Methods (`_add_*_features`)**:
-    *   **Purpose:** Each private method (`_add_sma_features`, `_add_ema_features`, `_add_rsi_features`, `_add_macd_features`, `_add_bollinger_bands_features`, `_add_atr_features`, `_add_volume_features`) is responsible for calculating and adding features for a specific family.
-    *   **Inputs:** Each method takes the DataFrame (`df`) being built as input.
-    *   **Logic:**
-        *   Retrieves the relevant parameters (windows, fast/slow/signal periods, std deviations) from `self.params` for its specific feature family.
-        *   Uses pandas' built-in functions (`.rolling()`, `.ewm()`, `.diff()`, `.pct_change()`, `.cumsum()`) and numpy operations for vectorized calculations based on the OHLCV columns.
-        *   Calculates the indicator values for the specified parameters.
-        *   Adds new columns to the input DataFrame `df` with descriptive names (e.g., `sma_50`, `rsi_14`, `macd_12_26_9_line`, `bb_20_2.0_upper`, `atr_14`, `volume_sma_20`).
-        *   Includes calculations for related metrics like relative SMAs/EMAs, Bollinger Bands %B and Bandwidth, ATR percentage, Volume ratios, OBV, PVT, and MFI.
-        *   Casts the resulting feature columns to `self.dtype`.
-    *   **Output:** Returns the modified DataFrame `df` with the new feature columns added.
+## Main Components
 
-The module uses logging to track the progress of feature generation. The `if __name__ == "__main__":` block provides an example of how to instantiate the `FeatureFactory` with data fetched by the `data_fetcher` module and generate/print the resulting features.
+### `FeatureFactory` Class
+
+The central class that encapsulates the logic for generating technical features.
+
+#### `DEFAULT_PARAMS` Class Attribute
+
+A dictionary holding default parameter sets for each supported feature family:
+- SMA (Simple Moving Averages)
+- EMA (Exponential Moving Averages)
+- RSI (Relative Strength Index)
+- MACD (Moving Average Convergence Divergence)
+- Bollinger Bands
+- ATR (Average True Range)
+- Volume Indicators
+
+#### Initialization
+
+```python
+def __init__(self, ohlcv_data, feature_families=None, params=None, indicator_params=None, use_float32=True):
+```
+
+- **ohlcv_data** (pd.DataFrame): Input data with 'Open', 'High', 'Low', 'Close', and 'Volume' columns
+- **feature_families** (list, optional): Which feature families to generate (e.g., `['sma', 'rsi']`)
+- **params** (dict, optional): DEPRECATED - Use indicator_params instead
+- **indicator_params** (dict, optional): Dictionary to override or extend DEFAULT_PARAMS
+- **use_float32** (bool): If True, features are cast to float32 to save memory
+
+#### Feature Generation
+
+```python
+def generate_features(self, drop_na=False, drop_na_threshold=None):
+```
+
+- **drop_na** (bool): Whether to drop rows with NaN values within the factory
+- **drop_na_threshold** (float or int): Controls NaN dropping behavior:
+  - If < 1: Drops rows where more than this fraction of values are NaN
+  - If >= 1: Drops rows where more than this number of columns have NaN values
+  - If None and drop_na=True: Any row with a NaN is dropped
+
+## NaN Handling
+
+The FeatureFactory itself can handle NaNs during feature generation, but the recommended approach is:
+
+1. Generate features with `drop_na=False` in FeatureFactory
+2. Handle NaNs externally (e.g., in main.py) after feature generation but before signal generation
+3. This ensures signals are not generated on incomplete data rows
+
+This approach prevents signals being generated on data rows that still contain NaNs from indicator lookback periods, which could lead to unexpected signal behavior.
+
+## Example Usage
+
+```python
+# Create the factory with data and configuration
+factory = FeatureFactory(
+    ohlcv_data=data,
+    feature_families=['sma', 'rsi', 'macd'],
+    indicator_params={
+        'sma': {'windows': [20, 50, 200]},
+        'rsi': {'windows': [14]}
+    }
+)
+
+# Generate features without dropping NaNs in the factory
+df_with_features = factory.generate_features(drop_na=False)
+
+# Handle NaNs externally before generating signals
+df_with_features = df_with_features.dropna()
+
+# Now generate signals on clean data
+strategy = SomeStrategy()
+df_with_signals = strategy.generate_signals(df_with_features)
+```
+
+## Feature Families
+
+The following feature families are supported:
+
+1. **SMA**: Simple Moving Averages with configurable windows
+2. **EMA**: Exponential Moving Averages with configurable windows
+3. **RSI**: Relative Strength Index with configurable windows
+4. **MACD**: Moving Average Convergence Divergence with configurable fast/slow/signal periods
+5. **Bollinger Bands**: With configurable window and std deviation
+6. **ATR**: Average True Range with configurable window
+7. **Volume**: Various volume-based indicators including OBV, PVT, and MFI
+
+Each family has its own set of parameters that can be configured via the indicator_params argument.

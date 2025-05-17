@@ -1,3 +1,9 @@
+**DEPRECATED - THIS DOCUMENTATION IS OUT OF DATE**
+
+**PLEASE REFER TO README.md IN THE PROJECT ROOT FOR CURRENT DOCUMENTATION.**
+
+This file may not reflect the current state of the data_fetcher.py implementation. It has been preserved for historical reference only.
+
 # File: D:/Code/projects/mystockapp/app/data_fetcher.py
 
 This module is responsible for fetching historical stock data, primarily using the `yfinance` library. It includes functionality for specifying the ticker, time period, and interval, and incorporates a basic caching mechanism to store and retrieve recently downloaded data locally.

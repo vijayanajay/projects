@@ -1,3 +1,9 @@
+**DEPRECATED - THIS DOCUMENTATION IS OUT OF DATE**
+
+**PLEASE REFER TO README.md IN THE PROJECT ROOT FOR CURRENT DOCUMENTATION.**
+
+This file does not reflect the current state of the codebase, particularly the backtesting framework and other recent additions. It has been preserved for historical reference only.
+
 # File Structure
 
 This section describes the relevant directories and files within the codebase.

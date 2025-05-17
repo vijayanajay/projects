@@ -1,0 +1,87 @@
+# Sample configuration file for the Stock Trading Application
+
+# Logger configuration
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  console: true
+  file: true
+  file_level: INFO
+
+# Data settings
+data:
+  ticker: "RELIANCE.NS"  # Stock ticker symbol (NSE: RELIANCE.NS, BSE: RELIANCE.BO)
+  period: "max"  # Valid options: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
+  interval: "1d"  # Valid options: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo
+  cache: true  # Whether to cache data
+  cache_dir: "data"  # Directory for cached data
+  cache_expiry_days: 1  # Number of days before cache expires
+
+# Feature generation settings
+features:
+  families:  # List of feature families to generate (leave empty or "all" for all features)
+    - sma
+    - ema
+    - rsi
+    - macd
+    - bollinger_bands
+    - atr
+    - volume
+  drop_na: true  # Whether to drop NaN values
+  drop_na_threshold: null  # Threshold for dropping rows with NaNs (null = drop any row with any NaN)
+  use_float32: true  # Use float32 for better performance
+
+# Indicator parameters - customize values for each indicator type
+indicator_params:
+  sma:
+    windows: [5, 10, 20, 50, 100, 200]
+  ema:
+    windows: [5, 10, 20, 50, 100, 200]
+  rsi:
+    windows: [6, 14, 21]
+  macd:
+    fast: [8, 12]
+    slow: [21, 26]
+    signal: [9]
+  bollinger_bands:
+    window: [20]
+    std_devs: [2.0]
+  atr:
+    windows: [7, 14, 21]
+  volume:
+    windows: [5, 10, 20, 50]
+
+# Backtest settings
+backtest:
+  split_date: "2022-01-01"  # Date to split data (YYYY-MM-DD), null for no split
+  initial_capital: 100000.0  # Initial capital for backtesting
+  strategy: "sma_crossover"  # Trading strategy: sma_crossover, rsi
+  commission_fixed: 20.0  # Fixed commission per trade in currency units
+  commission_pct: 0.0003  # Percentage commission per trade (0.0003 = 0.03%)
+  slippage_pct: 0.001  # Slippage as percentage of price (0.001 = 0.1%)
+  position_size_pct: 0.25  # Percentage of available capital to use per trade (0.25 = 25%)
+  # Strategy-specific parameters
+  sma_crossover:
+    fast_sma: 50  # Fast SMA window size
+    slow_sma: 200  # Slow SMA window size
+  rsi:
+    window: 14  # RSI window size
+    oversold: 30  # RSI oversold threshold for buy signals
+    overbought: 70  # RSI overbought threshold for sell signals
+
+# Output settings
+output:
+  path: "data/stock_features.csv"  # Output CSV file for features
+  plot: true  # Whether to generate plots
+  plot_dir: "plots"  # Directory for plots
+  save_signals: true  # Whether to save signals to a CSV file
+  save_trades: true  # Whether to save trades to a CSV file
+  save_results: true  # Whether to save backtest results to a JSON file
+
+# Optional: position sizing strategies
+position_sizing:
+  strategy: "percent_of_capital"  # Options: percent_of_capital, fixed_dollar, fixed_shares, risk_based
+  percent_of_capital: 0.25  # For percent_of_capital strategy
+  fixed_dollar: 25000  # For fixed_dollar strategy
+  fixed_shares: 100  # For fixed_shares strategy
+  risk_per_trade_pct: 0.01  # For risk_based strategy (1% of capital at risk per trade)
+  max_position_pct: 0.50  # Maximum position size as percentage of capital
