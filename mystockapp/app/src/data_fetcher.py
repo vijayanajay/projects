@@ -7,7 +7,7 @@ import logging
 from datetime import datetime, timedelta
 import pandas as pd
 import warnings
-import yf
+import yfinance as yf
 import requests
 import streamlit as st
 
@@ -18,8 +18,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Define a global constant for Streamlit cache TTL (1 day by default)
+STREAMLIT_CACHE_TTL_DAYS = 1
 
-@st.cache_data(ttl=timedelta(days=cache_expiry_days))
+
+@st.cache_data(ttl=timedelta(days=STREAMLIT_CACHE_TTL_DAYS))
 def fetch_stock_data(
     ticker_symbol,
     period="max",
@@ -37,7 +40,7 @@ def fetch_stock_data(
         interval (str): Valid intervals: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo
         save_to_csv (bool): Whether to save the data to a CSV file
         cache_dir (str): Directory to save the CSV file
-        cache_expiry_days (int): Number of days before cached data expires
+        cache_expiry_days (int): Number of days before cached data expires (for file-based cache)
 
     Returns:
         pd.DataFrame: DataFrame containing the historical stock data or None if data fetching fails

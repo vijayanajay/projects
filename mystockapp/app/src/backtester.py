@@ -376,6 +376,10 @@ def run_backtest(
     Returns:
         dict: Dictionary containing backtest results and metrics
     """
+    if df is None or df.empty:
+        logger.error("Input DataFrame is None or empty. Cannot run backtest.")
+        return None
+
     # Validate input DataFrame
     required_columns = ["Close", "buy_signal", "sell_signal"]
     missing_columns = [
@@ -421,6 +425,7 @@ def run_backtest(
     )  # List of dictionaries: [{'date': buy_date, 'actual_price': buy_price, 'shares': shares, 'commission': commission}]
     portfolio_values = []
     completed_trades = []
+    trades = []  # List to track all buy/sell transactions
     total_commission = 0
     total_slippage_cost = 0
     gross_profit = 0  # Track total profit from winning trades

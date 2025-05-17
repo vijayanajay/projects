@@ -63,10 +63,9 @@ def sample_data_only_buy_signals():
     return data
 
 
-def test_backtest_with_only_buy_signals():
+def test_backtest_with_only_buy_signals(sample_data_only_buy_signals):
     """Test that run_backtest properly handles a dataset with buy signals but no sell signals."""
-    # Get test data with only buy signals
-    df = sample_data_only_buy_signals()
+    df = sample_data_only_buy_signals
 
     # Run backtest with standard parameters
     results = run_backtest(
@@ -104,10 +103,9 @@ def test_backtest_with_only_buy_signals():
     ), "Final portfolio value should differ from initial capital"
 
 
-def test_multiple_buys_no_sells():
+def test_multiple_buys_no_sells(sample_data_only_buy_signals):
     """Test backtest with multiple buy signals but no sell signals."""
-    # Create a dataframe with multiple buy signals
-    df = sample_data_only_buy_signals()
+    df = sample_data_only_buy_signals.copy()
 
     # Add two more buy signals
     buy_indices = [
@@ -153,10 +151,9 @@ def test_multiple_buys_no_sells():
     ), "Final portfolio value should differ from initial capital"
 
 
-def test_buy_signals_with_insufficient_capital():
+def test_buy_signals_with_insufficient_capital(sample_data_only_buy_signals):
     """Test backtest with buy signals after capital is depleted."""
-    # Create a dataframe with multiple buy signals
-    df = sample_data_only_buy_signals()
+    df = sample_data_only_buy_signals.copy()
 
     # Add more buy signals throughout the dataset
     for i in range(1, 10):

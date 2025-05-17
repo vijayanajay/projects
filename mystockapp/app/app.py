@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import yf
+import yfinance as yf
 from datetime import datetime, timedelta
 import os
 import logging
@@ -32,6 +32,7 @@ from src.backtester import (
     run_backtest,
     generate_backtest_report,
 )
+from src.nan_handler import handle_nans  # Import the new nan_handler
 
 # Configure logging
 logging.basicConfig(
@@ -216,7 +217,38 @@ def main():
                 factory = FeatureFactory(
                     data, feature_families=feature_families
                 )
-                features_df = factory.generate_features()
+                # Generate features without dropping NaNs yet
+                features_df = factory.generate_features(drop_na=False)
+
+                # Define critical columns based on the selected strategy
+                critical_columns = ["Open", "High", "Low", "Close", "Volume"]
+                if selected_strategy == "SMA Crossover":
+                    critical_columns.extend(
+                        [f"sma_{fast_sma}", f"sma_{slow_sma}"]
+                    )
+                elif selected_strategy == "RSI Strategy":
+                    critical_columns.append(f"rsi_{rsi_window}")
+
+                # Use the standardized NaN handling
+                features_df, nan_stats = handle_nans(
+                    features_df,
+                    method="drop",
+                    drop_na_threshold=0.25,  # Default threshold
+                    critical_columns=critical_columns,
+                )
+
+                # Log NaN handling statistics
+                if nan_stats["rows_dropped"] > 0:
+                    st.warning(
+                        f"Dropped {nan_stats['rows_dropped']} rows ({nan_stats['pct_dropped']:.2f}%) "
+                        f"with NaN values after generating technical indicators."
+                    )
+
+                if features_df.empty:
+                    st.error(
+                        "No data remaining after NaN handling. Cannot continue analysis."
+                    )
+                    return
             else:
                 features_df = data.copy()
 
@@ -409,44 +441,41 @@ def main():
 
             # Create and apply trading strategy
             if selected_strategy == "SMA Crossover":
-                # Make sure we have the required SMA columns
-                if f"sma_{fast_sma}" not in features_df.columns:
-                    st.error(
-                        f"SMA column for {fast_sma} days not found. Please generate SMA indicators first."
-                    )
-                    return
-                if f"sma_{slow_sma}" not in features_df.columns:
-                    st.error(
-                        f"SMA column for {slow_sma} days not found. Please generate SMA indicators first."
-                    )
-                    return
-
                 strategy = SMACrossoverStrategy(
                     fast_window=fast_sma, slow_window=slow_sma
                 )
-                st.write(f"Strategy: **{strategy.name}**")
-
             elif selected_strategy == "RSI Strategy":
-                # Make sure we have the required RSI column
-                if f"rsi_{rsi_window}" not in features_df.columns:
-                    st.error(
-                        f"RSI column for {rsi_window} days not found. Please generate RSI indicators first."
-                    )
-                    return
-
                 strategy = RSIStrategy(
                     rsi_window=rsi_window,
                     oversold_threshold=rsi_oversold,
                     overbought_threshold=rsi_overbought,
                 )
-                st.write(f"Strategy: **{strategy.name}**")
 
-            # Generate signals
             features_with_signals = strategy.generate_signals(features_df)
+
+            # Check for NaN values after generating signals
+            critical_signal_columns = ["buy_signal", "sell_signal"]
+            features_with_signals, signal_nan_stats = handle_nans(
+                features_with_signals,
+                method="drop",
+                drop_na_threshold=0.0,  # No NaNs allowed in signal columns
+                critical_columns=critical_signal_columns,
+            )
+
+            if signal_nan_stats["rows_dropped"] > 0:
+                st.warning(
+                    f"Dropped {signal_nan_stats['rows_dropped']} rows with NaN values in signal columns."
+                )
+
+            if features_with_signals.empty:
+                st.error(
+                    "No data remaining after NaN handling of signals. Cannot run backtest."
+                )
+                return
 
             # Run backtest
             results = run_backtest(
-                features_with_signals,
+                features_with_signals,  # Use the DataFrame after NaN handling
                 initial_capital=initial_capital,
                 commission_fixed=commission_fixed,
                 commission_pct=commission_pct,
@@ -493,7 +522,7 @@ def main():
 
             # Convert portfolio values to a Series with the same index as the dataframe
             portfolio_series = pd.Series(
-                results["portfolio_values"], index=features_df.index
+                results["portfolio_values"], index=features_with_signals.index
             )
 
             # Add baseline initial capital
@@ -507,7 +536,7 @@ def main():
             # Add portfolio equity curve
             equity_fig.add_trace(
                 go.Scatter(
-                    x=features_df.index,
+                    x=features_with_signals.index,
                     y=portfolio_series,
                     name="Portfolio Value",
                     line=dict(color="blue", width=2),
@@ -515,8 +544,12 @@ def main():
             )
 
             # Add buy/sell markers
-            buy_points = features_df[features_df["buy_signal"] == True]
-            sell_points = features_df[features_df["sell_signal"] == True]
+            buy_points = features_with_signals[
+                features_with_signals["buy_signal"] == True
+            ]
+            sell_points = features_with_signals[
+                features_with_signals["sell_signal"] == True
+            ]
 
             equity_fig.add_trace(
                 go.Scatter(

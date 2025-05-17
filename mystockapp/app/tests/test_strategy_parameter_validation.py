@@ -7,7 +7,8 @@ in arch_review.md.
 import unittest
 import sys
 import os
-from unittest.mock import patch, MagicMock
+
+# from unittest.mock import patch, MagicMock  # Keep if needed for other mocks
 
 # Add parent directory to path to import source files
 sys.path.insert(
@@ -15,7 +16,7 @@ sys.path.insert(
 )
 
 # Mock streamlit before importing backtester
-sys.modules["streamlit"] = MagicMock()
+# REMOVE THIS LINE: sys.modules["streamlit"] = MagicMock()
 
 from src.backtester import SMACrossoverStrategy, RSIStrategy
 

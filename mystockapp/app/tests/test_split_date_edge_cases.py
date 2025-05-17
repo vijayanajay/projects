@@ -77,8 +77,8 @@ def split_and_process_data(data, split_date):
     logger.info(f"In-sample rows: {len(in_sample_data)}")
     logger.info(f"Out-of-sample rows: {len(out_of_sample_data)}")
 
-    # Process both datasets
     results = {}
+    sma_params_for_factory = {"sma": {"windows": [5, 10, 20]}}
 
     for period_name, period_data in [
         ("in_sample", in_sample_data),
@@ -89,40 +89,36 @@ def split_and_process_data(data, split_date):
             results[period_name] = None
             continue
 
-        # Generate features
-        factory = FeatureFactory(period_data, feature_families=["sma"])
-        with_features = factory.generate_features(drop_na=False)
+        try:
+            factory = FeatureFactory(
+                period_data,
+                feature_families=["sma"],
+                indicator_params=sma_params_for_factory,
+            )
+            with_features = factory.generate_features(drop_na=False)
 
-        # Apply strategy
-        strategy = SMACrossoverStrategy(
-            fast_window=5, slow_window=10
-        )  # Small windows for testing
-        with_signals = strategy.generate_signals(with_features)
+            strategy = SMACrossoverStrategy(fast_window=5, slow_window=10)
+            with_signals = strategy.generate_signals(with_features)
 
-        # Drop NaNs
-        filtered = with_signals.dropna()
+            filtered = with_signals.dropna()
 
-        if len(filtered) == 0:
-            logger.warning(
-                f"{period_name} data is empty after feature generation and NaN dropping"
+            if len(filtered) == 0:
+                logger.warning(
+                    f"{period_name} data is empty after feature generation and NaN dropping"
+                )
+                results[period_name] = None
+                continue
+
+            backtest_result = run_backtest(filtered, initial_capital=100000.0)
+            results[period_name] = backtest_result
+        except ValueError as e:
+            logger.error(f"Error processing {period_name} data: {str(e)}")
+            results[period_name] = None
+        except Exception as e:
+            logger.error(
+                f"Unexpected error processing {period_name} data: {str(e)}"
             )
             results[period_name] = None
-            continue
-
-        # Run backtest
-        try:
-            backtest_result = run_backtest(
-                filtered,
-                initial_capital=100000.0,
-                commission_fixed=20.0,
-                commission_pct=0.0003,
-                slippage_pct=0.001,
-                position_size_pct=0.25,
-            )
-            results[period_name] = backtest_result
-        except Exception as e:
-            logger.error(f"Backtest failed for {period_name}: {str(e)}")
-            results[period_name] = str(e)
 
     return results
 

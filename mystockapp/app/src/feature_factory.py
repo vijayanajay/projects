@@ -187,15 +187,6 @@ class FeatureFactory:
                 "Rows with resulting NaNs will be dropped if drop_na is True."
             )
 
-        # Verify that we have enough data for calculations
-        min_rows_needed = max(
-            self.params["sma"]["windows"] + self.params["ema"]["windows"]
-        )
-        if len(self.ohlcv) < min_rows_needed:
-            raise ValueError(
-                f"Input DataFrame has {len(self.ohlcv)} rows, but at least {min_rows_needed} rows are needed for feature calculations."
-            )
-
         # Create a copy of the original DataFrame to add features to
         df = self.ohlcv.copy()
 
@@ -482,7 +473,7 @@ class FeatureFactory:
         )
 
         # Price-Volume Trend (PVT)
-        price_change_pct = df["Close"].pct_change()
+        price_change_pct = df["Close"].pct_change(fill_method=None)
         df["pvt"] = (
             (price_change_pct * df["Volume"]).cumsum().astype(self.dtype)
         )

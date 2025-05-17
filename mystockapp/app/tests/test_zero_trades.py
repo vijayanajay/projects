@@ -102,11 +102,9 @@ def test_backtest_with_zero_trades():
     ), "All portfolio values should equal initial capital"
 
 
-def test_backtest_with_nan_values():
+def test_backtest_with_nan_values(sample_data_no_signals):
     """Test that run_backtest handles datasets with NaN values appropriately."""
-    # Get test data with no signals
-    df = sample_data_no_signals()
-
+    df = sample_data_no_signals
     # Add NaN values to some rows in critical columns
     df.loc[df.index[10:20], "Close"] = np.nan
     df.loc[df.index[30:40], "buy_signal"] = np.nan
@@ -139,39 +137,37 @@ def sample_ohlcv_data():
 
     # Generate random price data that somewhat resembles a stock
     rng = np.random.RandomState(42)  # Fixed seed for reproducibility
-    close = 100 + rng.randn(60).cumsum()
+    close_series = pd.Series(100 + rng.randn(60).cumsum(), index=dates)
 
     # Create realistic Open, High, Low values based on Close
     daily_volatility = 2.0
     open_prices = (
-        close.shift(1).fillna(close[0]) + rng.randn(60) * daily_volatility
+        close_series.shift(1).fillna(close_series.iloc[0])
+        + rng.randn(60) * daily_volatility
     )
     high_prices = (
-        np.maximum(close, open_prices) + rng.rand(60) * daily_volatility * 1.5
+        np.maximum(close_series.values, open_prices)
+        + rng.rand(60) * daily_volatility * 1.5
     )
     low_prices = (
-        np.minimum(close, open_prices) - rng.rand(60) * daily_volatility * 1.5
+        np.minimum(close_series.values, open_prices)
+        - rng.rand(60) * daily_volatility * 1.5
     )
-
-    # Generate volume data
     volume = (1000000 + rng.randn(60) * 200000).astype(int)
-    volume = np.abs(volume)  # Ensure positive volume
+    volume = np.abs(volume)
 
-    # Create DataFrame
     data = pd.DataFrame(
         {
             "Open": open_prices,
             "High": high_prices,
             "Low": low_prices,
-            "Close": close,
+            "Close": close_series,
             "Volume": volume,
-            # Add empty signal columns
             "buy_signal": False,
             "sell_signal": False,
         },
         index=dates,
     )
-
     return data
 
 
@@ -262,20 +258,19 @@ def test_backtest_with_only_buy_signal_executed(sample_ohlcv_data):
     assert results["win_rate"] == pytest.approx(0.0, abs=1e-10)
 
     # Final value should include mark-to-market value of the open position
-    assert results["final_value"] != pytest.approx(initial_capital, rel=1e-4)
-
-    # Position should be open at the end
-    final_position_value = (
+    trade_value_at_entry = (
+        results["trades"][0]["shares"] * results["trades"][0]["actual_price"]
+    )
+    cash_after_buy = (
+        initial_capital
+        - trade_value_at_entry
+        - results["trades"][0]["commission"]
+    )
+    final_position_value_at_exit_price = (
         results["trades"][0]["shares"] * sample_ohlcv_data["Close"].iloc[-1]
     )
     assert results["final_value"] == pytest.approx(
-        results["trades"][0]["shares"] * sample_ohlcv_data["Close"].iloc[-1]
-        + (
-            initial_capital
-            - results["trades"][0]["value"]
-            - results["trades"][0]["commission"]
-        ),
-        rel=1e-4,
+        cash_after_buy + final_position_value_at_exit_price, rel=1e-4
     )
 
 

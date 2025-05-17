@@ -87,11 +87,18 @@ def test_generate_features_with_insufficient_data(small_ohlcv_data):
 
 def test_generate_features_with_drop_na(small_ohlcv_data):
     """Test that FeatureFactory returns few or no rows when drop_na=True with insufficient data."""
-    # Create factory with default parameters (which include SMA 200)
-    factory = FeatureFactory(small_ohlcv_data)
-
-    # Generate features with dropping NaNs
-    df_with_features = factory.generate_features(drop_na=True)
+    # Define suitable small windows
+    small_window_params = {
+        "sma": {"windows": [10, 20]},
+        "ema": {"windows": [10, 20]},
+        "rsi": {"windows": [14]},
+    }
+    factory = FeatureFactory(
+        small_ohlcv_data, indicator_params=small_window_params
+    )
+    df_with_features = factory.generate_features(
+        drop_na=True, drop_na_threshold=0
+    )
 
     # The result should be empty or have very few rows
     assert len(df_with_features) < len(
@@ -109,10 +116,15 @@ def test_generate_features_with_drop_na(small_ohlcv_data):
 
 def test_generate_features_with_drop_na_threshold(small_ohlcv_data):
     """Test that FeatureFactory with drop_na_threshold preserves more rows while handling NaNs."""
-    # Create factory with default parameters
-    factory = FeatureFactory(small_ohlcv_data)
-
-    # Generate features with threshold-based NaN dropping (50% threshold)
+    # Define suitable small windows
+    small_window_params = {
+        "sma": {"windows": [10, 20]},
+        "ema": {"windows": [10, 20]},
+        "rsi": {"windows": [14]},
+    }
+    factory = FeatureFactory(
+        small_ohlcv_data, indicator_params=small_window_params
+    )
     df_with_features = factory.generate_features(
         drop_na=True, drop_na_threshold=0.5
     )
@@ -141,7 +153,11 @@ def test_generate_features_with_drop_na_threshold(small_ohlcv_data):
 def test_backtest_with_insufficient_data(small_ohlcv_data):
     """Test that backtesting handles insufficient data gracefully."""
     # Generate features and apply strategy
-    factory = FeatureFactory(small_ohlcv_data, feature_families=["sma"])
+    factory = FeatureFactory(
+        small_ohlcv_data,
+        feature_families=["sma"],
+        indicator_params={"sma": {"windows": [20, 50]}},
+    )
     df_with_features = factory.generate_features(drop_na=False)
 
     # Apply strategy to generate signals
@@ -194,7 +210,13 @@ def test_full_pipeline_with_insufficient_data(small_ohlcv_data):
     """Test the entire pipeline from feature generation to backtesting with insufficient data."""
     # Generate features
     factory = FeatureFactory(
-        small_ohlcv_data, feature_families=["sma", "rsi", "macd"]
+        small_ohlcv_data,
+        feature_families=["sma", "rsi", "macd"],
+        indicator_params={
+            "sma": {"windows": [20, 50]},
+            "rsi": {"windows": [14]},
+            "macd": {"fast": [12], "slow": [26], "signal": [9]},
+        },
     )
     df_with_features = factory.generate_features(drop_na=False)
 

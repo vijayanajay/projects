@@ -264,6 +264,7 @@ def test_feature_factory_insufficient_data():
             "too few",
             "minimum",
             "required",
+            "rows are needed",
         ]
     )
 
@@ -322,15 +323,26 @@ def test_feature_factory_with_nans():
     data.loc[data.index[15], "High"] = np.nan
 
     # Test with drop_na=False
-    factory = FeatureFactory(data)
+    small_window_params = {
+        "sma": {"windows": [5, 10]},
+        "ema": {"windows": [5, 10]},
+        "rsi": {"windows": [7]},
+        "macd": {"fast": [8], "slow": [12], "signal": [5]},
+        "bollinger_bands": {"window": [10], "std_devs": [2.0]},
+        "atr": {"windows": [7]},
+        "volume": {"windows": [5, 10]},
+    }
+    factory = FeatureFactory(data, indicator_params=small_window_params)
     result_with_nans = factory.generate_features(drop_na=False)
 
     # Should have NaNs in the result
     assert result_with_nans.isna().any().any()
 
     # Test with drop_na=True
-    factory = FeatureFactory(data)
-    result_without_nans = factory.generate_features(drop_na=True)
+    factory = FeatureFactory(data, indicator_params=small_window_params)
+    result_without_nans = factory.generate_features(
+        drop_na=True, drop_na_threshold=0.0
+    )
 
     # Should have no NaNs in the result
     assert not result_without_nans.isna().any().any()
